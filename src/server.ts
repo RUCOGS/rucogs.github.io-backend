@@ -1,3 +1,9 @@
+/* eslint-disable import/first */
+
+// Load Environment variables
+import dotenv from 'dotenv';
+dotenv.config();
+
 // Server
 import express from 'express';
 import cors from 'cors';
@@ -33,7 +39,7 @@ app.use(express.urlencoded({ extended: true }));
 
 // simple route
 app.get('/', (req, res) => {
-  res.json({ message: 'Welcome to the RUCOGS backend.' });
+  res.json({ message: 'Welcome to atlinx application.' });
 }); authRoute(app); userRoute(app);
 
 // set port, listen for requests
@@ -44,14 +50,16 @@ app.listen(PORT, () => {
 const Role = db.RoleModel;
 
 db.mongoose
-  .connect(`mongodb://${DBConfig.HOST}:${DBConfig.PORT}/${DBConfig.DB}`, {
+  .connect(`mongodb://${DBConfig.USER}:${DBConfig.PASS}@${DBConfig.HOST}:${DBConfig.PORT}/${DBConfig.NAME}?authSource=admin&w=1`, {
     useNewUrlParser: true,
     useUnifiedTopology: true
   } as ConnectOptions)
-  .then(() => {
-    console.log('Successfully connect to MongoDB.');
-    initial();
-  })
+  .then(
+    () => {
+      console.log('Successfully connect to MongoDB.');
+      initial();
+    }
+  )
   .catch(err => {
     console.error('Connection error', err);
     process.exit();
@@ -59,36 +67,41 @@ db.mongoose
 
 function initial(): void {
   void Role.estimatedDocumentCount({}, (err: NativeError, count: number) => {
-    if (!err && count === 0) {
-      new Role({
-        name: 'user'
-      }).save(err => {
-        if (err) {
-          console.log('error', err);
-        }
+    if (!err) {
+      if (count === 0) {
+        new Role({
+          name: 'user'
+        }).save(err => {
+          if (err) {
+            console.log('error', err);
+          }
 
-        console.log("added 'user' to roles collection");
-      });
+          console.log("added 'user' to roles collection");
+        });
 
-      new Role({
-        name: 'moderator'
-      }).save(err => {
-        if (err) {
-          console.log('error', err);
-        }
+        new Role({
+          name: 'moderator'
+        }).save(err => {
+          if (err) {
+            console.log('error', err);
+          }
 
-        console.log("added 'moderator' to roles collection");
-      });
+          console.log("added 'moderator' to roles collection");
+        });
 
-      new Role({
-        name: 'admin'
-      }).save(err => {
-        if (err) {
-          console.log('error', err);
-        }
+        new Role({
+          name: 'admin'
+        }).save(err => {
+          if (err) {
+            console.log('error', err);
+          }
 
-        console.log("added 'admin' to roles collection");
-      });
+          console.log("added 'admin' to roles collection");
+        });
+      }
+    } else {
+      console.error('Error in initializing DB', err);
+      process.exit();
     }
   });
 }
