@@ -1,0 +1,34 @@
+# Comopse file version
+version: '3'
+services:
+  api:
+    # build . runs the "Dockerfile"
+    build: .
+    environment:
+      DB_HOST: "db"
+    ports:
+      # Binds port 8080 on the computer that's running Docker to port 8080 on the container.
+      - "8080:8080"
+    depends_on:
+      - db
+  db:
+    image: "mongo"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: "${DB_USER}"
+      MONGO_INITDB_ROOT_PASSWORD: "${DB_PASS}"
+      MONGO_INITDB_DB: "${DB_NAME}"
+    volumes:
+      # Binds data volume to 'data/db' on the container, because 'data/db' is where mongodb stores data by default. 
+      - data:/data/db
+    ports:
+      # Binds port 27017 on the computer that's running Docker to port 27017 on the container.
+      
+      # We must bind to a host port other than 27017 because our actual computer may be running 
+      # the MongoDB service, which takes up the 27017 port.
+      - "27018:27017"
+    restart: unless-stopped
+    command: mongod
+
+# These are top level volumes, which are automatically created by Docker
+volumes:
+  data:
