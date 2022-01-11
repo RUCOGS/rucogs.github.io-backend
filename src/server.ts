@@ -15,8 +15,13 @@ import cors from 'cors';
 // immediately call the route setup function after its imported.
 // Import statements in typescript must stand alone, therefore
 // we need two lines to import and run the function.
-import authRoute from './app/routes/auth.routes';
-import userRoute from './app/routes/user.routes';
+import authRouter from './app/routes/auth.routes';
+import userRouter from './app/routes/user.routes';
+
+import passport from 'passport';
+
+import initPassport from './app/middlewares/init-passport';
+initPassport(passport);
 
 // Database Connection
 import * as db from './app/models';
@@ -37,16 +42,25 @@ app.use(express.json());
 // parse requests of content-type - application/x-www-form-urlencoded
 app.use(express.urlencoded({ extended: true }));
 
+app.use(passport.initialize());
+// We are using JWTs instead of sessions in order
+// to avoid having to store session data on the server.
+// app.use(passport.session());
+
 // simple route
 app.get('/', (req, res) => {
   res.json({ message: 'Welcome to atlinx application.' });
-}); authRoute(app); userRoute(app);
+});
+
+app.use('/auth', authRouter);
+app.use('/user', userRouter);
 
 // set port, listen for requests
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}.`);
 });
+
 const Role = db.RoleModel;
 
 db.mongoose

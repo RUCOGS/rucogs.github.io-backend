@@ -4,6 +4,8 @@ export interface User extends Document {
   username: string;
   email: string;
   password: string;
+  discordId: string;
+  googleId: string;
   roles: ObjectId[];
 }
 
@@ -13,6 +15,8 @@ export const UserModel = model(
     username: String,
     email: String,
     password: String,
+    discordId: String,
+    googleId: String,
     roles: [
       {
         type: Schema.Types.ObjectId,
