@@ -33,7 +33,6 @@
     "passport": "^0.5.2",
     "passport-discord": "^0.1.4",
     "passport-google-oauth20": "^2.0.0",
-    "passport-jwt": "^4.0.0",
     "passport-local": "^1.0.0",
     "request": "^2.88.2"
   },
@@ -48,7 +47,6 @@
     "@types/passport": "^1.0.7",
     "@types/passport-discord": "^0.1.5",
     "@types/passport-google-oauth20": "^2.0.11",
-    "@types/passport-jwt": "^3.0.6",
     "@types/passport-local": "^1.0.34",
     "@typescript-eslint/eslint-plugin": "^4.0.1",
     "eslint": "^7.12.1",

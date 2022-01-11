@@ -1,10 +1,9 @@
-import { /* Role, */ UserModel } from '../models';
+import { User, UserModel } from '../models';
 import { PassportStatic } from 'passport';
 import { Strategy as LocalStrategy } from 'passport-local';
 import bcrypt from 'bcryptjs';
 import { Config as AuthConfig } from '../config/auth.config';
 import { Strategy as DiscordStrategy } from 'passport-discord';
-import { Strategy as JWTStrategy, ExtractJwt } from 'passport-jwt';
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
 
 export default function initialize(passport: PassportStatic): void {
@@ -61,14 +60,17 @@ export default function initialize(passport: PassportStatic): void {
     callbackURL: AuthConfig.DISCORD_CLIENT_REDIRECT,
     scope: ['identify', 'email', 'guilds', 'guilds.join']
   }, (accessToken, refreshToken, profile, done) => {
+    console.log('Discord Profile: \n' + JSON.stringify(profile));
     void UserModel.findOneAndUpdate(
       {
         discordId: profile.id
       },
       {
         $setOnInsert: {
+          username: profile.username,
+          email: profile.email,
           discordId: profile.id
-        }
+        } as User
       },
       {
         new: true,
@@ -95,14 +97,17 @@ export default function initialize(passport: PassportStatic): void {
     callbackURL: AuthConfig.GOOGLE_CLIENT_REDIRECT,
     scope: ['profile', 'email']
   }, (accessToken, refreshToken, profile, done) => {
+    console.log('Google Profile: \n' + JSON.stringify(profile));
     UserModel.findOneAndUpdate(
       {
         googleId: profile.id
       },
       {
         $setOnInsert: {
+          username: profile.displayName.replace(' ', ''),
+          email: profile.emails[0].value,
           googleId: profile.id
-        }
+        } as User
       },
       {
         new: true,
@@ -119,26 +124,6 @@ export default function initialize(passport: PassportStatic): void {
         // User should technically always exist, because findOneAndUpdate
         // will attempt to create the user if they do not exist.
         return done(err, user);
-      });
-  }));
-
-  // Set up JWT strategy
-  passport.use(new JWTStrategy({
-    jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-    secretOrKey: AuthConfig.SECRET,
-    issuer: 'rucogs.club',
-    audience: 'rucogs.club'
-  }, (jwtPayload, done) => {
-    UserModel.findOne({ id: jwtPayload.sub })
-      .exec((err, user) => {
-        if (err) {
-          return done(err, false);
-        }
-        if (!user) {
-          return done(null, false, { message: 'User not found.' });
-        }
-
-        return done(null, user);
       });
   }));
 }
