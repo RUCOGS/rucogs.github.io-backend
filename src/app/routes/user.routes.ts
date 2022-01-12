@@ -1,6 +1,7 @@
 import express from 'express';
-import { AuthJwt } from '../middlewares';
+// import { AuthJwt } from '../middlewares';
 import * as controller from '../controllers/user.controller';
+import { UserModel } from '@app/models';
 
 const router = express.Router();
 
@@ -12,20 +13,11 @@ router.use(function(req, res, next) {
   next();
 });
 
-router.get('/test/all', controller.allAccess);
+router.get('/users/:id', (req, res) => {
+  
+  res.send();
+});
 
-router.get('/test/user', [AuthJwt.verifyToken], controller.userBoard);
-
-router.get(
-  '/test/mod',
-  [AuthJwt.verifyToken, AuthJwt.isModerator],
-  controller.moderatorBoard
-);
-
-router.get(
-  '/test/admin',
-  [AuthJwt.verifyToken, AuthJwt.isAdmin],
-  controller.adminBoard
-);
+router.post('/update/user', controller.allAccess);
 
 export default router;

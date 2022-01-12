@@ -82,7 +82,8 @@ export const authenticateAndReturnToken = function(strategy: string, req: any, r
     console.log(`Authenticasted user:\n${JSON.stringify(user)}\n using strategy '${strategy}' with token '${accessToken}'`);
 
     const message = JSON.stringify({
-      accessToken: accessToken
+      accessToken: accessToken,
+      user: user
     });
 
     return res.send(`<html><head><title>Authenticate</title></head><body></body><script>res = ${message}; window.opener.postMessage(res, "*");window.close();</script></html>`);

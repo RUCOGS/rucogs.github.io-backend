@@ -11,8 +11,16 @@
 		"paths": {
 			"*": [
 				"../node_modules/*"
-			]
-		}
+			],
+			"@app/*": [ "app/*" ],
+			"@config/*": [ "app/config/*" ],
+			"@models/*": [ "app/models/*" ],
+			"@utils/*": [ "app/utils/*" ],
+			"@routes/*": [ "app/routes/*" ],
+			"@controllers/*": [ "app/controllers/*" ],
+			"@middlewares/*": [ "app/middlewares/*" ],
+		},
+
 	},
 	"include": [
 		"**/*"
