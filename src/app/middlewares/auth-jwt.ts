@@ -3,69 +3,65 @@ import { Request, RequestHandler } from 'express';
 import jwt, { VerifyCallback } from 'jsonwebtoken';
 
 import { Config as AuthConfig } from '../config/auth.config';
-import { RoleModel, UserModel } from '../models';
+import { RoleModel, Role, UserModel } from '../models';
 
 // We're adding the userId property to the request when we verify the token.
 // I'm defining this kind of addition as "metadata".
-interface ReqMetadata {
+export interface UserIdMetadata {
   userId: string;
 }
 
-const verifyToken = function(req: Request & ReqMetadata, res, next) {
+function constructUserIdMetadata(req: Request & UserIdMetadata): void {
+  req.userId = '';
+}
+
+export const verifyToken = function(req: Request & UserIdMetadata, res, next) {
+  constructUserIdMetadata(req);
+
   const token = req.headers['x-access-token'];
 
   if (!token || typeof token !== 'string') {
-    return res.status(403).send({ message: 'No token provided!' });
+    res.status(403).send({ message: 'No token provided!' });
+    return;
   }
 
   jwt.verify(token, AuthConfig.SECRET, function(err, decoded) {
     if (err) {
-      return res.status(401).send({ message: 'Unauthorized!' });
+      res.status(401).send({ message: 'Unauthorized!' });
+      return;
     }
     req.userId = decoded.id;
     next();
   } as VerifyCallback);
 } as RequestHandler;
 
-const isAdmin = function(req: Request & ReqMetadata, res, next) {
+// We're adding the userId property to the request when we verify the token.
+// I'm defining this kind of addition as "metadata".
+export interface RolesMetadata {
+  roles: Role[];
+
+  hasRole: (roleName: string) => boolean;
+}
+
+function constructRolesMetadata(req: Request & RolesMetadata): void {
+  req.roles = [];
+  req.hasRole = (roleName: string) => {
+    return req.roles.find((role) => role.name === roleName) !== undefined;
+  };
+}
+
+// Requires verifyToken();
+export const getRoles = function(req: Request & UserIdMetadata & RolesMetadata, res, next) {
+  constructRolesMetadata(req);
+
   UserModel.findById(req.userId).exec((err, user) => {
     if (err) {
       res.status(500).send({ message: err });
       return;
     }
 
-    // if (user === null) {
-    //   res.status(500).send({ message: 'User does not exist.' });
-    //   return;
-    // }
-
-    void RoleModel.find(
-      {
-        _id: { $in: user.roles }
-      },
-      (err, roles) => {
-        if (err) {
-          res.status(500).send({ message: err });
-          return;
-        }
-
-        for (let i = 0; i < roles.length; i++) {
-          if (roles[i].name === 'admin') {
-            next();
-            return;
-          }
-        }
-
-        res.status(403).send({ message: 'Require Admin Role!' });
-      }
-    );
-  });
-} as RequestHandler;
-
-const isModerator = function(req: Request & ReqMetadata, res, next) {
-  UserModel.findById(req.userId).exec((err, user) => {
-    if (err) {
-      res.status(500).send({ message: err });
+    if (user === null) {
+      res.status(500).send({ message: 'User does not exist.' });
       return;
     }
 
@@ -79,21 +75,22 @@ const isModerator = function(req: Request & ReqMetadata, res, next) {
           return;
         }
 
-        for (let i = 0; i < roles.length; i++) {
-          if (roles[i].name === 'moderator') {
-            next();
-            return;
-          }
-        }
-
-        res.status(403).send({ message: 'Require Moderator Role!' });
+        req.roles = roles;
+        next();
       }
     );
   });
 } as RequestHandler;
 
-export {
-  verifyToken,
-  isAdmin,
-  isModerator
+// Requires getRoles()
+// Uses bind
+export const hasRole = function(roleName: string): RequestHandler {
+  return function(req: Request & RolesMetadata, res, next) {
+    if (req.hasRole(roleName)) {
+      next();
+      return;
+    }
+
+    res.status(403).send({ message: `Unauthorized. Requires ${roleName} role!` });
+  } as RequestHandler;
 };

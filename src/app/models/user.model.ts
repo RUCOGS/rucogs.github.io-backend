@@ -1,16 +1,30 @@
 import { Schema, model, Types, Document } from 'mongoose';
-import { SocialLink, SocialLinkModel } from './social-link.model';
+import { SocialLink, SocialLinkSchema } from './social-link.model';
 
-export interface User extends Document {
-  username: string;
-  displayName: string;
+export interface User extends Document, PublicUser {
   email: string;
   password?: string;
   discordId?: string;
   googleId?: string;
+}
+
+export interface PublicUser extends Document {
+  username: string;
+  displayName: string;
   roles: Types.ObjectId[];
   projects: Types.ObjectId[];
   socialLinks: SocialLink[];
+}
+
+export function getPublicUser(user: User): PublicUser {
+  return {
+    _id: user._id,
+    username: user.username,
+    displayName: user.displayName,
+    roles: user.roles,
+    projects: user.projects,
+    socialLinks: user.socialLinks
+  } as PublicUser;
 }
 
 export const UserModel = model(
@@ -30,6 +44,6 @@ export const UserModel = model(
       type: Schema.Types.ObjectId,
       ref: 'Project'
     }],
-    socialLinks: [SocialLinkModel.schema]
+    socialLinks: [SocialLinkSchema]
   })
 );

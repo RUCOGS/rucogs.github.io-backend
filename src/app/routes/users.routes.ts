@@ -1,8 +1,7 @@
 import { Request, Response } from 'express';
 import * as express from 'express';
 // import { AuthJwt } from '../middlewares';
-import { User, UserModel } from '@app/models';
-import { getPublicUser } from '@app/models/user.model';
+import { User, UserModel, getPublicUser } from '@app/models';
 import { AuthJwt } from '@app/middlewares';
 
 const router = express.Router();
@@ -12,6 +11,7 @@ router.use(function(req, res, next) {
     'Access-Control-Allow-Headers',
     'x-access-token, Origin, Content-Type, Accept'
   );
+  res.type('json');
   next();
 });
 
@@ -54,13 +54,18 @@ router.get('/:id/private',
     const { id } = req.params;
 
     if (req.userId === id || req.hasRole('admin')) {
-      UserModel.find({})
-        .exec((err, users: User[]) => {
+      UserModel.findById(id)
+        .exec((err, user: User) => {
           if (err) {
             return res.status(500).send({ message: err.message });
           }
-          return res.status(200).send(users.map((user) => getPublicUser(user)));
+          if (!user) {
+            return res.status(404).send({ message: 'User not found.' });
+          }
+          return res.status(200).send(user);
         });
+    } else {
+      return res.status(403).send({ message: 'Unauthorized.' });
     }
   });
 
@@ -96,7 +101,7 @@ router.post('/',
     // TODO: Add email verification
     //       See this: https://stackoverflow.com/questions/39092822/how-to-confirm-email-address-using-express-node
 
-    UserModel.create(req.body, (err: Error, user: User) => {
+    void UserModel.create(req.body, (err: Error, user: User) => {
       if (err) {
         res.status(500).send({ message: err.message });
       }
@@ -127,6 +132,8 @@ router.put('/:id',
 
           res.status(200);
         });
+    } else {
+      res.status(403).send({ message: 'Unauthorized.' });
     }
   });
 

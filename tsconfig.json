@@ -19,8 +19,14 @@
 			"@routes/*": [ "app/routes/*" ],
 			"@controllers/*": [ "app/controllers/*" ],
 			"@middlewares/*": [ "app/middlewares/*" ],
+			"@init/*": [ "app/init/*" ],
+			"@tests/*": [ "tests/*" ]
 		},
-
+		/* Advanced Options */
+		"plugins": [
+			{ "transform": "typescript-transform-paths" },
+			{ "transform": "typescript-is/lib/transform-inline/transformer" }
+		],
 	},
 	"include": [
 		"**/*"

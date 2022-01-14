@@ -1,4 +1,4 @@
-import { model, Schema } from 'mongoose';
+import { Schema } from 'mongoose';
 
 export interface SocialLink extends Document {
   platform: string;
@@ -6,11 +6,8 @@ export interface SocialLink extends Document {
   link: string;
 }
 
-export const SocialLinkModel = model(
-  'SocialLink',
-  new Schema<SocialLink>({
-    platform: { type: String, required: true },
-    username: { type: String, required: true },
-    link: { type: String, required: true }
-  })
-);
+export const SocialLinkSchema = new Schema<SocialLink>({
+  platform: { type: String, required: true },
+  username: { type: String, required: true },
+  link: { type: String, required: true }
+});

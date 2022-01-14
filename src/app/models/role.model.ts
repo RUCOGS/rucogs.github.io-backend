@@ -10,3 +10,9 @@ export const RoleModel = model(
     name: String
   })
 );
+
+export const ROLES: Role[] = [
+  { name: 'user' } as Role,
+  { name: 'moderator' } as Role,
+  { name: 'admin' } as Role
+];

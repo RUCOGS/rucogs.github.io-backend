@@ -1,9 +1,9 @@
 import { NativeError } from 'mongoose';
-import { UserModel, RoleModel, Role } from '../models';
+import { UserModel, RoleModel, Role, User } from '@models/index';
 import bcrypt from 'bcryptjs';
 import passport from 'passport';
 import jwt from 'jsonwebtoken';
-import { Config as AuthConfig } from '../config/auth.config';
+import { Config as AuthConfig } from '@config/auth.config';
 import { RequestHandler } from 'express';
 
 export const signup = function(req, res): void {
@@ -61,31 +61,36 @@ export const signup = function(req, res): void {
   });
 } as RequestHandler;
 
+export function getAuthToken(user: User): string {
+  return jwt.sign({ id: user.id }, AuthConfig.SECRET, {
+    expiresIn: '7d',
+    issuer: 'rucogs.club'
+  });
+}
+
 // Authenticates with passport and sends a JWT accessToken back.
-export const authenticateAndReturnToken = function(strategy: string, req: any, res: any, next: any): void {
-  console.log('Called authenticateAndReturnToken');
-  passport.authenticate(strategy, { session: false }, (err, user, info) => {
-    if (err) {
-      return next(err);
-    }
-    if (!user) {
-      return res.status(403).send({ message: 'Unauthorized' });
-    }
-    console.log('info: ' + JSON.stringify(info));
-    // Each passport strategy returns a different user,
-    // therefore we have to customize how we return
-    // a token using each type of user.
-    const accessToken = jwt.sign({ id: user.id }, AuthConfig.SECRET, {
-      expiresIn: '7d',
-      issuer: 'rucogs.club'
-    });
-    console.log(`Authenticasted user:\n${JSON.stringify(user)}\n using strategy '${strategy}' with token '${accessToken}'`);
+export function authenticateAndReturnAuthToken(strategy: string) {
+  return function(req: any, res: any, next: any): void {
+    passport.authenticate(strategy, { session: false }, (err, user: User | false, info) => {
+      if (err) {
+        return next(err);
+      }
+      if (!user) {
+        return res.status(403).send({ message: 'Unauthorized' });
+      }
 
-    const message = JSON.stringify({
-      accessToken: accessToken,
-      user: user
-    });
+      // Each passport strategy returns a different user,
+      // therefore we have to customize how we return
+      // a token using each type of user.
+      const authToken = getAuthToken(user);
+      console.log(`Authenticasted user:\n${JSON.stringify(user)}\n using strategy '${strategy}' with token '${authToken}'`);
 
-    return res.send(`<html><head><title>Authenticate</title></head><body></body><script>res = ${message}; window.opener.postMessage(res, "*");window.close();</script></html>`);
-  })(req, res, next);
-};
+      const message = JSON.stringify({
+        accessToken: authToken,
+        user: user
+      });
+
+      return res.send(`<html><head><title>Authenticate</title></head><body></body><script>res = ${message}; window.opener.postMessage(res, "*");window.close();</script></html>`);
+    })(req, res, next);
+  };
+}

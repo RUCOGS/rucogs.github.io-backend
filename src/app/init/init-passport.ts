@@ -6,7 +6,7 @@ import { Config as AuthConfig } from '../config/auth.config';
 import { Strategy as DiscordStrategy } from 'passport-discord';
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
 
-export default function initialize(passport: PassportStatic): void {
+export default function(passport: PassportStatic): void {
   // Set up local strategy
   passport.use(new LocalStrategy(function(username, password, done) {
     UserModel.findOne({

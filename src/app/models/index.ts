@@ -1,8 +1,9 @@
 import mongoose from 'mongoose';
 mongoose.Promise = global.Promise;
 
-export { User, UserModel } from './user.model';
-export { Role, RoleModel } from './role.model';
+export { User, UserModel, getPublicUser } from './user.model';
+export { Role, RoleModel, ROLES } from './role.model';
+export { Project, ProjectModel } from './project.model';
+export { SocialLink, SocialLinkSchema } from './social-link.model';
 
-export const ROLES = ['user', 'admin', 'moderator'];
 export { mongoose };

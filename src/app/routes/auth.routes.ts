@@ -12,9 +12,9 @@ router.use(function(req, res, next) {
   next();
 });
 
-router.get('/discord', controller.authenticateAndReturnToken.bind(null, 'discord'));
-router.get('/google', controller.authenticateAndReturnToken.bind(null, 'google'));
-router.post('/signin', controller.authenticateAndReturnToken.bind(null, 'local'));
+router.get('/discord', controller.authenticateAndReturnAuthToken('discord'));
+router.get('/google', controller.authenticateAndReturnAuthToken('google'));
+router.post('/signin', controller.authenticateAndReturnAuthToken('local'));
 
 router.post(
   '/signup',
