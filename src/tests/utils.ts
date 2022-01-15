@@ -8,6 +8,6 @@ import { Types } from 'mongoose';
 // from a database, because those
 // models are stored in a web-safe
 // format.
-export function convertToWebModel(object: any): any {
+export function getWebModel(object: any): any {
   return JSON.parse(JSON.stringify(object));
 }

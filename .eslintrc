@@ -38,6 +38,13 @@
     }],
     "@typescript-eslint/consistent-type-assertions": "off",
     "space-before-function-paren": "off",
-    "@typescript-eslint/space-before-function-paren": ["error", "never"]
+    "@typescript-eslint/space-before-function-paren": ["error", "never"],
+    "@typescript-eslint/no-this-alias": [
+      "error",
+      {
+        "allowDestructuring": false, // Disallow `const { props, state } = this`; true by default
+        "allowedNames": ["self", "parent"] // Allow `const self = this`; `[]` by default
+      }
+    ]
   }
 }

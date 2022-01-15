@@ -21,7 +21,7 @@ router.use(function(req, res, next) {
 
 router.get('/', [AuthJwt.verifyToken], function(req: Request, res: Response) {
   UserModel.find({})
-    .exec((err, users: User[]) => {
+    .exec((err: Error, users: User[]) => {
       if (err) {
         return res.status(500).send({ message: err.message });
       }
@@ -37,7 +37,7 @@ router.get('/private',
   ],
   (req: Request & AuthJwt.UserIdMetadata & AuthJwt.RolesMetadata, res: Response) => {
     UserModel.find({})
-      .exec((err, users: User[]) => {
+      .exec((err: Error, users: User[]) => {
         if (err) {
           return res.status(500).send({ message: err.message });
         }
@@ -55,7 +55,7 @@ router.get('/:id/private',
 
     if (req.userId === id || req.hasRole('admin')) {
       UserModel.findById(id)
-        .exec((err, user: User) => {
+        .exec((err: Error, user: User | false) => {
           if (err) {
             return res.status(500).send({ message: err.message });
           }
@@ -78,7 +78,7 @@ router.get('/:id',
 
     // Mongoose automatically casts string ids to ObjectIds.
     UserModel.findById(id)
-      .exec((err, user: User) => {
+      .exec((err: Error, user: User | false) => {
         if (err) {
           return res.status(500).send({ message: err.message });
         }
@@ -103,8 +103,10 @@ router.post('/',
 
     void UserModel.create(req.body, (err: Error, user: User) => {
       if (err) {
-        res.status(500).send({ message: err.message });
+        return res.status(500).send({ message: err.message });
       }
+
+      return res.status(201).send(user);
     });
   });
 
@@ -116,24 +118,51 @@ router.put('/:id',
   (req: Request & AuthJwt.UserIdMetadata & AuthJwt.RolesMetadata, res: Response) => {
     const { id } = req.params;
 
-    if (id === req.userId || req.hasRole('admin')) {
+    if ((id === req.userId && !('roles' in req.body)) || req.hasRole('admin')) {
       void UserModel.findByIdAndUpdate(id,
         {
-          $setOnInsert: req.body
+          $set: req.body
         },
         {
-          new: true
+          returnDocument: 'after'
         },
         (err, user) => {
           if (err) {
-            res.status(500).send({ message: err.message });
-            return;
+            return res.status(500).send({ message: err.message });
+          }
+          if (!user) {
+            return res.status(404).send({ message: 'User not found.' });
           }
 
-          res.status(200);
+          return res.status(200).send(user);
         });
     } else {
-      res.status(403).send({ message: 'Unauthorized.' });
+      return res.status(403).send({ message: 'Unauthorized.' });
+    }
+  });
+
+router.delete('/:id',
+  [
+    AuthJwt.verifyToken,
+    AuthJwt.getRoles
+  ],
+  (req: Request & AuthJwt.UserIdMetadata & AuthJwt.RolesMetadata, res: Response) => {
+    const { id } = req.params;
+
+    if (id === req.userId || req.hasRole('admin')) {
+      void UserModel.findOneAndDelete({ _id: id },
+        (err: Error, user: User | false) => {
+          if (err) {
+            return res.status(500).send({ message: err.message });
+          }
+          if (!user) {
+            return res.status(404).send({ message: 'User not found.' });
+          }
+
+          return res.status(200).send(user);
+        });
+    } else {
+      return res.status(403).send({ message: 'Unauthorized.' });
     }
   });
 

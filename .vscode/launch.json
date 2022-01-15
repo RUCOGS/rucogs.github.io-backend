@@ -24,12 +24,25 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "Jasmine Current File",
-      "program": "${workspaceFolder}/node_modules/.bin/ts-node", //refer to ts-node here
+      "name": "Test all",
+      "runtimeExecutable": "npm",
       "args": [
-        "node_modules/.bin/jasmine", //and call jasmine here.
-        "${file}",
+        "test"
       ],
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Test current file",
+      "runtimeExecutable": "npm",
+      "args": [
+        "test",
+        "${file}"
+      ],
+      "cwd": "${workspaceFolder}",
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen"
     }
