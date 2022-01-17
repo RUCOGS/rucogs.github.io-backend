@@ -58,148 +58,164 @@ describe("'/users' route,", function() {
   });
 
   describe('when GET users,', function() {
-    function makeRequest(token: string, userId: string = ''): request.Test {
-      if (userId === '') {
-        return request(app)
-          .get('/users')
-          .set('x-access-token', token);
-      }
-      return request(app)
-        .get(`/users/${userId}`)
-        .set('x-access-token', token);
-    }
+    describe('when GET public users,', function() {
+      describe('when get all,', function() {
+        function makeRequest(token: string): request.Test {
+          return request(app)
+            .get('/users')
+            .set('x-access-token', token);
+        }
 
-    it("should return all users' public info", async function() {
-      await makeRequest(fixture.token)
-        .expect('Content-Type', /json/)
-        .expect(200)
-        .then((response) => {
-          const publicUsers = fixture.allUsers.map((user) => getPublicUser(user));
-          const responseUsers = (response.body as any[]);
-          for (const publicUser of publicUsers) {
-            expect(responseUsers).toContain(joc(getWebModel(publicUser)));
-          }
-        });
-    });
-
-    it('should return public user info if searched user is own user', async function() {
-      await makeRequest(fixture.token, fixture.user._id)
-        .expect('Content-Type', /json/)
-        .expect(200)
-        .then((response) => {
-          expect(response.body).toEqual(joc(getWebModel(getPublicUser(fixture.user))));
-        });
-    });
-
-    it("should return public user info if searched user isn't own user", async function() {
-      for (const someUser of fixture.allUsers) {
-        if (someUser !== fixture.user) {
-          await makeRequest(fixture.token, someUser._id)
+        it("should return all users' public info", async function() {
+          await makeRequest(fixture.token)
             .expect('Content-Type', /json/)
             .expect(200)
             .then((response) => {
-              expect(response.body).toEqual(joc(getWebModel(getPublicUser(someUser))));
+              const publicUsers = fixture.allUsers.map((user) => getPublicUser(user));
+              const responseUsers = (response.body as any[]);
+              for (const publicUser of publicUsers) {
+                expect(responseUsers).toContain(joc(getWebModel(publicUser)));
+              }
             });
-        }
-      }
-    });
+        });
 
-    it("should return not found if searched user doesn't exist", async function() {
-      const nonexistantId = new mongoose.Types.ObjectId();
-      await makeRequest(fixture.token, nonexistantId.toString())
-        .expect(404);
-    });
-
-    it('if token is invalid, should return unauthorized', async function() {
-      await makeRequest('faketoken')
-        .expect(401);
-    });
-
-    it('should return unauthorized for searching users if token is invalid', async function() {
-      await makeRequest('faketoken', fixture.user._id)
-        .expect(401);
-    });
-  });
-
-  describe('when GET private users,', function() {
-    function makeRequest(token: string, userId: string = ''): request.Test {
-      if (userId === '') {
-        return request(app)
-          .get('/users/private')
-          .set('x-access-token', token);
-      }
-      return request(app)
-        .get(`/users/${userId}/private`)
-        .set('x-access-token', token);
-    }
-
-    describe('if you are admin,', function() {
-      it("should return all users' full info", async function() {
-        await makeRequest(fixture.adminToken)
-          .expect('Content-Type', /json/)
-          .expect(200)
-          .then((response) => {
-            const responseUsers = (response.body as any[]);
-            for (const user of fixture.allUsers) {
-              expect(responseUsers).toContain(joc(getWebModel(user)));
-            }
-          });
+        it('if token is invalid, should return unauthorized', async function() {
+          await makeRequest('faketoken')
+            .expect(401);
+        });
       });
 
-      it("should return full user info if searched user isn't own user", async function() {
-        for (const someUser of fixture.allUsers) {
-          if (someUser !== fixture.user) {
-            await makeRequest(fixture.adminToken, someUser._id)
+      describe('when get specific user,', function() {
+        function makeRequest(token: string, userId: string): request.Test {
+          return request(app)
+            .get(`/users/${userId}`)
+            .set('x-access-token', token);
+        }
+
+        it('if searched user is own user, should return public user info', async function() {
+          await makeRequest(fixture.token, fixture.user._id)
+            .expect('Content-Type', /json/)
+            .expect(200)
+            .then((response) => {
+              expect(response.body).toEqual(joc(getWebModel(getPublicUser(fixture.user))));
+            });
+        });
+
+        it("if searched user isn't own user, should return public user info", async function() {
+          for (const someUser of fixture.allUsers) {
+            if (someUser !== fixture.user) {
+              await makeRequest(fixture.token, someUser._id)
+                .expect('Content-Type', /json/)
+                .expect(200)
+                .then((response) => {
+                  expect(response.body).toEqual(joc(getWebModel(getPublicUser(someUser))));
+                });
+            }
+          }
+        });
+
+        it("if searched user doesn't exist, should return not found", async function() {
+          const nonexistantId = new mongoose.Types.ObjectId();
+          await makeRequest(fixture.token, nonexistantId.toString())
+            .expect(404);
+        });
+
+        it('if token is invalid, should return unauthorized', async function() {
+          await makeRequest('faketoken', fixture.user._id)
+            .expect(401);
+        });
+      });
+    });
+
+    describe('when GET private users,', function() {
+      describe('when get all,', function() {
+        function makeRequest(token: string): request.Test {
+          return request(app)
+            .get('/users/private')
+            .set('x-access-token', token);
+        }
+
+        describe('if you are admin,', function() {
+          it("should return all users' full info", async function() {
+            await makeRequest(fixture.adminToken)
               .expect('Content-Type', /json/)
               .expect(200)
               .then((response) => {
-                expect(response.body).toEqual(joc(getWebModel(someUser)));
+                const responseUsers = (response.body as any[]);
+                for (const user of fixture.allUsers) {
+                  expect(responseUsers).toContain(joc(getWebModel(user)));
+                }
               });
-          }
-        }
-      });
-
-      it("should return not found if searched user doesn't exist", async function() {
-        const nonexistantId = new mongoose.Types.ObjectId();
-        await makeRequest(fixture.adminToken, nonexistantId.toString())
-          .expect(404);
-      });
-    });
-
-    describe('if you are not admin,', function() {
-      it('should return forbidden if you are not admin', async function() {
-        await makeRequest(fixture.token)
-          .expect('Content-Type', /json/)
-          .expect(403);
-      });
-
-      it('should return your full user info if searched user is own user', async function() {
-        await makeRequest(fixture.token, fixture.user._id)
-          .expect('Content-Type', /json/)
-          .expect(200)
-          .then((response) => {
-            expect(response.body).toEqual(joc(getWebModel(fixture.user)));
           });
+
+          describe('if you are user,', function() {
+            it('if get all, should return forbidden', async function() {
+              await makeRequest(fixture.token)
+                .expect('Content-Type', /json/)
+                .expect(403);
+            });
+          });
+        });
+
+        it('if token is invalid, should return unauthorized', async function() {
+          await makeRequest('faketoken')
+            .expect(401);
+        });
       });
 
-      it("should return forbidden if searched user isn't own user", async function() {
-        for (const someUser of fixture.allUsers) {
-          if (someUser !== fixture.user) {
-            await makeRequest(fixture.token, someUser._id)
-              .expect(403);
-          }
+      describe('when get specific user,', function() {
+        function makeRequest(token: string, userId: string): request.Test {
+          return request(app)
+            .get(`/users/${userId}/private`)
+            .set('x-access-token', token);
         }
+
+        describe('if you are admin,', function() {
+          it("should return full user info if searched user isn't own user", async function() {
+            for (const someUser of fixture.allUsers) {
+              if (someUser !== fixture.user) {
+                await makeRequest(fixture.adminToken, someUser._id)
+                  .expect('Content-Type', /json/)
+                  .expect(200)
+                  .then((response) => {
+                    expect(response.body).toEqual(joc(getWebModel(someUser)));
+                  });
+              }
+            }
+          });
+
+          it("should return not found if searched user doesn't exist", async function() {
+            const nonexistantId = new mongoose.Types.ObjectId();
+            await makeRequest(fixture.adminToken, nonexistantId.toString())
+              .expect(404);
+          });
+        });
+
+        describe('if you are user,', function() {
+          it('if searched user is own user, should return your full user info', async function() {
+            await makeRequest(fixture.token, fixture.user._id)
+              .expect('Content-Type', /json/)
+              .expect(200)
+              .then((response) => {
+                expect(response.body).toEqual(joc(getWebModel(fixture.user)));
+              });
+          });
+
+          it("if searched user isn't own user, should return forbidden", async function() {
+            for (const someUser of fixture.allUsers) {
+              if (someUser !== fixture.user) {
+                await makeRequest(fixture.token, someUser._id)
+                  .expect(403);
+              }
+            }
+          });
+        });
+
+        it('if token is invalid, should return unauthorized', async function() {
+          await makeRequest('faketoken', fixture.user._id)
+            .expect(401);
+        });
       });
-    });
-
-    it('if token is invalid, should return unauthorized', async function() {
-      await makeRequest('faketoken')
-        .expect(401);
-    });
-
-    it('if token is invalid, if searching users, should return unauthorized', async function() {
-      await makeRequest('faketoken', fixture.user._id)
-        .expect(401);
     });
   });
 
@@ -219,6 +235,34 @@ describe("'/users' route,", function() {
         .send(newUser);
     }
 
+    describe('if extra data is sent,', function() {
+      const junk = {
+        junk: 'this is some junk',
+        name: 'junk information'
+      };
+      const newUserWithJunk = {
+        ...newUser,
+        ...junk
+      };
+
+      for (const { testId, token } of [
+        { testId: 'admin', token: fixture.adminToken }
+      ]) {
+        describe(`for ${testId},`, function() {
+          it('should return success and ignore extra data', async function() {
+            await makeRequest(token, newUserWithJunk)
+              .expect(201);
+          });
+
+          it('should edit the DB and ignore extra data', async function() {
+            const response = await makeRequest(token, newUserWithJunk);
+            expect(response.body).not.toEqual(joc(getWebModel(junk)));
+            expect(response.body).toEqual(joc(getWebModel(newUser)));
+          });
+        });
+      }
+    });
+
     describe('if you are admin,', function() {
       it('should add user to DB', async function() {
         await makeRequest(fixture.adminToken, newUser);
@@ -230,24 +274,6 @@ describe("'/users' route,", function() {
           .expect('Content-Type', /json/)
           .expect(201);
         expect(response.body).toEqual(joc(getWebModel(newUser)));
-      });
-
-      describe('if extra data is sent,', function() {
-        const newUserWithJunk = {
-          junk: 'this is some junk',
-          name: 'junk information',
-          ...newUser
-        };
-
-        it('should return success and ignore extra data', async function() {
-          await makeRequest(fixture.adminToken, newUserWithJunk)
-            .expect(201);
-        });
-
-        it('should edit the DB and ignore extra data', async function() {
-          const response = await makeRequest(fixture.adminToken, newUserWithJunk);
-          expect(response.body).toEqual(joc(getWebModel(newUser)));
-        });
       });
     });
 
@@ -270,16 +296,16 @@ describe("'/users' route,", function() {
   });
 
   describe('when PUT user,', function() {
-    const userUpdate = {
+    const userLevelUpdate = {
       email: 'UpdatedEmail@test.com',
       displayName: 'UpdatedUsername',
       username: 'updatedUsername'
     };
 
-    let roleUpdate: any;
+    let adminLevelUpdate: any;
 
     beforeEach(() => {
-      roleUpdate = {
+      adminLevelUpdate = {
         roles: [fixture.getRoleId('moderator')]
       };
     });
@@ -298,8 +324,8 @@ describe("'/users' route,", function() {
 
     describe('if you are admin,', function() {
       const fullUserUpdate = {
-        ...userUpdate,
-        ...roleUpdate
+        ...userLevelUpdate,
+        ...adminLevelUpdate
       };
 
       it('should update user in DB', async function() {
@@ -325,32 +351,32 @@ describe("'/users' route,", function() {
       });
     });
 
-    describe('if you are not admin,', function() {
+    describe('if you are user,', function() {
       describe('if update own,', function() {
-        describe('if update own roles,', function() {
+        describe('if update own unauthorized fields,', function() {
           it('should return forbidden', async function() {
-            await makeRequest(fixture.token, fixture.user._id, roleUpdate)
+            await makeRequest(fixture.token, fixture.user._id, adminLevelUpdate)
               .expect(403);
           });
 
           it('should not edit the DB', async function() {
-            await makeRequest(fixture.token, fixture.user._id, roleUpdate);
+            await makeRequest(fixture.token, fixture.user._id, adminLevelUpdate);
             expect(getWebModel(await UserModel.findById(fixture.user._id))).toEqual(getWebModel(fixture.user));
           });
         });
-        describe('if update own user info,', function() {
+        describe('if update own authorized fields,', function() {
           it('should return updated user', async function() {
-            await makeRequest(fixture.token, fixture.user._id, userUpdate)
+            await makeRequest(fixture.token, fixture.user._id, userLevelUpdate)
               .expect('Content-Type', /json/)
               .expect(200)
               .then((response) => {
-                expect(response.body).toEqual(joc(userUpdate));
+                expect(response.body).toEqual(joc(userLevelUpdate));
               });
           });
 
           it('should update user in DB', async function() {
-            await makeRequest(fixture.token, fixture.user._id, userUpdate);
-            expect(await UserModel.findById(fixture.user._id)).toEqual(joc(userUpdate));
+            await makeRequest(fixture.token, fixture.user._id, userLevelUpdate);
+            expect(await UserModel.findById(fixture.user._id)).toEqual(joc(userLevelUpdate));
           });
         });
       });
@@ -359,7 +385,7 @@ describe("'/users' route,", function() {
         it('should return forbidden', async function() {
           for (const someUser of fixture.allUsers) {
             if (someUser._id !== fixture.user._id) {
-              await makeRequest(fixture.token, someUser._id, userUpdate)
+              await makeRequest(fixture.token, someUser._id, userLevelUpdate)
                 .expect(403);
             }
           }
@@ -368,7 +394,7 @@ describe("'/users' route,", function() {
         it('should not edit the DB', async function() {
           for (const someUser of fixture.allUsers) {
             if (someUser._id !== fixture.user._id) {
-              await makeRequest(fixture.token, someUser._id, userUpdate);
+              await makeRequest(fixture.token, someUser._id, userLevelUpdate);
               expect(getWebModel(await UserModel.findById(someUser._id))).toEqual(getWebModel(someUser));
             }
           }
@@ -380,22 +406,29 @@ describe("'/users' route,", function() {
       const userUpdateWithJunk = {
         junk: 'this is some junk',
         name: 'junk information',
-        ...userUpdate
+        ...userLevelUpdate
       };
 
-      it('should return success and ignore extra data', async function() {
-        await makeRequest(fixture.token, fixture.user._id, userUpdateWithJunk)
-          .expect(200);
-      });
+      for (const { testId, token } of [
+        { testId: 'admin', token: fixture.adminToken },
+        { testId: 'user', token: fixture.token }
+      ]) {
+        describe(`for ${testId},`, function() {
+          it('should return success and ignore extra data', async function() {
+            await makeRequest(token, fixture.user._id, userUpdateWithJunk)
+              .expect(200);
+          });
 
-      it('should edit the DB and ignore extra data', async function() {
-        await makeRequest(fixture.token, fixture.user._id, userUpdateWithJunk);
-        expect(getWebModel(await UserModel.findById(fixture.user._id))).toEqual({ ...getWebModel(fixture.user), ...userUpdate });
-      });
+          it('should edit the DB and ignore extra data', async function() {
+            await makeRequest(token, fixture.user._id, userUpdateWithJunk);
+            expect(getWebModel(await UserModel.findById(fixture.user._id))).toEqual({ ...getWebModel(fixture.user), ...userLevelUpdate });
+          });
+        });
+      }
     });
 
     it('if token is invalid, should return unauthorized', async function() {
-      await makeRequest('invalidToken', fixture.user._id, userUpdate)
+      await makeRequest('invalidToken', fixture.user._id, userLevelUpdate)
         .expect(401);
     });
   });
@@ -431,7 +464,7 @@ describe("'/users' route,", function() {
       });
     });
 
-    describe('if you are not admin,', function() {
+    describe('if you are user,', function() {
       describe('if deleting another user,', function() {
         it('should return forbidden', async function() {
           for (const someUser of fixture.allUsers) {
