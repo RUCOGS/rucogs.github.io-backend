@@ -20,13 +20,12 @@ router.use(function(req, res, next) {
 //       The current implementation may overload the server if there are too many users.
 
 router.get('/', [AuthJwt.verifyToken], function(req: Request, res: Response) {
-  UserModel.find({})
-    .exec((err: Error, users: User[]) => {
-      if (err) {
-        return res.status(500).send({ message: err.message });
-      }
-      return res.status(200).send(users.map((user) => getPublicUser(user)));
-    });
+  void UserModel.find({}, (err: Error, users: User[]) => {
+    if (err) {
+      return res.status(500).send({ message: err.message });
+    }
+    return res.status(200).send(users.map((user) => getPublicUser(user)));
+  });
 });
 
 router.get('/private',
@@ -36,13 +35,12 @@ router.get('/private',
     AuthJwt.hasRole('admin')
   ],
   (req: Request & AuthJwt.UserIdMetadata & AuthJwt.RolesMetadata, res: Response) => {
-    UserModel.find({})
-      .exec((err: Error, users: User[]) => {
-        if (err) {
-          return res.status(500).send({ message: err.message });
-        }
-        return res.status(200).send(users);
-      });
+    void UserModel.find({}, (err: Error, users: User[]) => {
+      if (err) {
+        return res.status(500).send({ message: err.message });
+      }
+      return res.status(200).send(users);
+    });
   });
 
 router.get('/:id/private',
@@ -54,16 +52,15 @@ router.get('/:id/private',
     const { id } = req.params;
 
     if (req.userId === id || req.hasRole('admin')) {
-      UserModel.findById(id)
-        .exec((err: Error, user: User | false) => {
-          if (err) {
-            return res.status(500).send({ message: err.message });
-          }
-          if (!user) {
-            return res.status(404).send({ message: 'User not found.' });
-          }
-          return res.status(200).send(user);
-        });
+      void UserModel.findById(id, (err: Error, user: User | false) => {
+        if (err) {
+          return res.status(500).send({ message: err.message });
+        }
+        if (!user) {
+          return res.status(404).send({ message: 'User not found.' });
+        }
+        return res.status(200).send(user);
+      });
     } else {
       return res.status(403).send({ message: 'Unauthorized.' });
     }
@@ -77,17 +74,16 @@ router.get('/:id',
     const { id } = req.params;
 
     // Mongoose automatically casts string ids to ObjectIds.
-    UserModel.findById(id)
-      .exec((err: Error, user: User | false) => {
-        if (err) {
-          return res.status(500).send({ message: err.message });
-        }
-        if (!user) {
-          return res.status(404).send({ message: 'User not found.' });
-        }
+    void UserModel.findById(id, (err: Error, user: User | false) => {
+      if (err) {
+        return res.status(500).send({ message: err.message });
+      }
+      if (!user) {
+        return res.status(404).send({ message: 'User not found.' });
+      }
 
-        return res.status(200).send(getPublicUser(user));
-      });
+      return res.status(200).send(getPublicUser(user));
+    });
   });
 
 router.post('/',
@@ -103,7 +99,7 @@ router.post('/',
 
     void UserModel.create(req.body, (err: Error, user: User) => {
       if (err) {
-        return res.status(500).send({ message: err.message });
+        return res.status(400).send({ message: err.message });
       }
 
       return res.status(201).send(user);
@@ -124,11 +120,12 @@ router.put('/:id',
           $set: req.body
         },
         {
-          returnDocument: 'after'
+          returnDocument: 'after',
+          runValidators: true
         },
         (err, user) => {
           if (err) {
-            return res.status(500).send({ message: err.message });
+            return res.status(400).send({ message: err.message });
           }
           if (!user) {
             return res.status(404).send({ message: 'User not found.' });
@@ -153,7 +150,7 @@ router.delete('/:id',
       void UserModel.findOneAndDelete({ _id: id },
         (err: Error, user: User | false) => {
           if (err) {
-            return res.status(500).send({ message: err.message });
+            return res.status(400).send({ message: err.message });
           }
           if (!user) {
             return res.status(404).send({ message: 'User not found.' });

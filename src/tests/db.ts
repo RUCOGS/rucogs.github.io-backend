@@ -13,7 +13,7 @@ const mongod = new MongoMemoryServer();
 
 // Connect to the DB
 export async function connect(): Promise<void> {
-  await mongod.start();
+  await mongod.ensureInstance();
   const uri = await mongod.getUri();
   await mongoose.connect(uri, {
     useNewUrlParser: true,

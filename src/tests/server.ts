@@ -1,14 +1,12 @@
 import dotenv from 'dotenv';
 import express, { Express } from 'express';
-import { Server } from 'http';
 import cors from 'cors';
-import { once } from 'events';
 import * as db from '@tests/db';
 
 dotenv.config();
 
 type ConfigureApp = (app: Express) => void;
-type OnReady = Promise<Server>;
+type OnReady = Promise<void>;
 
 export const app = express();
 
@@ -36,17 +34,17 @@ export async function startServer(...configureAppFns: ConfigureApp[]): OnReady {
   }
 
   // set port, listen for requests
-  const PORT = process.env.PORT || 8080;
+  // const PORT = process.env.PORT || 8080;
 
-  const server = app.listen(PORT);
+  // const server = app.listen(PORT);
 
-  await once(server, 'listening');
-  console.log(`Server is running on port ${PORT}.`);
+  // await once(server, 'listening');
+  // console.log(`Server is running on port ${PORT}.`);
 
   await db.connect();
   console.log('Connected to memory MongoDB.');
 
-  return server;
+  // return server;
 };
 
 export async function clearServer(): Promise<void> {

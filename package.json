@@ -11,7 +11,7 @@
     "build-start": "node .",
     "start": "node .",
     "dev": "ts-node-dev --prefer-ts true --no-notify -r tsconfig-paths/register --watch src --transpile-only src/server.ts",
-    "test": "ts-node -r tsconfig-paths/register node_modules/jasmine/bin/jasmine --config=jasmine.json --seed=73577"
+    "test": "ts-node -r tsconfig-paths/register node_modules/jasmine/bin/jasmine --config=jasmine.json"
   },
   "keywords": [
     "node.js",
@@ -34,6 +34,7 @@
     "passport-discord": "^0.1.4",
     "passport-google-oauth20": "^2.0.0",
     "passport-local": "^1.0.0",
+    "random": "^3.0.6",
     "request": "^2.88.2",
     "typescript-is": "^0.19.0"
   },

@@ -1,6 +1,6 @@
-import { Schema } from 'mongoose';
+import { Schema, Types } from 'mongoose';
 
-export interface SocialLink extends Document {
+export interface SocialLink extends Types.Subdocument {
   platform: string;
   username: string;
   link: string;

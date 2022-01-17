@@ -1,3 +1,4 @@
 {
   "jasmineExplorer.config": "jasmine.json",
+  "jasmineExplorer.nodeArgv": ["-r", "tsconfig-paths/register", "-r", "ts-node/register"],
 }
