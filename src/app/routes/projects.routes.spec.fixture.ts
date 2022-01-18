@@ -1,13 +1,13 @@
 import { getAuthToken } from '@app/controllers/auth.controller';
-import { Project, ProjectModel, User, UserModel } from '@app/models';
+import { Project, ProjectModel, UserDoc, UserModel, RoleType } from '@app/models';
 import { randSubarray, rng } from '@tests/utils';
 import * as usersFixture from './users.routes.spec.fixture';
 export * from './users.routes.spec.fixture';
 
-export let nomadUser: User;
+export let nomadUser: UserDoc;
 export let nomadToken: string;
 
-export let projectMemberUser: User;
+export let projectMemberUser: UserDoc;
 export let projectMemberToken: string;
 export let project: Project;
 export const allProjects: Project[] = [];
@@ -19,11 +19,11 @@ async function createTestProjects(count: number): Promise<void> {
       .map(user => {
         return {
           user: user._id,
-          roles: [usersFixture.getRoleId('project_member')]
+          roles: [usersFixture.getRoleId(RoleType.ProjectMember)]
         };
       });
     // Give the first member admin
-    projectMembers[0].roles.push(usersFixture.getRoleId('project_admin'));
+    projectMembers[0].roles.push(usersFixture.getRoleId(RoleType.ProjectAdmin));
     const newProject = await ProjectModel.create({
       title: `Test Project ${i}`,
       description: 'Testing out the backend!',
@@ -42,8 +42,7 @@ export const init = async(testUserCount: number = 5, testProjectCount: number = 
     email: 'testProjectMember@test.com',
     username: 'testprojectmember',
     displayName: 'TestProjectMember',
-    password: 'Hashed Password',
-    roles: [usersFixture.getRoleId('user')]
+    password: 'Hashed Password'
   });
   usersFixture.allUsers.push(projectMemberUser);
   projectMemberToken = getAuthToken(projectMemberUser);
@@ -63,11 +62,11 @@ export const init = async(testUserCount: number = 5, testProjectCount: number = 
     members: [
       {
         user: usersFixture.user._id,
-        roles: [usersFixture.getRoleId('project_member'), usersFixture.getRoleId('project_admin')]
+        roles: [usersFixture.getRoleId(RoleType.ProjectMember), usersFixture.getRoleId(RoleType.ProjectAdmin)]
       },
       {
         user: projectMemberUser._id,
-        roles: [usersFixture.getRoleId('project_member')]
+        roles: [usersFixture.getRoleId(RoleType.ProjectMember)]
       }
     ]
   });

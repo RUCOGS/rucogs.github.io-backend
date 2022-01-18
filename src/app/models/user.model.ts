@@ -1,15 +1,17 @@
 import { Schema, model, Types, Document } from 'mongoose';
-import { ProjectModel, RoleModel } from '.';
+import { ProjectModel, RoleModel, RoleType, IDable } from '.';
 import { SocialLink, SocialLinkSchema } from './social-link.model';
 
-export interface User extends Document, PublicUser {
+export interface User extends IDable {
   email: string;
   password?: string;
   discordId?: string;
   googleId?: string;
 }
 
-export interface PublicUser extends Document {
+export type UserDoc = Document & PublicUser & User;
+
+export interface PublicUser {
   username: string;
   displayName: string;
   roles: Types.ObjectId[];
@@ -17,18 +19,7 @@ export interface PublicUser extends Document {
   socialLinks: SocialLink[];
 }
 
-export function getPublicUser(user: User): PublicUser {
-  return {
-    _id: user._id,
-    username: user.username,
-    displayName: user.displayName,
-    roles: user.roles,
-    projects: user.projects,
-    socialLinks: user.socialLinks
-  } as PublicUser;
-}
-
-export const UserSchema = new Schema<User>({
+export const UserSchema = new Schema<UserDoc>({
   username: { type: String, required: true },
   displayName: { type: String, required: true },
   email: { type: String, required: true },
@@ -47,12 +38,11 @@ export const UserSchema = new Schema<User>({
 });
 
 // Updates projects on users
-UserSchema.post('save', async function(user: User) {
+UserSchema.post('save', async function(user: UserDoc) {
   if (user.isModified('projects')) {
     const projects = await ProjectModel.find({
       _id: { $in: user.projects }
     });
-    const projectMemberRole = await RoleModel.findOne({ name: 'project_member' });
 
     for (const project of projects) {
       // If the project doesn't have this user, then we add this user
@@ -61,12 +51,16 @@ UserSchema.post('save', async function(user: User) {
         // See https://github.com/DefinitelyTyped/DefinitelyTyped/issues/11291#issuecomment-248140648
         // for why we have to cast to <any> here
         project.members.push(<any> {
-          user: user._id,
-          roles: [projectMemberRole._id]
+          user: user._id
         });
         await project.save();
       }
     }
+  }
+
+  if (user.roles.length === 0) {
+    const userRole = await RoleModel.findOne({ name: RoleType.User });
+    user.roles.push(userRole._id);
   }
 });
 

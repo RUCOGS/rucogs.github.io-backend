@@ -28,8 +28,9 @@ import * as server from '@tests/server';
 import { Express } from 'express';
 import request from 'supertest';
 import usersRouter from '@routes/users.routes';
-import { getPublicUser, mongoose, UserModel } from '@app/models';
+import { mongoose, PublicUser, RoleType, UserModel } from '@app/models';
 import { getWebModel } from '@tests/utils';
+import { toTypeInstance } from '@app/utils';
 import * as fixture from './users.routes.spec.fixture';
 
 // 'joc' is used to build comparison queries for jasmine
@@ -60,69 +61,46 @@ describe("'/users' route,", function() {
   describe('when GET users,', function() {
     describe('when GET public users,', function() {
       describe('when get all,', function() {
-        function makeRequest(token: string): request.Test {
+        function makeRequest(): request.Test {
           return request(app)
-            .get('/users')
-            .set('x-access-token', token);
+            .get('/users');
         }
 
         it("should return all users' public info", async function() {
-          await makeRequest(fixture.token)
+          await makeRequest()
             .expect('Content-Type', /json/)
             .expect(200)
             .then((response) => {
-              const publicUsers = fixture.allUsers.map((user) => getPublicUser(user));
+              const publicUsers = fixture.allUsers.map((user) => toTypeInstance<PublicUser>(user));
               const responseUsers = (response.body as any[]);
               for (const publicUser of publicUsers) {
                 expect(responseUsers).toContain(joc(getWebModel(publicUser)));
               }
             });
         });
-
-        it('if token is invalid, should return unauthorized', async function() {
-          await makeRequest('faketoken')
-            .expect(401);
-        });
       });
 
       describe('when get specific user,', function() {
-        function makeRequest(token: string, userId: string): request.Test {
+        function makeRequest(userId: string): request.Test {
           return request(app)
-            .get(`/users/${userId}`)
-            .set('x-access-token', token);
+            .get(`/users/${userId}`);
         }
 
-        it('if searched user is own user, should return public user info', async function() {
-          await makeRequest(fixture.token, fixture.user._id)
-            .expect('Content-Type', /json/)
-            .expect(200)
-            .then((response) => {
-              expect(response.body).toEqual(joc(getWebModel(getPublicUser(fixture.user))));
-            });
-        });
-
-        it("if searched user isn't own user, should return public user info", async function() {
+        it('should return public user info', async function() {
           for (const someUser of fixture.allUsers) {
-            if (someUser !== fixture.user) {
-              await makeRequest(fixture.token, someUser._id)
-                .expect('Content-Type', /json/)
-                .expect(200)
-                .then((response) => {
-                  expect(response.body).toEqual(joc(getWebModel(getPublicUser(someUser))));
-                });
-            }
+            await makeRequest(someUser._id)
+              .expect('Content-Type', /json/)
+              .expect(200)
+              .then((response) => {
+                expect(response.body).toEqual(joc(getWebModel(toTypeInstance<PublicUser>(someUser))));
+              });
           }
         });
 
         it("if searched user doesn't exist, should return not found", async function() {
           const nonexistantId = new mongoose.Types.ObjectId();
-          await makeRequest(fixture.token, nonexistantId.toString())
+          await makeRequest(nonexistantId.toString())
             .expect(404);
-        });
-
-        it('if token is invalid, should return unauthorized', async function() {
-          await makeRequest('faketoken', fixture.user._id)
-            .expect(401);
         });
       });
     });
@@ -244,10 +222,15 @@ describe("'/users' route,", function() {
         ...newUser,
         ...junk
       };
+      let parameters: any;
 
-      for (const { testId, token } of [
-        { testId: 'admin', token: fixture.adminToken }
-      ]) {
+      beforeEach(() => {
+        parameters = [
+          { testId: 'admin', token: fixture.adminToken }
+        ];
+      });
+
+      for (const { testId, token } of parameters) {
         describe(`for ${testId},`, function() {
           it('should return success and ignore extra data', async function() {
             await makeRequest(token, newUserWithJunk)
@@ -306,7 +289,7 @@ describe("'/users' route,", function() {
 
     beforeEach(() => {
       adminLevelUpdate = {
-        roles: [fixture.getRoleId('moderator')]
+        roles: [fixture.getRoleId(RoleType.Admin)]
       };
     });
 
@@ -408,11 +391,16 @@ describe("'/users' route,", function() {
         name: 'junk information',
         ...userLevelUpdate
       };
+      let parameters: any;
 
-      for (const { testId, token } of [
-        { testId: 'admin', token: fixture.adminToken },
-        { testId: 'user', token: fixture.token }
-      ]) {
+      beforeEach(() => {
+        parameters = [
+          { testId: 'admin', token: fixture.adminToken },
+          { testId: 'user', token: fixture.token }
+        ];
+      });
+
+      for (const { testId, token } of parameters) {
         describe(`for ${testId},`, function() {
           it('should return success and ignore extra data', async function() {
             await makeRequest(token, fixture.user._id, userUpdateWithJunk)
@@ -500,6 +488,11 @@ describe("'/users' route,", function() {
             });
         });
       });
+    });
+
+    it('if token is invalid, should return unauthorized', async function() {
+      await makeRequest('invalidToken', fixture.user._id)
+        .expect(401);
     });
   });
 });

@@ -1,12 +1,12 @@
 import { getAuthToken } from '@app/controllers/auth.controller';
 import initializeRoles from '@init/init-roles';
-import { Role, RoleModel, UserModel, User } from '@app/models';
+import { Role, RoleModel, UserModel, UserDoc, RoleType } from '@app/models';
 
-export let user: User;
-export let adminUser: User;
+export let user: UserDoc;
+export let adminUser: UserDoc;
 export let token: string;
 export let adminToken: string;
-export const allUsers: User[] = [];
+export const allUsers: UserDoc[] = [];
 export let roles: Role[];
 
 export function getRoleId(name: string): string {
@@ -35,14 +35,14 @@ export const init = async(testUserCount: number = 5): Promise<void> => {
     username: 'test',
     displayName: 'Test',
     password: 'Hashed Password',
-    roles: [getRoleId('user')]
+    roles: [getRoleId(RoleType.User)]
   });
   adminUser = await UserModel.create({
     email: 'admin@test.com',
     username: 'admin',
     displayName: 'Admin',
     password: 'Hashed Password',
-    roles: [getRoleId('user'), getRoleId('admin')]
+    roles: [getRoleId(RoleType.User), getRoleId(RoleType.Admin)]
   });
 
   allUsers.push(user);

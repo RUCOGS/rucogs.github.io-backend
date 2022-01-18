@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import * as express from 'express';
-import { Project, ProjectModel } from '@app/models';
+import { Project, ProjectModel, RoleType } from '@app/models';
 import { AuthJwt } from '@app/middlewares';
 
 const router = express.Router();
@@ -19,9 +19,6 @@ router.use(function(req, res, next) {
 //       The current implementation may overload the server if there are too many projects.
 
 router.get('/',
-  [
-    AuthJwt.verifyToken
-  ],
   (req: Request & AuthJwt.UserIdMetadata, res: Response) => {
     void ProjectModel.find({}, (err: Error, projects: Project[]) => {
       if (err) {
@@ -32,9 +29,6 @@ router.get('/',
   });
 
 router.get('/:id',
-  [
-    AuthJwt.verifyToken
-  ],
   (req: Request & AuthJwt.UserIdMetadata, res: Response) => {
     const { id } = req.params;
 
@@ -55,7 +49,7 @@ router.post('/',
   [
     AuthJwt.verifyToken,
     AuthJwt.getRoles,
-    AuthJwt.hasRole('admin')
+    AuthJwt.hasRole(RoleType.Admin)
   ],
   (req: Request & AuthJwt.UserIdMetadata & AuthJwt.RolesMetadata, res: Response) => {
     // TODO: Add email verification
@@ -83,9 +77,9 @@ router.put('/:id',
         res.status(404).send({ message: 'Project not found.' });
         return;
       }
-      const isProjectAdmin = await project.isMember(req.userId, 'project_admin');
+      const isProjectAdmin = await project.isMember(req.userId, RoleType.ProjectAdmin);
 
-      if (req.hasRole('admin') || isProjectAdmin) {
+      if (req.hasRole(RoleType.Admin) || isProjectAdmin) {
         const updatedProject = await ProjectModel.findByIdAndUpdate(id,
           {
             $set: req.body
@@ -109,7 +103,7 @@ router.delete('/:id',
   [
     AuthJwt.verifyToken,
     AuthJwt.getRoles,
-    AuthJwt.hasRole('admin')
+    AuthJwt.hasRole(RoleType.Admin)
   ],
   (req: Request & AuthJwt.UserIdMetadata & AuthJwt.RolesMetadata, res: Response) => {
     const { id } = req.params;

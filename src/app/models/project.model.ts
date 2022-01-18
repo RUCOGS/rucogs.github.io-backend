@@ -1,5 +1,5 @@
 import { model, Schema, Types, Document } from 'mongoose';
-import { UserModel, RoleModel } from '.';
+import { UserModel, RoleModel, RoleType, getRole } from '.';
 
 export interface ProjectMember extends Types.Subdocument {
   user: Types.ObjectId;
@@ -21,12 +21,19 @@ export const ProjectMemberSchema = new Schema<ProjectMember>({
 });
 
 ProjectMemberSchema.methods.hasRole = async function(roleName: string): Promise<boolean> {
-  const foundRole = await RoleModel.findOne({ name: roleName });
+  const foundRole = await getRole(roleName);
   if (foundRole === null) {
     return false;
   }
   return (this as ProjectMember).roles.some(roleId => roleId.equals(foundRole._id));
 };
+
+ProjectMemberSchema.post('save', async function(member: ProjectMember) {
+  if (member.roles.length === 0) {
+    const projectMemberRole = await RoleModel.findOne({ name: RoleType.ProjectMember });
+    member.roles.push(projectMemberRole._id);
+  }
+});
 
 export interface Project extends Document {
   title: string;

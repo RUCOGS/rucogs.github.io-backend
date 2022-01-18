@@ -1,5 +1,5 @@
 import { NativeError } from 'mongoose';
-import { UserModel, RoleModel, Role, User } from '@models/index';
+import { UserModel, RoleModel, Role, UserDoc } from '@models/index';
 import bcrypt from 'bcryptjs';
 import passport from 'passport';
 import jwt from 'jsonwebtoken';
@@ -61,7 +61,7 @@ export const signup = function(req, res): void {
   });
 } as RequestHandler;
 
-export function getAuthToken(user: User): string {
+export function getAuthToken(user: UserDoc): string {
   return jwt.sign({ id: user.id }, AuthConfig.SECRET, {
     expiresIn: '7d',
     issuer: 'rucogs.club'
@@ -71,7 +71,7 @@ export function getAuthToken(user: User): string {
 // Authenticates with passport and sends a JWT accessToken back.
 export function authenticateAndReturnAuthToken(strategy: string) {
   return function(req: any, res: any, next: any): void {
-    passport.authenticate(strategy, { session: false }, (err, user: User | false, info) => {
+    passport.authenticate(strategy, { session: false }, (err, user: UserDoc | false, info) => {
       if (err) {
         return next(err);
       }

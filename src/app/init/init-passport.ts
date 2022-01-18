@@ -1,4 +1,4 @@
-import { User, UserModel } from '../models';
+import { UserDoc, UserModel } from '../models';
 import { PassportStatic } from 'passport';
 import { Strategy as LocalStrategy } from 'passport-local';
 import bcrypt from 'bcryptjs';
@@ -70,7 +70,7 @@ export default function(passport: PassportStatic): void {
           username: profile.username,
           email: profile.email,
           discordId: profile.id
-        } as User
+        } as UserDoc
       },
       {
         new: true,
@@ -107,7 +107,7 @@ export default function(passport: PassportStatic): void {
           username: profile.displayName.replace(' ', ''),
           email: profile.emails[0].value,
           googleId: profile.id
-        } as User
+        } as UserDoc
       },
       {
         new: true,
