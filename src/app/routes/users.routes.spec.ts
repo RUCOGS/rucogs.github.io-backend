@@ -222,7 +222,7 @@ describe("'/users' route,", function() {
         ...newUser,
         ...junk
       };
-      let parameters: any;
+      let parameters: any = [];
 
       beforeEach(() => {
         parameters = [
@@ -384,15 +384,19 @@ describe("'/users' route,", function() {
         });
       });
     });
-
+    
     describe('if extra data is sent,', function() {
       const userUpdateWithJunk = {
         junk: 'this is some junk',
         name: 'junk information',
         ...userLevelUpdate
       };
-      let parameters: any;
+      let parameters: any = [];
 
+      // TODO NOW: Move paramters for paramterized tests into the it() function.
+      //           This is necessary because Jasmine ends up evaluating the outside 
+      //           for loops when it first identifies the tests, which means the paramters
+      //           array will be uninitialized and be empty.
       beforeEach(() => {
         parameters = [
           { testId: 'admin', token: fixture.adminToken },
