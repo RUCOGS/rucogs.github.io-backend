@@ -20,8 +20,7 @@
 			"@controllers/*": [ "app/controllers/*" ],
 			"@middlewares/*": [ "app/middlewares/*" ],
 			"@init/*": [ "app/init/*" ],
-			"@tests/*": [ "tests/*" ],
-			"@utils/*": [ "utils/*" ]
+			"@tests/*": [ "tests/*" ]
 		},
 		/* Advanced Options */
 		"plugins": [
