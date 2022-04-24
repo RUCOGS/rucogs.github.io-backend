@@ -81,5 +81,5 @@ db.mongoose
 
 // Called when everything is set up
 function initial(): void {
-  initRoles();
+  void initRoles();
 }
