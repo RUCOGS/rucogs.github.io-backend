@@ -3,6 +3,6 @@
   "exclude": [
     "**/*.spec.ts",
     "**/*.fixture.ts",
-    "/tests"
+    "src/tests"
   ]
 }
