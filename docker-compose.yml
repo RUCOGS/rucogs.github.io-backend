@@ -6,21 +6,16 @@ services:
       - .env
     # build . runs the "Dockerfile"
     build: .
-    environment:
-      DB_HOST: "db"
     ports:
       # Binds port 8080 on the computer that's running Docker to port 8080 on the container.
       - "8080:8080"
     depends_on:
       - db
   db:
-    env_file:
-      - .env
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: "${DB_USER}"
-      MONGO_INITDB_ROOT_PASSWORD: "${DB_PASS}"
-      MONGO_INITDB_DATABASE: "${DB_NAME}"
     image: "mongo"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${DB_USER}
+      MONGO_INITDB_ROOT_PASSWORD: ${DB_PASS}
     volumes:
       # Binds data volume to 'data/db' on the container, because 'data/db' is where mongodb stores data by default. 
       - data:/data/db
