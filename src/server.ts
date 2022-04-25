@@ -12,15 +12,15 @@ import cors from 'cors';
 // immediately call the route setup function after its imported.
 // Import statements in typescript must stand alone, therefore
 // we need two lines to import and run the function.
-import authRouter from './app/routes/auth.routes';
-import userRouter from './app/routes/users.routes';
+import authRouter from '@routes/auth.routes';
+import userRouter from '@routes/users.routes';
 
 import passport from 'passport';
 import initPassport from '@init/init-passport';
 
 // Database Connection
-import * as db from './app/models';
-import { Config as DBConfig } from './app/config/db.config';
+import * as db from '@models/index';
+import { Config as DBConfig } from '@config/db.config';
 import { ConnectOptions } from 'mongoose';
 
 import initRoles from '@init/init-roles';

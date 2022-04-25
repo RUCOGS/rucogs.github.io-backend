@@ -7,29 +7,25 @@
 		"moduleResolution": "node",
 		"sourceMap": true,
 		"outDir": "dist",
-		"baseUrl": "src",
+		"rootDir": "src",
+		"baseUrl": ".",
 		"paths": {
-			"*": [
-				"../node_modules/*"
-			],
-			"@app/*": [ "app/*" ],
-			"@config/*": [ "app/config/*" ],
-			"@models/*": [ "app/models/*" ],
-			"@utils/*": [ "app/utils/*" ],
-			"@routes/*": [ "app/routes/*" ],
-			"@controllers/*": [ "app/controllers/*" ],
-			"@middlewares/*": [ "app/middlewares/*" ],
-			"@init/*": [ "app/init/*" ],
-			"@tests/*": [ "tests/*" ]
+			"@app/*": [ "src/app/*" ],
+			"@config/*": [ "src/app/config/*" ],
+			"@models/*": [ "src/app/models/*" ],
+			"@utils/*": [ "src/app/utils/*" ],
+			"@routes/*": [ "src/app/routes/*" ],
+			"@controllers/*": [ "src/app/controllers/*" ],
+			"@middlewares/*": [ "src/app/middlewares/*" ],
+			"@init/*": [ "src/app/init/*" ],
+			"@tests/*": [ "src/tests/*" ]
 		},
-		/* Advanced Options */
 		"plugins": [
-			{ "transform": "typescript-transform-paths" },
 			{ "transform": "typescript-is/lib/transform-inline/transformer" },
 			{ "transform": "ts-transformer-keys/transformer" }
-		],
+		]
 	},
 	"include": [
 		"**/*"
-	],
+	]
 }
