@@ -2,6 +2,8 @@
 version: '3'
 services:
   api:
+    env_file:
+      - .env
     # build . runs the "Dockerfile"
     build: .
     environment:
@@ -12,11 +14,13 @@ services:
     depends_on:
       - db
   db:
-    image: "mongo"
+    env_file:
+      - .env
     environment:
       MONGO_INITDB_ROOT_USERNAME: "${DB_USER}"
       MONGO_INITDB_ROOT_PASSWORD: "${DB_PASS}"
-      MONGO_INITDB_DB: "${DB_NAME}"
+      MONGO_INITDB_DATABASE: "${DB_NAME}"
+    image: "mongo"
     volumes:
       # Binds data volume to 'data/db' on the container, because 'data/db' is where mongodb stores data by default. 
       - data:/data/db

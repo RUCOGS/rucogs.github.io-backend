@@ -4,10 +4,10 @@ The backend to our website. It hosts a database containing all our projects and 
 
 ## Running
 
-To run both the backend, run
+To build and run the backend, run
 
 ```bash
-> docker-compose up --build
+> docker-compose up --build --force-recreate
 ```
 
 ## Notes
