@@ -1,0 +1,33 @@
+{
+	"jwt": {
+		"secret": ""
+	},
+	"oauth": {
+		"discord": {
+			"module": "passport-discord",
+			"authenticateConfig": {
+				"failureRedirect": "/",
+				"failureFlash": true
+			},
+			"strategyConfig": {
+				"clientID": "",
+				"clientSecret": "",
+				"callbackURL": "/auth/thirdparty/discord/callback",
+				"scope": ["identify", "email", "guilds"]
+			}
+		},
+		"google": {
+			"module": "passport-google-oauth2",
+			"authenticateConfig": {
+				"failureRedirect": "/",
+				"failureFlash": true
+			},
+			"strategyConfig": {
+				"clientID": "",
+				"clientSecret": "",
+				"callbackURL": "/auth/thirdparty/google/callback",
+				"scope": ["email", "profile"]
+			}
+		}
+	}
+}

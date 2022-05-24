@@ -1,0 +1,29 @@
+Failed to load schema for "C:\Path\To\LearnTypetta\hello-world\src\generated\resolvers.ts"
+        Failed to load schema from src/generated/operations.ts,src/**.typedefs.ts:
+
+        Unknown type: "RoleCodeFilterInput".
+        Error: Unknown type: "RoleCodeFilterInput".
+    at getNamedType (C:\Path\To\LearnTypetta\hello-world\node_modules\graphql\utilities\extendSchema.js:360:13)
+    at getWrappedType (C:\Path\To\LearnTypetta\hello-world\node_modules\graphql\utilities\extendSchema.js:375:12)        
+    at buildInputFieldMap (C:\Path\To\LearnTypetta\hello-world\node_modules\graphql\utilities\extendSchema.js:459:20)    
+    at fields (C:\Path\To\LearnTypetta\hello-world\node_modules\graphql\utilities\extendSchema.js:642:22)
+    at resolveThunk (C:\Path\To\LearnTypetta\hello-world\node_modules\graphql\type\definition.js:480:40)
+    at defineInputFieldMap (C:\Path\To\LearnTypetta\hello-world\node_modules\graphql\type\definition.js:1208:18)
+    at GraphQLInputObjectType.getFields (C:\Path\To\LearnTypetta\hello-world\node_modules\graphql\type\definition.js:1155:27)
+    at collectReferencedTypes (C:\Path\To\LearnTypetta\hello-world\node_modules\graphql\type\schema.js:376:81)
+    at new GraphQLSchema (C:\Path\To\LearnTypetta\hello-world\node_modules\graphql\type\schema.js:148:9)
+    at Object.buildASTSchema (C:\Path\To\LearnTypetta\hello-world\node_modules\graphql\utilities\buildASTSchema.js:97:10)
+
+        GraphQL Code Generator supports:
+          - ES Modules and CommonJS exports (export as default or named export "schema")
+          - Introspection JSON File
+          - URL of GraphQL endpoint
+          - Multiple files with type definitions (glob expression)
+          - String in config file
+
+        Try to use one of above options and run codegen again.
+
+
+    at executeCodegen (C:\Path\To\LearnTypetta\hello-world\node_modules\@graphql-codegen\cli\index.js:1078:28)
+    at async generate (C:\Path\To\LearnTypetta\hello-world\node_modules\@graphql-codegen\cli\index.js:1388:25)
+    at async Command.exports.default (C:\Path\To\LearnTypetta\hello-world\node_modules\@twinlogix\typetta\lib\cli\generate\generate.js:145:17)

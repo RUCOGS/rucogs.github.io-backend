@@ -1,0 +1,5 @@
+schema: src/**.typedefs.ts
+outputDir: src/generated
+generateGraphQLOperations:
+  context: 
+    path: securedEntityManager
