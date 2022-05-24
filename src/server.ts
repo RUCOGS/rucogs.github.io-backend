@@ -15,11 +15,11 @@ import authRouter from '@src/routes/auth.routes';
 import http from 'http';
 import { createSecureEntityManager, createUnsecureEntityManager } from '@src/config/entity-manager.configurer';
 import { authenticateAuthToken, configPassport, userToSecurityContext } from '@src/controllers/auth.controller';
+import DbConfig from '@src/config/db.config.json';
 
 async function startServer() {
-  require('dotenv').config();
-  const mongoClient = new MongoClient(process.env.MONGODB_URL!);
-  const mongoDb = mongoClient.db(process.env.MONGODB_DATABASE_NAME);
+  const mongoClient = new MongoClient(DbConfig.mongodbUrl);
+  const mongoDb = mongoClient.db(DbConfig.mongodbDbName);
 
   await mongoClient.connect();
 
