@@ -1,3 +1,4 @@
+import { RoleCode } from "@src/generated/model.types";
 import { EntityManager } from "@src/generated/typetta";
 import { AbstractDAO, DAOGenerics } from "@twinlogix/typetta";
 
@@ -32,7 +33,7 @@ export namespace EntityManagerExtensions {
     const ownershipRoles = await entityManager.projectMemberRole.findAll({
       filter: {
         projectMemberId: { in: members.map(m => m.id) },
-        roleCode: { eq: "PROJECT_OWNER" }
+        roleCode: { eq: RoleCode.ProjectOwner }
       }
     });
     const ownedProjectIds = members.filter(member => ownershipRoles.some(role => role.projectMemberId == member.id)).map(member => member.projectId);

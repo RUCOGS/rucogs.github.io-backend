@@ -38,7 +38,7 @@ async function startServer() {
     resolvers,
     context: async ({ req }) => {
       const authPayload = await authenticateAuthToken(req);
-      const securityContext = await userToSecurityContext(unsecuredEntityManager, authPayload.userId);
+      const securityContext = await userToSecurityContext(createUnsecureEntityManager(mongoDb), authPayload.userId);
       return {
         securedEntityManager: createSecureEntityManager(securityContext, mongoDb)
       };

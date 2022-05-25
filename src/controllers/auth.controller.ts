@@ -12,6 +12,7 @@ import { EntityManager, UserInsert } from '@src/generated/typetta';
 import { Context } from '@src/context';
 import { createUnsecureEntityManager, SecurityContext, SecurityDomain } from '@src/config/entity-manager.configurer';
 import { PERMISSION, projection } from '@twinlogix/typetta';
+import { ObjectId } from 'mongodb';
 
 export const Permissions = {
   EDIT_PROJECT: "EDIT_PROJECT",
@@ -66,7 +67,7 @@ function getOAuthStrategyPassportCallback<TProfile extends passport.Profile>(ent
     (async () => {
       const identityId = profileToIdentityID(profile); 
       
-      const user = await entityManager.userLoginIdentity.findOne({
+      const userLoginIdentity = await entityManager.userLoginIdentity.findOne({
         filter: {
           name: strategyName,
           identityId,
@@ -76,8 +77,14 @@ function getOAuthStrategyPassportCallback<TProfile extends passport.Profile>(ent
         }
       });
 
-      if (user)
+      if (userLoginIdentity) {
+        const user = await entityManager.user.findOne({ 
+          filter: {
+            id: { eq: userLoginIdentity.userId }
+          }
+        });
         return user;
+      }
 
       const newUser = await entityManager.user.insertOne({
         record: profileToNewUser(profile)
@@ -101,7 +108,9 @@ function getOAuthStrategyPassportCallback<TProfile extends passport.Profile>(ent
 
       return newUser;
     })()
-    .then((user) => done(null, user))
+    .then((user: any) => {
+      done(null, user)
+    })
     .catch((err) => done(err));
   }
 }
@@ -182,10 +191,7 @@ export const UserRoleCodeRanking: { [key: string]: number}  = {
 export async function userToSecurityContext(entityManager: EntityManager, userId: string): Promise<SecurityContext> {
   const userRoles = await entityManager.userRole.findAll({
     filter: {
-      id: { eq: userId }
-    },
-    projection: {
-      roleCode: true,
+      userId: { eq: <any>new ObjectId(userId) }
     }
   });
 
@@ -206,6 +212,7 @@ export async function userRoleCodeToSecurityContext(entityManager: EntityManager
     case RoleCode.User:
       const ownedProjectIds = await EntityManagerExtensions.getOwnedProjectIds(entityManager, userId);
       return {
+        READ_PROFILE_PRIVATE: [{ userId: userId }],
         UPDATE_PROFILE: [{ userId: userId }],
         CREATE_PROJECT: true,
         UPDATE_PROJECT: ownedProjectIds.map(projectId => <SecurityDomain>{ projectId })
@@ -215,6 +222,7 @@ export async function userRoleCodeToSecurityContext(entityManager: EntityManager
         UPDATE_PROFILE: true,
         CREATE_PROJECT: true,
         UPDATE_PROJECT: true,
+        READ_PROFILE_PRIVATE: true,
       };
     case RoleCode.SuperAdmin:
       return {
@@ -223,6 +231,7 @@ export async function userRoleCodeToSecurityContext(entityManager: EntityManager
         CREATE_PROJECT: true,
         UPDATE_PROJECT: true,
         DELETE_PROJECT: true,
+        READ_PROFILE_PRIVATE: true,
       };
     default:
       return {};

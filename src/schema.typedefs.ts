@@ -19,6 +19,7 @@ enum Permission {
   UPDATE_PROJECT,
   UPDATE_PROFILE,
   DELETE_PROFILE,
+  READ_PROFILE_PRIVATE,
 }
 
 type Role @entity @mongodb {

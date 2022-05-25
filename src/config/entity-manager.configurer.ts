@@ -34,6 +34,11 @@ export function createUnsecureEntityManager(db: Db): EntityManager {
 }
 
 export function createSecureEntityManager(securityContext: SecurityContext | undefined, db: Db): SecureEntityManager {
+  const test = {
+    context: {
+        permissions: securityContext ?? {},
+      }
+  }
   return new EntityManager<never, { securityDomain: OperationSecurityDomain }, Permission, SecurityDomain>({
     mongodb: {
       default: db,
@@ -53,26 +58,13 @@ export function createSecureEntityManager(securityContext: SecurityContext | und
           permissions: {
             UPDATE_PROFILE: PERMISSION.UPDATE_ONLY,
             DELETE_PROFILE: PERMISSION.DELETE_ONLY,
+            READ_PROFILE_PRIVATE: PERMISSION.READ_ONLY,
           }, 
-          defaultPermissions: {
-            read: {
-              avatarLink: true,
-              bannerLink: true,
-              createdAt: true,
-              id: true,
-              projectMembers: true,
-              name: true,
-              roles: true,
-              socials: true,
-
-              email: false,
-              loginIdentities: false,
-            }
-          },
+          defaultPermissions: PERMISSION.DENY,
           // TODO: Add rest of permissions
         },
       },
-      defaultPermission: PERMISSION.ALLOW,
+      defaultPermission: PERMISSION.DENY,
       // 'metadata' is the metadata passed into a EntityManager call.
       // Here you're specify how you want to fetch the current call's domain.
       // We're planning on storing our current domain under metadata.security.

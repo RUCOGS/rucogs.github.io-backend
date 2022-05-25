@@ -206,6 +206,7 @@ export const Permission = {
   CreateProject: 'CREATE_PROJECT',
   DeleteProfile: 'DELETE_PROFILE',
   DeleteProject: 'DELETE_PROJECT',
+  ReadProfilePrivate: 'READ_PROFILE_PRIVATE',
   UpdateProfile: 'UPDATE_PROFILE',
   UpdateProject: 'UPDATE_PROJECT',
 } as const

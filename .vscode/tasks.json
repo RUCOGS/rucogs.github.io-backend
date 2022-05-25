@@ -1,0 +1,18 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "npm: build - app",
+      "type": "npm",
+      "script": "compile",
+      "group": "build",
+    },
+    {
+      "label": "prepare app to debug",
+      "type": "shell",
+      "command": "echo prepare app to debug",
+      "dependsOrder": "sequence",
+      "dependsOn": ["npm: build - app"]
+    },
+  ]
+}
