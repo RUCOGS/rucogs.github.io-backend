@@ -175,27 +175,23 @@ export default gql`
   ########### ProjectMember ###########
   input ProjectMemberInsertInput {
     contributions: String!
-    name: String!
     projectId: ID!
     userId: ID!
   }
   input ProjectMemberUpdateInput {
     contributions: String
-    name: String
     projectId: ID
     userId: ID
   }
   input ProjectMemberSortInput {
     contributions: SortDirection
     id: SortDirection
-    name: SortDirection
     projectId: SortDirection
     userId: SortDirection
   }
   input ProjectMemberFilterInput {
     contributions: StringFilterInput
     id: IDFilterInput
-    name: StringFilterInput
     projectId: IDFilterInput
     userId: IDFilterInput
     and_: [ProjectMemberFilterInput!]

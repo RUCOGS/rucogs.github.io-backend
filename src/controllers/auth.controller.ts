@@ -2,7 +2,7 @@ import passport, { PassportStatic } from 'passport';
 import jwt, { VerifyCallback } from 'jsonwebtoken';
 import AuthConfig from '@src/config/auth.config.json';
 import { RequestHandler } from 'express';
-import { EntityManagerExtensions, Extensions } from '@src/utils/utils'
+import { EntityManagerExtensions, Extensions, TwoWayMap } from '@src/utils/utils'
 import express from 'express';
 import { Strategy as DiscordStrategy } from 'passport-discord';
 import { Strategy as GoogleStrategy, Profile as GoogleStrategyProfile} from 'passport-google-oauth20';
@@ -41,8 +41,8 @@ export function configPassport(passport: PassportStatic, entityManager: EntityMa
         (profile) => ({
           email: profile.email ?? "",
           name: profile.displayName,
-          avatarLink: profile.avatar,
-          bannerLink: profile.banner,
+          avatarLink: profile.avatar ? `https://cdn.discordapp.com/avatars/${profile.id}/${profile.avatar}.png?size=256` : "",
+          bannerLink: profile.banner ? `https://cdn.discordapp.com/banners/${profile.id}/${profile.banner}.png?size=512` : "",
         }),
         (profile) => ({ })
       )
@@ -53,7 +53,7 @@ export function configPassport(passport: PassportStatic, entityManager: EntityMa
         (profile) => ({
           email: profile._json.email ?? "",
           name: profile.displayName,
-          avatarLink: profile._json.picture,
+          avatarLink: profile._json.picture ?? "",
         }),
         (profile) => ({ })
       )
@@ -78,6 +78,13 @@ function getOAuthStrategyPassportCallback<TProfile extends passport.Profile>(ent
       });
 
       if (userLoginIdentity) {
+        const newUser = await entityManager.user.updateOne({
+          filter: {
+            id: userLoginIdentity.userId
+          },
+          changes: profileToNewUser(profile)
+        });
+
         const user = await entityManager.user.findOne({ 
           filter: {
             id: { eq: userLoginIdentity.userId }
@@ -135,7 +142,7 @@ export async function generateAuthToken(payload: AuthTokenPayload) {
 }
 
 export async function authenticateAuthToken(req: express.Request) {
-  const authHeader = req.headers.authorization;
+  const authHeader = req.headers["authorization"] as string;
   const token = authHeader && authHeader.split(' ')[1];
 
   if (token == null)
@@ -181,17 +188,21 @@ export function passportAuthenticateUserAndSendAuthToken(strategy: string) {
   };
 }
 
-export const UserRoleCodeRanking: { [key: string]: number}  = {
-  [RoleCode.User]: 1,
-  [RoleCode.Moderator]: 2,
-  [RoleCode.SuperAdmin]: 3,
-}
+export const UserRoleCodeRanking = new TwoWayMap<string, number>({
+  [RoleCode.User]: 0,
+  [RoleCode.Moderator]: 1,
+  [RoleCode.SuperAdmin]: 2,
+});
 
+export const ProjectMemberRoleCodeRanking = new TwoWayMap<string, number>({
+  [RoleCode.ProjectMember]: 0,
+  [RoleCode.ProjectOwner]: 1,
+});
 
 export async function userToSecurityContext(entityManager: EntityManager, userId: string): Promise<SecurityContext> {
   const userRoles = await entityManager.userRole.findAll({
     filter: {
-      userId: { eq: <any>new ObjectId(userId) }
+      userId: { eq: userId }
     }
   });
 
@@ -199,7 +210,7 @@ export async function userToSecurityContext(entityManager: EntityManager, userId
   // This lets us spread the roles, which lets the 
   // later roles have precedence and can override any
   // permissions of the weaker roles
-  userRoles.sort((a, b) => UserRoleCodeRanking[a.roleCode] - UserRoleCodeRanking[b.roleCode]);
+  userRoles.sort((a, b) => UserRoleCodeRanking.get(a.roleCode) - UserRoleCodeRanking.get(b.roleCode));
   let securityContext: SecurityContext = {};
   for (const role of userRoles) {
     securityContext = { ...securityContext, ...(await userRoleCodeToSecurityContext(entityManager, userId, role.roleCode))};
@@ -208,14 +219,34 @@ export async function userToSecurityContext(entityManager: EntityManager, userId
 }
 
 export async function userRoleCodeToSecurityContext(entityManager: EntityManager, userId: string, role: RoleCode): Promise<SecurityContext> {
+  
   switch (role) {
     case RoleCode.User:
+      // ----- Project Domains ----- //
       const ownedProjectIds = await EntityManagerExtensions.getOwnedProjectIds(entityManager, userId);
+      const projectDomains = ownedProjectIds.map(projectId => <SecurityDomain>{ projectId });
+
+      // ----- Project Member Role Domains ----- //
+      const projectMembers = await entityManager.projectMember.findAll({
+        filter: {
+          userId: { eq: userId },
+        }
+      });
+      let projectMemberRoleDomains: SecurityDomain[] = [];
+      for (const member in projectMembers) {
+        projectMemberRoleDomains = [...projectMemberRoleDomains, ...await EntityManagerExtensions.getProjectMemberRoleDomains(entityManager, userId)];
+      }
+
+      // ----- User Role Domains ----- //
+      const userRoleDomains = await EntityManagerExtensions.getUserRoleDomains(entityManager, userId);
+
       return {
         READ_PROFILE_PRIVATE: [{ userId: userId }],
         UPDATE_PROFILE: [{ userId: userId }],
         CREATE_PROJECT: true,
-        UPDATE_PROJECT: ownedProjectIds.map(projectId => <SecurityDomain>{ projectId })
+        UPDATE_PROJECT: projectDomains,
+        MANAGE_USER_ROLES: userRoleDomains,
+        MANAGE_PROJECT_MEMBER_ROLES: projectMemberRoleDomains,
       };
     case RoleCode.Moderator:
       return {
@@ -223,6 +254,8 @@ export async function userRoleCodeToSecurityContext(entityManager: EntityManager
         CREATE_PROJECT: true,
         UPDATE_PROJECT: true,
         READ_PROFILE_PRIVATE: true,
+        MANAGE_USER_ROLES: await EntityManagerExtensions.getUserRoleDomains(entityManager, userId),
+        MANAGE_PROJECT_MEMBER_ROLES: true,
       };
     case RoleCode.SuperAdmin:
       return {
@@ -232,9 +265,22 @@ export async function userRoleCodeToSecurityContext(entityManager: EntityManager
         UPDATE_PROJECT: true,
         DELETE_PROJECT: true,
         READ_PROFILE_PRIVATE: true,
+        MANAGE_USER_ROLES: true,
+        MANAGE_PROJECT_MEMBER_ROLES: true,
       };
     default:
       return {};
   }
 }
 
+export async function projectMemberRoleCodeToSecurityContext(entityManager: EntityManager, projectMemberId: string, role: RoleCode): Promise<SecurityContext> {
+  switch (role) {
+    case RoleCode.ProjectMember:
+    case RoleCode.ProjectOwner:
+      return {
+        MANAGE_PROJECT_MEMBER_ROLES: await EntityManagerExtensions.getProjectMemberRoleDomains(entityManager, projectMemberId),
+      };
+    default:
+      return {};
+  }
+}

@@ -20,6 +20,8 @@ enum Permission {
   UPDATE_PROFILE,
   DELETE_PROFILE,
   READ_PROFILE_PRIVATE,
+  MANAGE_USER_ROLES,
+  MANAGE_PROJECT_MEMBER_ROLES,
 }
 
 type Role @entity @mongodb {
@@ -43,9 +45,9 @@ type User @entity @mongodb {
 type UserRole @entity @mongodb {
   id: ID! @id(from: "db") @alias(value: "_id")
   role: Role! @innerRef(refFrom: "roleCode", refTo: "code")
-  roleCode: RoleCode!
+  roleCode: RoleCode! @schema(metadata: [{unique: 0}])
   user: User! @innerRef
-  userId: ID!
+  userId: ID! @schema(metadata: [{unique: 0}])
 }
 
 type UserSocial @entity @mongodb {
@@ -58,7 +60,7 @@ type UserSocial @entity @mongodb {
 
 type UserLoginIdentity @entity @mongodb {
   id: ID! @id(from: "db") @alias(value: "_id")
-  name: String!
+  name: String! @schema(metadata: [{unique: 0}])
   identityId: String!
   data: Json
   user: User! @innerRef 
@@ -82,19 +84,18 @@ type Project @entity @mongodb {
 
 type ProjectMember @entity @mongodb {
   id: ID! @id(from: "db") @alias(value: "_id")
-  name: String!
   contributions: String!
   roles: [ProjectMemberRole!]! @foreignRef(refFrom: "projectMemberId")         
   project: Project! @innerRef
   projectId: ID!
   user: User! @innerRef
-  userId: ID!
+  userId: ID! @schema(metadata: [{unique: 0}])
 }
 
 type ProjectMemberRole @entity @mongodb {
   id: ID! @id(from: "db") @alias(value: "_id")
-  role: Role! @innerRef(refFrom: "roleCode", refTo: "code")
-  roleCode: RoleCode!
+  role: Role! @innerRef(refFrom: "roleCode", refTo: "code") @schema(metadata: [{unique: 0}])
+  roleCode: RoleCode! @schema(metadata: [{unique: 0}])
   projectMember: ProjectMember! @innerRef
   projectMemberId: ID!
 }

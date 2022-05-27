@@ -265,7 +265,6 @@ export type ProjectResolvers<ContextType = any, ParentType extends ResolversPare
 export type ProjectMemberResolvers<ContextType = any, ParentType extends ResolversParentTypes['ProjectMember'] = ResolversParentTypes['ProjectMember']> = {
   contributions?: Resolver<ResolversTypes['String'], ParentType, ContextType>
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>
-  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>
   project?: Resolver<ResolversTypes['Project'], ParentType, ContextType>
   projectId?: Resolver<ResolversTypes['ID'], ParentType, ContextType>
   roles?: Resolver<Array<ResolversTypes['ProjectMemberRole']>, ParentType, ContextType>

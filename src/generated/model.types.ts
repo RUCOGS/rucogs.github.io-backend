@@ -206,6 +206,8 @@ export const Permission = {
   CreateProject: 'CREATE_PROJECT',
   DeleteProfile: 'DELETE_PROFILE',
   DeleteProject: 'DELETE_PROJECT',
+  ManageProjectMemberRoles: 'MANAGE_PROJECT_MEMBER_ROLES',
+  ManageUserRoles: 'MANAGE_USER_ROLES',
   ReadProfilePrivate: 'READ_PROFILE_PRIVATE',
   UpdateProfile: 'UPDATE_PROFILE',
   UpdateProject: 'UPDATE_PROJECT',
@@ -282,7 +284,6 @@ export type ProjectMember = {
   __typename?: 'ProjectMember'
   contributions: Scalars['String']
   id: Scalars['ID']
-  name: Scalars['String']
   project: Project
   projectId: Scalars['ID']
   roles: Array<ProjectMemberRole>
@@ -294,7 +295,6 @@ export type ProjectMemberFilterInput = {
   and_?: InputMaybe<Array<ProjectMemberFilterInput>>
   contributions?: InputMaybe<StringFilterInput>
   id?: InputMaybe<IdFilterInput>
-  name?: InputMaybe<StringFilterInput>
   nor_?: InputMaybe<Array<ProjectMemberFilterInput>>
   or_?: InputMaybe<Array<ProjectMemberFilterInput>>
   projectId?: InputMaybe<IdFilterInput>
@@ -311,7 +311,6 @@ export type ProjectMemberFindInput = {
 
 export type ProjectMemberInsertInput = {
   contributions: Scalars['String']
-  name: Scalars['String']
   projectId: Scalars['ID']
   userId: Scalars['ID']
 }
@@ -372,14 +371,12 @@ export type ProjectMemberRoleUpdateInput = {
 export type ProjectMemberSortInput = {
   contributions?: InputMaybe<SortDirection>
   id?: InputMaybe<SortDirection>
-  name?: InputMaybe<SortDirection>
   projectId?: InputMaybe<SortDirection>
   userId?: InputMaybe<SortDirection>
 }
 
 export type ProjectMemberUpdateInput = {
   contributions?: InputMaybe<Scalars['String']>
-  name?: InputMaybe<Scalars['String']>
   projectId?: InputMaybe<Scalars['ID']>
   userId?: InputMaybe<Scalars['ID']>
 }

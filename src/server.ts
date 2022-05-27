@@ -1,5 +1,6 @@
 import { MongoClient } from 'mongodb';
-import { resolvers } from '@src/generated/resolvers'
+import { resolvers as generatedResolvers } from '@src/generated/resolvers'
+import { resolvers as customResolvers } from '@src/resolvers'
 import { mergeTypeDefs } from '@graphql-tools/merge'
 import inputTypeDefs from '@src/generated/operations'
 import schemaTypeDefs from '@src/schema.typedefs'
@@ -13,7 +14,7 @@ import cors from 'cors';
 import passport from 'passport';
 import authRouter from '@src/routes/auth.routes';
 import http from 'http';
-import { createSecureEntityManager, createUnsecureEntityManager } from '@src/config/entity-manager.configurer';
+import { createSecureEntityManager, createUnsecureEntityManager, getOperationMetadataFromRequest } from '@src/config/entity-manager.configurer';
 import { authenticateAuthToken, configPassport, userToSecurityContext } from '@src/controllers/auth.controller';
 import DbConfig from '@src/config/db.config.json';
 
@@ -35,12 +36,17 @@ async function startServer() {
       schemaTypeDefs,
       typettaDirectivesTypeDefs,
     ]),
-    resolvers,
+    resolvers: mergeResolvers([
+      generatedResolvers,
+      customResolvers
+    ]),
     context: async ({ req }) => {
       const authPayload = await authenticateAuthToken(req);
       const securityContext = await userToSecurityContext(createUnsecureEntityManager(mongoDb), authPayload.userId);
+      const metadata = getOperationMetadataFromRequest(req);
+      const securedEntityManager = createSecureEntityManager(securityContext, mongoDb, metadata);
       return {
-        securedEntityManager: createSecureEntityManager(securityContext, mongoDb)
+        securedEntityManager
       };
     },
     csrfPrevention: true,
@@ -59,6 +65,23 @@ async function startServer() {
 🚀 Server ready at: http://localhost:${port}
 📈 GraphQL API ready at: http://localhost:${port}${server.graphqlPath}`,
   );
+}
+
+function mergeResolvers(resolversArr: any[]) {
+  let mergedResolvers = { Query: {}, Mutation: {}};
+  for (const resolvers of resolversArr) {
+    mergedResolvers = {
+      Query: {
+        ...mergedResolvers.Query,
+        ...resolvers.Query
+      },
+      Mutation: {
+        ...mergedResolvers.Mutation,
+        ...resolvers.Mutation
+      }
+    }
+  }
+  return mergedResolvers;
 }
 
 function configExpress(app: Express, entityManager: EntityManager) {

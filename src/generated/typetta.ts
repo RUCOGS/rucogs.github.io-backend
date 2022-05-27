@@ -8,47 +8,71 @@ export type ProjectRelationFields = 'members'
 export function projectSchema(): T.Schema<types.Scalars> {
   return {
     bannerLink: {
+      type: 'scalar',
       scalar: 'String',
     },
     cardImageLink: {
+      type: 'scalar',
       scalar: 'String',
     },
     completedAt: {
+      type: 'scalar',
       scalar: 'Date',
     },
     createdAt: {
+      type: 'scalar',
       scalar: 'Date',
       required: true,
-      defaultGenerationStrategy: 'generator',
+      generationStrategy: 'generator',
     },
     description: {
+      type: 'scalar',
       scalar: 'String',
       required: true,
     },
     downloadLinks: {
+      type: 'scalar',
       scalar: 'String',
+      isListElementRequired: true,
       required: true,
-      array: true,
+      isList: true,
     },
     galleryImageLinks: {
+      type: 'scalar',
       scalar: 'String',
+      isListElementRequired: true,
       required: true,
-      array: true,
+      isList: true,
     },
     id: {
+      type: 'scalar',
       scalar: 'ID',
+      isId: true,
+      generationStrategy: 'db',
       required: true,
       alias: '_id',
     },
-    members: { relation: () => projectMemberSchema(), array: true },
+    members: {
+      type: 'relation',
+      relation: 'foreign',
+      schema: () => projectMemberSchema(),
+      refFrom: 'projectId',
+      refTo: 'id',
+      dao: 'projectMember',
+      isListElementRequired: true,
+      isList: true,
+    },
     name: {
+      type: 'scalar',
       scalar: 'String',
       required: true,
     },
     soundcloudEmbedSrc: {
+      type: 'scalar',
       scalar: 'String',
     },
     updatedAt: {
+      type: 'scalar',
       scalar: 'Date',
       required: true,
     },
@@ -170,11 +194,7 @@ export class ProjectDAO<MetadataType, OperationMetadataType> extends T.AbstractM
   public constructor(params: ProjectDAOParams<MetadataType, OperationMetadataType>) {
     super({
       ...params,
-      idField: 'id',
       schema: projectSchema(),
-      relations: T.overrideRelations([{ type: '1-n', reference: 'foreign', field: 'members', refFrom: 'projectId', refTo: 'id', dao: 'projectMember', required: false }]),
-      idGeneration: 'db',
-      idScalar: 'ID',
     })
   }
 }
@@ -190,11 +210,7 @@ export class InMemoryProjectDAO<MetadataType, OperationMetadataType> extends T.A
   public constructor(params: InMemoryProjectDAOParams<MetadataType, OperationMetadataType>) {
     super({
       ...params,
-      idField: 'id',
       schema: projectSchema(),
-      relations: T.overrideRelations([{ type: '1-n', reference: 'foreign', field: 'members', refFrom: 'projectId', refTo: 'id', dao: 'projectMember', required: false }]),
-      idGeneration: 'db',
-      idScalar: 'ID',
     })
   }
 }
@@ -205,28 +221,57 @@ export type ProjectMemberRelationFields = 'project' | 'roles' | 'user'
 export function projectMemberSchema(): T.Schema<types.Scalars> {
   return {
     contributions: {
+      type: 'scalar',
       scalar: 'String',
       required: true,
     },
     id: {
+      type: 'scalar',
       scalar: 'ID',
+      isId: true,
+      generationStrategy: 'db',
       required: true,
       alias: '_id',
     },
-    name: {
-      scalar: 'String',
+    project: {
+      type: 'relation',
+      relation: 'inner',
+      schema: () => projectSchema(),
+      refFrom: 'projectId',
+      refTo: 'id',
+      dao: 'project',
       required: true,
     },
-    project: { relation: () => projectSchema(), required: true },
     projectId: {
+      type: 'scalar',
       scalar: 'ID',
       required: true,
     },
-    roles: { relation: () => projectMemberRoleSchema(), required: true, array: true },
-    user: { relation: () => userSchema(), required: true },
+    roles: {
+      type: 'relation',
+      relation: 'foreign',
+      schema: () => projectMemberRoleSchema(),
+      refFrom: 'projectMemberId',
+      refTo: 'id',
+      dao: 'projectMemberRole',
+      isListElementRequired: true,
+      required: true,
+      isList: true,
+    },
+    user: {
+      type: 'relation',
+      relation: 'inner',
+      schema: () => userSchema(),
+      refFrom: 'userId',
+      refTo: 'id',
+      dao: 'user',
+      required: true,
+    },
     userId: {
+      type: 'scalar',
       scalar: 'ID',
       required: true,
+      metadata: Object.fromEntries([['undefined', 'undefined']]),
     },
   }
 }
@@ -234,7 +279,6 @@ export function projectMemberSchema(): T.Schema<types.Scalars> {
 type ProjectMemberFilterFields = {
   contributions?: types.Scalars['String'] | null | T.EqualityOperators<types.Scalars['String']> | T.ElementOperators | T.StringOperators
   id?: types.Scalars['ID'] | null | T.EqualityOperators<types.Scalars['ID']> | T.ElementOperators
-  name?: types.Scalars['String'] | null | T.EqualityOperators<types.Scalars['String']> | T.ElementOperators | T.StringOperators
   projectId?: types.Scalars['ID'] | null | T.EqualityOperators<types.Scalars['ID']> | T.ElementOperators
   userId?: types.Scalars['ID'] | null | T.EqualityOperators<types.Scalars['ID']> | T.ElementOperators
 }
@@ -254,7 +298,6 @@ export type ProjectMemberRelations = {
 export type ProjectMemberProjection = {
   contributions?: boolean
   id?: boolean
-  name?: boolean
   project?: ProjectProjection | boolean
   projectId?: boolean
   roles?: ProjectMemberRoleProjection | boolean
@@ -263,14 +306,13 @@ export type ProjectMemberProjection = {
 }
 export type ProjectMemberParam<P extends ProjectMemberProjection> = T.ParamProjection<types.ProjectMember, ProjectMemberProjection, P>
 
-export type ProjectMemberSortKeys = 'contributions' | 'id' | 'name' | 'projectId' | 'userId'
+export type ProjectMemberSortKeys = 'contributions' | 'id' | 'projectId' | 'userId'
 export type ProjectMemberSort = Partial<Record<ProjectMemberSortKeys, T.SortDirection>>
 export type ProjectMemberRawSort = () => M.Sort
 
 export type ProjectMemberUpdate = {
   contributions?: types.Scalars['String']
   id?: types.Scalars['ID']
-  name?: types.Scalars['String']
   projectId?: types.Scalars['ID']
   userId?: types.Scalars['ID']
 }
@@ -278,7 +320,6 @@ export type ProjectMemberRawUpdate = () => M.UpdateFilter<M.Document>
 
 export type ProjectMemberInsert = {
   contributions: types.Scalars['String']
-  name: types.Scalars['String']
   projectId: types.Scalars['ID']
   userId: types.Scalars['ID']
 }
@@ -324,15 +365,7 @@ export class ProjectMemberDAO<MetadataType, OperationMetadataType> extends T.Abs
   public constructor(params: ProjectMemberDAOParams<MetadataType, OperationMetadataType>) {
     super({
       ...params,
-      idField: 'id',
       schema: projectMemberSchema(),
-      relations: T.overrideRelations([
-        { type: '1-1', reference: 'inner', field: 'project', refFrom: 'projectId', refTo: 'id', dao: 'project', required: true },
-        { type: '1-n', reference: 'foreign', field: 'roles', refFrom: 'projectMemberId', refTo: 'id', dao: 'projectMemberRole', required: true },
-        { type: '1-1', reference: 'inner', field: 'user', refFrom: 'userId', refTo: 'id', dao: 'user', required: true },
-      ]),
-      idGeneration: 'db',
-      idScalar: 'ID',
     })
   }
 }
@@ -348,15 +381,7 @@ export class InMemoryProjectMemberDAO<MetadataType, OperationMetadataType> exten
   public constructor(params: InMemoryProjectMemberDAOParams<MetadataType, OperationMetadataType>) {
     super({
       ...params,
-      idField: 'id',
       schema: projectMemberSchema(),
-      relations: T.overrideRelations([
-        { type: '1-1', reference: 'inner', field: 'project', refFrom: 'projectId', refTo: 'id', dao: 'project', required: true },
-        { type: '1-n', reference: 'foreign', field: 'roles', refFrom: 'projectMemberId', refTo: 'id', dao: 'projectMemberRole', required: true },
-        { type: '1-1', reference: 'inner', field: 'user', refFrom: 'userId', refTo: 'id', dao: 'user', required: true },
-      ]),
-      idGeneration: 'db',
-      idScalar: 'ID',
     })
   }
 }
@@ -367,19 +392,43 @@ export type ProjectMemberRoleRelationFields = 'projectMember' | 'role'
 export function projectMemberRoleSchema(): T.Schema<types.Scalars> {
   return {
     id: {
+      type: 'scalar',
       scalar: 'ID',
+      isId: true,
+      generationStrategy: 'db',
       required: true,
       alias: '_id',
     },
-    projectMember: { relation: () => projectMemberSchema(), required: true },
+    projectMember: {
+      type: 'relation',
+      relation: 'inner',
+      schema: () => projectMemberSchema(),
+      refFrom: 'projectMemberId',
+      refTo: 'id',
+      dao: 'projectMember',
+      required: true,
+    },
     projectMemberId: {
+      type: 'scalar',
       scalar: 'ID',
       required: true,
     },
-    role: { relation: () => roleSchema(), required: true },
+    role: {
+      type: 'relation',
+      relation: 'inner',
+      schema: () => roleSchema(),
+      refFrom: 'roleCode',
+      refTo: 'code',
+      dao: 'role',
+      required: true,
+      metadata: Object.fromEntries([['undefined', 'undefined']]),
+    },
     roleCode: {
+      type: 'scalar',
       scalar: 'String',
       required: true,
+      isEnum: true,
+      metadata: Object.fromEntries([['undefined', 'undefined']]),
     },
   }
 }
@@ -460,14 +509,7 @@ export class ProjectMemberRoleDAO<MetadataType, OperationMetadataType> extends T
   public constructor(params: ProjectMemberRoleDAOParams<MetadataType, OperationMetadataType>) {
     super({
       ...params,
-      idField: 'id',
       schema: projectMemberRoleSchema(),
-      relations: T.overrideRelations([
-        { type: '1-1', reference: 'inner', field: 'projectMember', refFrom: 'projectMemberId', refTo: 'id', dao: 'projectMember', required: true },
-        { type: '1-1', reference: 'inner', field: 'role', refFrom: 'roleCode', refTo: 'code', dao: 'role', required: true },
-      ]),
-      idGeneration: 'db',
-      idScalar: 'ID',
     })
   }
 }
@@ -483,14 +525,7 @@ export class InMemoryProjectMemberRoleDAO<MetadataType, OperationMetadataType> e
   public constructor(params: InMemoryProjectMemberRoleDAOParams<MetadataType, OperationMetadataType>) {
     super({
       ...params,
-      idField: 'id',
       schema: projectMemberRoleSchema(),
-      relations: T.overrideRelations([
-        { type: '1-1', reference: 'inner', field: 'projectMember', refFrom: 'projectMemberId', refTo: 'id', dao: 'projectMember', required: true },
-        { type: '1-1', reference: 'inner', field: 'role', refFrom: 'roleCode', refTo: 'code', dao: 'role', required: true },
-      ]),
-      idGeneration: 'db',
-      idScalar: 'ID',
     })
   }
 }
@@ -501,13 +536,19 @@ export type RoleRelationFields = never
 export function roleSchema(): T.Schema<types.Scalars> {
   return {
     code: {
+      type: 'scalar',
       scalar: 'String',
+      isId: true,
+      generationStrategy: 'user',
       required: true,
+      isEnum: true,
     },
     permissions: {
+      type: 'scalar',
       scalar: 'String',
       required: true,
-      array: true,
+      isList: true,
+      isEnum: true,
     },
   }
 }
@@ -583,11 +624,7 @@ export class RoleDAO<MetadataType, OperationMetadataType> extends T.AbstractMong
   public constructor(params: RoleDAOParams<MetadataType, OperationMetadataType>) {
     super({
       ...params,
-      idField: 'code',
       schema: roleSchema(),
-      relations: T.overrideRelations([]),
-      idGeneration: 'user',
-      idScalar: 'String',
     })
   }
 }
@@ -603,11 +640,7 @@ export class InMemoryRoleDAO<MetadataType, OperationMetadataType> extends T.Abst
   public constructor(params: InMemoryRoleDAOParams<MetadataType, OperationMetadataType>) {
     super({
       ...params,
-      idField: 'code',
       schema: roleSchema(),
-      relations: T.overrideRelations([]),
-      idGeneration: 'user',
-      idScalar: 'String',
     })
   }
 }
@@ -618,32 +651,80 @@ export type UserRelationFields = 'loginIdentities' | 'projectMembers' | 'roles' 
 export function userSchema(): T.Schema<types.Scalars> {
   return {
     avatarLink: {
+      type: 'scalar',
       scalar: 'String',
     },
     bannerLink: {
+      type: 'scalar',
       scalar: 'String',
     },
     createdAt: {
+      type: 'scalar',
       scalar: 'Date',
       required: true,
-      defaultGenerationStrategy: 'generator',
+      generationStrategy: 'generator',
     },
     email: {
+      type: 'scalar',
       scalar: 'String',
       required: true,
     },
     id: {
+      type: 'scalar',
       scalar: 'ID',
+      isId: true,
+      generationStrategy: 'db',
       required: true,
       alias: '_id',
     },
-    loginIdentities: { relation: () => userLoginIdentitySchema(), required: true, array: true },
+    loginIdentities: {
+      type: 'relation',
+      relation: 'foreign',
+      schema: () => userLoginIdentitySchema(),
+      refFrom: 'userId',
+      refTo: 'id',
+      dao: 'userLoginIdentity',
+      isListElementRequired: true,
+      required: true,
+      isList: true,
+    },
     name: {
+      type: 'scalar',
       scalar: 'String',
     },
-    projectMembers: { relation: () => projectMemberSchema(), required: true, array: true },
-    roles: { relation: () => userRoleSchema(), required: true, array: true },
-    socials: { relation: () => userSocialSchema(), required: true, array: true },
+    projectMembers: {
+      type: 'relation',
+      relation: 'foreign',
+      schema: () => projectMemberSchema(),
+      refFrom: 'userId',
+      refTo: 'id',
+      dao: 'projectMember',
+      isListElementRequired: true,
+      required: true,
+      isList: true,
+    },
+    roles: {
+      type: 'relation',
+      relation: 'foreign',
+      schema: () => userRoleSchema(),
+      refFrom: 'userId',
+      refTo: 'id',
+      dao: 'userRole',
+      isListElementRequired: true,
+      required: true,
+      isList: true,
+    },
+    socials: {
+      type: 'relation',
+      relation: 'foreign',
+      schema: () => userSocialSchema(),
+      refFrom: 'userId',
+      refTo: 'id',
+      dao: 'userSocial',
+      isListElementRequired: true,
+      required: true,
+      isList: true,
+    },
   }
 }
 
@@ -766,16 +847,7 @@ export class UserDAO<MetadataType, OperationMetadataType> extends T.AbstractMong
   public constructor(params: UserDAOParams<MetadataType, OperationMetadataType>) {
     super({
       ...params,
-      idField: 'id',
       schema: userSchema(),
-      relations: T.overrideRelations([
-        { type: '1-n', reference: 'foreign', field: 'loginIdentities', refFrom: 'userId', refTo: 'id', dao: 'userLoginIdentity', required: true },
-        { type: '1-n', reference: 'foreign', field: 'projectMembers', refFrom: 'userId', refTo: 'id', dao: 'projectMember', required: true },
-        { type: '1-n', reference: 'foreign', field: 'roles', refFrom: 'userId', refTo: 'id', dao: 'userRole', required: true },
-        { type: '1-n', reference: 'foreign', field: 'socials', refFrom: 'userId', refTo: 'id', dao: 'userSocial', required: true },
-      ]),
-      idGeneration: 'db',
-      idScalar: 'ID',
     })
   }
 }
@@ -791,16 +863,7 @@ export class InMemoryUserDAO<MetadataType, OperationMetadataType> extends T.Abst
   public constructor(params: InMemoryUserDAOParams<MetadataType, OperationMetadataType>) {
     super({
       ...params,
-      idField: 'id',
       schema: userSchema(),
-      relations: T.overrideRelations([
-        { type: '1-n', reference: 'foreign', field: 'loginIdentities', refFrom: 'userId', refTo: 'id', dao: 'userLoginIdentity', required: true },
-        { type: '1-n', reference: 'foreign', field: 'projectMembers', refFrom: 'userId', refTo: 'id', dao: 'projectMember', required: true },
-        { type: '1-n', reference: 'foreign', field: 'roles', refFrom: 'userId', refTo: 'id', dao: 'userRole', required: true },
-        { type: '1-n', reference: 'foreign', field: 'socials', refFrom: 'userId', refTo: 'id', dao: 'userSocial', required: true },
-      ]),
-      idGeneration: 'db',
-      idScalar: 'ID',
     })
   }
 }
@@ -811,23 +874,39 @@ export type UserLoginIdentityRelationFields = 'user'
 export function userLoginIdentitySchema(): T.Schema<types.Scalars> {
   return {
     data: {
+      type: 'scalar',
       scalar: 'Json',
     },
     id: {
+      type: 'scalar',
       scalar: 'ID',
+      isId: true,
+      generationStrategy: 'db',
       required: true,
       alias: '_id',
     },
     identityId: {
+      type: 'scalar',
       scalar: 'String',
       required: true,
     },
     name: {
+      type: 'scalar',
       scalar: 'String',
       required: true,
+      metadata: Object.fromEntries([['undefined', 'undefined']]),
     },
-    user: { relation: () => userSchema(), required: true },
+    user: {
+      type: 'relation',
+      relation: 'inner',
+      schema: () => userSchema(),
+      refFrom: 'userId',
+      refTo: 'id',
+      dao: 'user',
+      required: true,
+    },
     userId: {
+      type: 'scalar',
       scalar: 'ID',
       required: true,
     },
@@ -917,11 +996,7 @@ export class UserLoginIdentityDAO<MetadataType, OperationMetadataType> extends T
   public constructor(params: UserLoginIdentityDAOParams<MetadataType, OperationMetadataType>) {
     super({
       ...params,
-      idField: 'id',
       schema: userLoginIdentitySchema(),
-      relations: T.overrideRelations([{ type: '1-1', reference: 'inner', field: 'user', refFrom: 'userId', refTo: 'id', dao: 'user', required: true }]),
-      idGeneration: 'db',
-      idScalar: 'ID',
     })
   }
 }
@@ -937,11 +1012,7 @@ export class InMemoryUserLoginIdentityDAO<MetadataType, OperationMetadataType> e
   public constructor(params: InMemoryUserLoginIdentityDAOParams<MetadataType, OperationMetadataType>) {
     super({
       ...params,
-      idField: 'id',
       schema: userLoginIdentitySchema(),
-      relations: T.overrideRelations([{ type: '1-1', reference: 'inner', field: 'user', refFrom: 'userId', refTo: 'id', dao: 'user', required: true }]),
-      idGeneration: 'db',
-      idScalar: 'ID',
     })
   }
 }
@@ -952,19 +1023,43 @@ export type UserRoleRelationFields = 'role' | 'user'
 export function userRoleSchema(): T.Schema<types.Scalars> {
   return {
     id: {
+      type: 'scalar',
       scalar: 'ID',
+      isId: true,
+      generationStrategy: 'db',
       required: true,
       alias: '_id',
     },
-    role: { relation: () => roleSchema(), required: true },
-    roleCode: {
-      scalar: 'String',
+    role: {
+      type: 'relation',
+      relation: 'inner',
+      schema: () => roleSchema(),
+      refFrom: 'roleCode',
+      refTo: 'code',
+      dao: 'role',
       required: true,
     },
-    user: { relation: () => userSchema(), required: true },
+    roleCode: {
+      type: 'scalar',
+      scalar: 'String',
+      required: true,
+      isEnum: true,
+      metadata: Object.fromEntries([['undefined', 'undefined']]),
+    },
+    user: {
+      type: 'relation',
+      relation: 'inner',
+      schema: () => userSchema(),
+      refFrom: 'userId',
+      refTo: 'id',
+      dao: 'user',
+      required: true,
+    },
     userId: {
+      type: 'scalar',
       scalar: 'ID',
       required: true,
+      metadata: Object.fromEntries([['undefined', 'undefined']]),
     },
   }
 }
@@ -1045,14 +1140,7 @@ export class UserRoleDAO<MetadataType, OperationMetadataType> extends T.Abstract
   public constructor(params: UserRoleDAOParams<MetadataType, OperationMetadataType>) {
     super({
       ...params,
-      idField: 'id',
       schema: userRoleSchema(),
-      relations: T.overrideRelations([
-        { type: '1-1', reference: 'inner', field: 'role', refFrom: 'roleCode', refTo: 'code', dao: 'role', required: true },
-        { type: '1-1', reference: 'inner', field: 'user', refFrom: 'userId', refTo: 'id', dao: 'user', required: true },
-      ]),
-      idGeneration: 'db',
-      idScalar: 'ID',
     })
   }
 }
@@ -1068,14 +1156,7 @@ export class InMemoryUserRoleDAO<MetadataType, OperationMetadataType> extends T.
   public constructor(params: InMemoryUserRoleDAOParams<MetadataType, OperationMetadataType>) {
     super({
       ...params,
-      idField: 'id',
       schema: userRoleSchema(),
-      relations: T.overrideRelations([
-        { type: '1-1', reference: 'inner', field: 'role', refFrom: 'roleCode', refTo: 'code', dao: 'role', required: true },
-        { type: '1-1', reference: 'inner', field: 'user', refFrom: 'userId', refTo: 'id', dao: 'user', required: true },
-      ]),
-      idGeneration: 'db',
-      idScalar: 'ID',
     })
   }
 }
@@ -1086,20 +1167,34 @@ export type UserSocialRelationFields = 'user'
 export function userSocialSchema(): T.Schema<types.Scalars> {
   return {
     id: {
+      type: 'scalar',
       scalar: 'ID',
+      isId: true,
+      generationStrategy: 'db',
       required: true,
       alias: '_id',
     },
     link: {
+      type: 'scalar',
       scalar: 'String',
       required: true,
     },
     name: {
+      type: 'scalar',
       scalar: 'String',
       required: true,
     },
-    user: { relation: () => userSchema(), required: true },
+    user: {
+      type: 'relation',
+      relation: 'inner',
+      schema: () => userSchema(),
+      refFrom: 'userId',
+      refTo: 'id',
+      dao: 'user',
+      required: true,
+    },
     userId: {
+      type: 'scalar',
       scalar: 'ID',
       required: true,
     },
@@ -1185,11 +1280,7 @@ export class UserSocialDAO<MetadataType, OperationMetadataType> extends T.Abstra
   public constructor(params: UserSocialDAOParams<MetadataType, OperationMetadataType>) {
     super({
       ...params,
-      idField: 'id',
       schema: userSocialSchema(),
-      relations: T.overrideRelations([{ type: '1-1', reference: 'inner', field: 'user', refFrom: 'userId', refTo: 'id', dao: 'user', required: true }]),
-      idGeneration: 'db',
-      idScalar: 'ID',
     })
   }
 }
@@ -1205,11 +1296,7 @@ export class InMemoryUserSocialDAO<MetadataType, OperationMetadataType> extends 
   public constructor(params: InMemoryUserSocialDAOParams<MetadataType, OperationMetadataType>) {
     super({
       ...params,
-      idField: 'id',
       schema: userSocialSchema(),
-      relations: T.overrideRelations([{ type: '1-1', reference: 'inner', field: 'user', refFrom: 'userId', refTo: 'id', dao: 'user', required: true }]),
-      idGeneration: 'db',
-      idScalar: 'ID',
     })
   }
 }
