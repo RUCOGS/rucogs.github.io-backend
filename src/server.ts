@@ -14,15 +14,15 @@ import cors from 'cors';
 import passport from 'passport';
 import authRouter from '@src/routes/auth.routes';
 import http from 'http';
-import { createSecureEntityManager, createUnsecureEntityManager, getOperationMetadataFromRequest } from '@src/config/entity-manager.configurer';
+import { createSecureEntityManager, createUnsecureEntityManager, getOperationMetadataFromRequest } from '@src/controllers/entity-manager.controller';
 import { authenticate, authenticateBearerToken, authenticateBasicRootUserPassword, AuthScheme, configPassport, userToSecurityContext } from '@src/controllers/auth.controller';
 import { Db } from 'mongodb';
-import DbConfig from '@src/config/db.config.json';
+import ServerConfig from '@src/config/server.config.json';
 import AuthConfig from '@src/config/auth.config.json';
 
 async function startServer() {
-  const mongoClient = new MongoClient(DbConfig.mongodbUrl);
-  const mongoDb = mongoClient.db(DbConfig.mongodbDbName);
+  const mongoClient = new MongoClient(ServerConfig.mongodbUrl);
+  const mongoDb = mongoClient.db(ServerConfig.mongodbDbName);
 
   await mongoClient.connect();
 
@@ -33,9 +33,9 @@ async function startServer() {
 
   const httpServer = http.createServer(app);
 
-  startApolloServer(app, httpServer, mongoDb, "/api/graphql", {});
+  startApolloServer(app, httpServer, mongoDb, ServerConfig.baseUrl + "/api/graphql", {});
   // Set port, listen for requests
-  const port = process.env.PORT || 3000;
+  const port = ServerConfig.port;
   // Promisfy httpServer.listen();
   await new Promise<void>(resolve => httpServer.listen({ port }, resolve));
   
@@ -137,11 +137,14 @@ function configExpress(app: Express, entityManager: EntityManager) {
   // app.use(passport.session());
   // Simple route
 
-  app.get('/', (req, res) => {
+  const router = express.Router();
+  router.use('/auth', authRouter);
+
+  router.get('/', (req, res) => {
     res.json({ message: 'Welcome to the RUCOGS backend API!' });
   });
-
-  app.use('/auth', authRouter);
+  
+  app.use(ServerConfig.baseUrl, router);
 }
 
 startServer();

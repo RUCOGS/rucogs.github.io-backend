@@ -1,4 +1,4 @@
-import { SecurityDomain } from "@src/config/entity-manager.configurer";
+import { SecurityDomain } from "@src/controllers/entity-manager.controller";
 import { ProjectMemberRoleCodeRanking, UserRoleCodeRanking } from "@src/controllers/auth.controller";
 import { RoleCode } from "@src/generated/model.types";
 import { EntityManager } from "@src/generated/typetta";

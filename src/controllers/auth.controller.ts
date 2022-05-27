@@ -10,7 +10,7 @@ import OAuth2Strategy, { VerifyFunction } from 'passport-oauth2';
 import { RoleCode, User } from '@src/generated/model.types';
 import { EntityManager, UserInsert } from '@src/generated/typetta';
 import { Context } from '@src/context';
-import { createUnsecureEntityManager, SecurityContext, SecurityDomain } from '@src/config/entity-manager.configurer';
+import { createUnsecureEntityManager, SecurityContext, SecurityDomain } from '@src/controllers/entity-manager.controller';
 import { PERMISSION, projection } from '@twinlogix/typetta';
 import { ObjectId } from 'mongodb';
 
