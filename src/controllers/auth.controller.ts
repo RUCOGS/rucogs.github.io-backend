@@ -122,11 +122,11 @@ function getOAuthStrategyPassportCallback<TProfile extends passport.Profile>(ent
   }
 }
 
-export type AuthTokenPayload = {
+export type AuthPayload = {
   userId: string;
 }
 
-export async function generateAuthToken(payload: AuthTokenPayload) {
+export async function generateAuthToken(payload: AuthPayload) {
   return new Promise<string>((resolve, reject) => { 
     jwt.sign(payload, AuthConfig.jwt.secret, {
         expiresIn: '7d',
@@ -141,16 +141,48 @@ export async function generateAuthToken(payload: AuthTokenPayload) {
   });
 }
 
-export async function authenticateAuthToken(req: express.Request) {
-  const authHeader = req.headers["authorization"] as string;
-  const token = authHeader && authHeader.split(' ')[1];
+export const AuthScheme = {
+  BasicRoot: "basic-root",
+  Bearer: "bearer"
+}
 
-  if (token == null)
-    throw new Error("Authentication token is malformed!");
+export async function authenticate(req: express.Request): Promise<[authScheme: string, payload: AuthPayload]>{
+  const authHeader = req.headers['authorization'];
+  if (!authHeader)
+    throw new Error("Protected GraphQL endpoint must have authorization in request!");
+  const args = authHeader.split(' ');
   
-  return await new Promise<AuthTokenPayload>((resolve, reject) => {
+  const authScheme = args[0].toLowerCase();
+  switch (authScheme) {
+    case AuthScheme.BasicRoot:
+      return [authScheme, await authenticateBasicRootUserPassword(args)];
+    case AuthScheme.Bearer:
+      return [authScheme, await authenticateBearerToken(args)];
+    default:
+      throw new Error("Unknown authentication scheme.");
+  }
+}
+
+export async function authenticateBasicRootUserPassword(args: string[]): Promise<AuthPayload> {
+  if (args.length !== 2 || args[0].toLowerCase() !== AuthScheme.BasicRoot)
+    throw new Error("Invalid user password authentication!");
+  const usernamePassword = args[1].split(':');
+  if (usernamePassword.length !== 2)
+    throw new Error("Basic authentication needs username and password. Format: 'basic username:password'.")
+  const authorized = AuthConfig.rootUsers.some(user => user.username === usernamePassword[0] && user.password === usernamePassword[1]);
+  if (!authorized)
+    throw new Error("Invalid username/password.");
+  return { userId: usernamePassword[0] };
+}
+
+export async function authenticateBearerToken(args: string[]): Promise<AuthPayload> {
+  if (args.length !== 2 || args[0].toLowerCase() !== AuthScheme.Bearer)
+    throw new Error("Invalid JWT authentication!");
+  
+  const token = args[1];
+  return await new Promise<AuthPayload>((resolve, reject) => {
     jwt.verify(token, AuthConfig.jwt.secret, (err, decoded) => {
-      const payload = decoded as AuthTokenPayload;
+      const payload = decoded as AuthPayload;
 
       if (err || !payload) {
         return reject(err);

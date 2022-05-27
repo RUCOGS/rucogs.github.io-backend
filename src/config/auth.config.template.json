@@ -1,4 +1,10 @@
 {
+	"rootUsers": [
+		{
+			"username": "",
+			"password": ""
+		}
+	],
 	"jwt": {
 		"secret": ""
 	},
