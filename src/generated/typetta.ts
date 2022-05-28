@@ -658,11 +658,19 @@ export function userSchema(): T.Schema<types.Scalars> {
       type: 'scalar',
       scalar: 'String',
     },
+    bio: {
+      type: 'scalar',
+      scalar: 'String',
+    },
     createdAt: {
       type: 'scalar',
       scalar: 'Date',
       required: true,
       generationStrategy: 'generator',
+    },
+    displayName: {
+      type: 'scalar',
+      scalar: 'String',
     },
     email: {
       type: 'scalar',
@@ -687,10 +695,6 @@ export function userSchema(): T.Schema<types.Scalars> {
       isListElementRequired: true,
       required: true,
       isList: true,
-    },
-    name: {
-      type: 'scalar',
-      scalar: 'String',
     },
     projectMembers: {
       type: 'relation',
@@ -725,16 +729,22 @@ export function userSchema(): T.Schema<types.Scalars> {
       required: true,
       isList: true,
     },
+    username: {
+      type: 'scalar',
+      scalar: 'String',
+    },
   }
 }
 
 type UserFilterFields = {
   avatarLink?: types.Scalars['String'] | null | T.EqualityOperators<types.Scalars['String']> | T.ElementOperators | T.StringOperators
   bannerLink?: types.Scalars['String'] | null | T.EqualityOperators<types.Scalars['String']> | T.ElementOperators | T.StringOperators
+  bio?: types.Scalars['String'] | null | T.EqualityOperators<types.Scalars['String']> | T.ElementOperators | T.StringOperators
   createdAt?: types.Scalars['Date'] | null | T.EqualityOperators<types.Scalars['Date']> | T.ElementOperators
+  displayName?: types.Scalars['String'] | null | T.EqualityOperators<types.Scalars['String']> | T.ElementOperators | T.StringOperators
   email?: types.Scalars['String'] | null | T.EqualityOperators<types.Scalars['String']> | T.ElementOperators | T.StringOperators
   id?: types.Scalars['ID'] | null | T.EqualityOperators<types.Scalars['ID']> | T.ElementOperators
-  name?: types.Scalars['String'] | null | T.EqualityOperators<types.Scalars['String']> | T.ElementOperators | T.StringOperators
+  username?: types.Scalars['String'] | null | T.EqualityOperators<types.Scalars['String']> | T.ElementOperators | T.StringOperators
 }
 export type UserFilter = UserFilterFields & T.LogicalOperators<UserFilterFields | UserRawFilter>
 export type UserRawFilter = () => M.Filter<M.Document>
@@ -773,37 +783,43 @@ export type UserRelations = {
 export type UserProjection = {
   avatarLink?: boolean
   bannerLink?: boolean
+  bio?: boolean
   createdAt?: boolean
+  displayName?: boolean
   email?: boolean
   id?: boolean
   loginIdentities?: UserLoginIdentityProjection | boolean
-  name?: boolean
   projectMembers?: ProjectMemberProjection | boolean
   roles?: UserRoleProjection | boolean
   socials?: UserSocialProjection | boolean
+  username?: boolean
 }
 export type UserParam<P extends UserProjection> = T.ParamProjection<types.User, UserProjection, P>
 
-export type UserSortKeys = 'avatarLink' | 'bannerLink' | 'createdAt' | 'email' | 'id' | 'name'
+export type UserSortKeys = 'avatarLink' | 'bannerLink' | 'bio' | 'createdAt' | 'displayName' | 'email' | 'id' | 'username'
 export type UserSort = Partial<Record<UserSortKeys, T.SortDirection>>
 export type UserRawSort = () => M.Sort
 
 export type UserUpdate = {
   avatarLink?: types.Scalars['String'] | null
   bannerLink?: types.Scalars['String'] | null
+  bio?: types.Scalars['String'] | null
   createdAt?: types.Scalars['Date']
+  displayName?: types.Scalars['String'] | null
   email?: types.Scalars['String']
   id?: types.Scalars['ID']
-  name?: types.Scalars['String'] | null
+  username?: types.Scalars['String'] | null
 }
 export type UserRawUpdate = () => M.UpdateFilter<M.Document>
 
 export type UserInsert = {
   avatarLink?: null | types.Scalars['String']
   bannerLink?: null | types.Scalars['String']
+  bio?: null | types.Scalars['String']
   createdAt?: null | types.Scalars['Date']
+  displayName?: null | types.Scalars['String']
   email: types.Scalars['String']
-  name?: null | types.Scalars['String']
+  username?: null | types.Scalars['String']
 }
 
 type UserDAOGenerics<MetadataType, OperationMetadataType> = T.MongoDBDAOGenerics<
@@ -1179,7 +1195,7 @@ export function userSocialSchema(): T.Schema<types.Scalars> {
       scalar: 'String',
       required: true,
     },
-    name: {
+    platform: {
       type: 'scalar',
       scalar: 'String',
       required: true,
@@ -1198,14 +1214,20 @@ export function userSocialSchema(): T.Schema<types.Scalars> {
       scalar: 'ID',
       required: true,
     },
+    username: {
+      type: 'scalar',
+      scalar: 'String',
+      required: true,
+    },
   }
 }
 
 type UserSocialFilterFields = {
   id?: types.Scalars['ID'] | null | T.EqualityOperators<types.Scalars['ID']> | T.ElementOperators
   link?: types.Scalars['String'] | null | T.EqualityOperators<types.Scalars['String']> | T.ElementOperators | T.StringOperators
-  name?: types.Scalars['String'] | null | T.EqualityOperators<types.Scalars['String']> | T.ElementOperators | T.StringOperators
+  platform?: types.Scalars['String'] | null | T.EqualityOperators<types.Scalars['String']> | T.ElementOperators | T.StringOperators
   userId?: types.Scalars['ID'] | null | T.EqualityOperators<types.Scalars['ID']> | T.ElementOperators
+  username?: types.Scalars['String'] | null | T.EqualityOperators<types.Scalars['String']> | T.ElementOperators | T.StringOperators
 }
 export type UserSocialFilter = UserSocialFilterFields & T.LogicalOperators<UserSocialFilterFields | UserSocialRawFilter>
 export type UserSocialRawFilter = () => M.Filter<M.Document>
@@ -1215,28 +1237,31 @@ export type UserSocialRelations = Record<never, string>
 export type UserSocialProjection = {
   id?: boolean
   link?: boolean
-  name?: boolean
+  platform?: boolean
   user?: UserProjection | boolean
   userId?: boolean
+  username?: boolean
 }
 export type UserSocialParam<P extends UserSocialProjection> = T.ParamProjection<types.UserSocial, UserSocialProjection, P>
 
-export type UserSocialSortKeys = 'id' | 'link' | 'name' | 'userId'
+export type UserSocialSortKeys = 'id' | 'link' | 'platform' | 'userId' | 'username'
 export type UserSocialSort = Partial<Record<UserSocialSortKeys, T.SortDirection>>
 export type UserSocialRawSort = () => M.Sort
 
 export type UserSocialUpdate = {
   id?: types.Scalars['ID']
   link?: types.Scalars['String']
-  name?: types.Scalars['String']
+  platform?: types.Scalars['String']
   userId?: types.Scalars['ID']
+  username?: types.Scalars['String']
 }
 export type UserSocialRawUpdate = () => M.UpdateFilter<M.Document>
 
 export type UserSocialInsert = {
   link: types.Scalars['String']
-  name: types.Scalars['String']
+  platform: types.Scalars['String']
   userId: types.Scalars['ID']
+  username: types.Scalars['String']
 }
 
 type UserSocialDAOGenerics<MetadataType, OperationMetadataType> = T.MongoDBDAOGenerics<

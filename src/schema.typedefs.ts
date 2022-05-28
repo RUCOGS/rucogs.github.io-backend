@@ -33,7 +33,9 @@ type User @entity @mongodb {
   id: ID! @id(from: "db") @alias(value: "_id")
   createdAt: Date! @default(from: "generator")
   email: String!
-  name: String
+  username: String
+  displayName: String
+  bio: String
   bannerLink: String
   avatarLink: String  
   loginIdentities: [UserLoginIdentity!]! @foreignRef(refFrom: "userId")
@@ -52,7 +54,8 @@ type UserRole @entity @mongodb {
 
 type UserSocial @entity @mongodb {
   id: ID! @id(from: "db") @alias(value: "_id")
-  name: String!
+  platform: String!
+  username: String!
   link: String!
   user: User! @innerRef
   userId: ID!

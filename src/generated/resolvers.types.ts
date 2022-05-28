@@ -302,14 +302,16 @@ export type RoleResolvers<ContextType = any, ParentType extends ResolversParentT
 export type UserResolvers<ContextType = any, ParentType extends ResolversParentTypes['User'] = ResolversParentTypes['User']> = {
   avatarLink?: Resolver<types.Maybe<ResolversTypes['String']>, ParentType, ContextType>
   bannerLink?: Resolver<types.Maybe<ResolversTypes['String']>, ParentType, ContextType>
+  bio?: Resolver<types.Maybe<ResolversTypes['String']>, ParentType, ContextType>
   createdAt?: Resolver<ResolversTypes['Date'], ParentType, ContextType>
+  displayName?: Resolver<types.Maybe<ResolversTypes['String']>, ParentType, ContextType>
   email?: Resolver<ResolversTypes['String'], ParentType, ContextType>
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>
   loginIdentities?: Resolver<Array<ResolversTypes['UserLoginIdentity']>, ParentType, ContextType>
-  name?: Resolver<types.Maybe<ResolversTypes['String']>, ParentType, ContextType>
   projectMembers?: Resolver<Array<ResolversTypes['ProjectMember']>, ParentType, ContextType>
   roles?: Resolver<Array<ResolversTypes['UserRole']>, ParentType, ContextType>
   socials?: Resolver<Array<ResolversTypes['UserSocial']>, ParentType, ContextType>
+  username?: Resolver<types.Maybe<ResolversTypes['String']>, ParentType, ContextType>
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>
 }
 
@@ -335,9 +337,10 @@ export type UserRoleResolvers<ContextType = any, ParentType extends ResolversPar
 export type UserSocialResolvers<ContextType = any, ParentType extends ResolversParentTypes['UserSocial'] = ResolversParentTypes['UserSocial']> = {
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>
   link?: Resolver<ResolversTypes['String'], ParentType, ContextType>
-  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>
+  platform?: Resolver<ResolversTypes['String'], ParentType, ContextType>
   user?: Resolver<ResolversTypes['User'], ParentType, ContextType>
   userId?: Resolver<ResolversTypes['ID'], ParentType, ContextType>
+  username?: Resolver<ResolversTypes['String'], ParentType, ContextType>
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>
 }
 

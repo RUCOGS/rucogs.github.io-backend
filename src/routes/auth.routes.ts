@@ -19,6 +19,9 @@ router.use(function(req, res, next) {
   next();
 });
 
+// ----- REFRESH TOKENS ----- //
+// router.post('/token', authController.processRefreshToken);
+
 // ----- SETUP OAUTH ----- //
 for (const providerName of keys(AuthConfig.oauth)) {
   const provider = AuthConfig.oauth[providerName];

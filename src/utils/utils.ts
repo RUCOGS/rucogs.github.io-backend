@@ -1,4 +1,4 @@
-import { SecurityDomain } from "@src/controllers/entity-manager.controller";
+import { AnyEntityManager, SecurityDomain } from "@src/controllers/entity-manager.controller";
 import { ProjectMemberRoleCodeRanking, UserRoleCodeRanking } from "@src/controllers/auth.controller";
 import { RoleCode } from "@src/generated/model.types";
 import { EntityManager } from "@src/generated/typetta";
@@ -9,6 +9,26 @@ interface FindOrCreateParams {
   changes: any;
   record?: any;
 }
+
+// Compares the properties of one object against the
+// properties of another object.
+export function isShallowEquals(o1: any, o2: any){
+    for(var p in o1){
+        if(o1.hasOwnProperty(p)){
+            if(o1[p] !== o2[p]){
+                return false;
+            }
+        }
+    }
+    for(var p in o2){
+        if(o2.hasOwnProperty(p)){
+            if(o1[p] !== o2[p]){
+                return false;
+            }
+        }
+    }
+    return true;
+};
 
 export class TwoWayMap<K extends string | number | symbol, V extends string | number | symbol> {
   map: Record<K, V>;
@@ -78,7 +98,7 @@ export namespace Extensions {
 }
 
 export namespace EntityManagerExtensions {
-  export async function getOwnedProjectIds(entityManager: EntityManager, userId: string) {
+  export async function getOwnedProjectIds(entityManager: AnyEntityManager, userId: string) {
     const members = await entityManager.projectMember.findAll({
       filter: {
         userId: { eq: userId },
@@ -94,7 +114,7 @@ export namespace EntityManagerExtensions {
     return ownedProjectIds;
   }
 
-  export async function getUserMaxRoleCode(entityManager: EntityManager, userId: string) {
+  export async function getUserMaxRoleCode(entityManager: AnyEntityManager, userId: string) {
     const roles = await entityManager.userRole.findAll({
       filter: {
         userId: userId
@@ -107,7 +127,7 @@ export namespace EntityManagerExtensions {
     return maxRoleCode;
   }
 
-  export async function getProjectMemberMaxRoleCode(entityManager: EntityManager, projectMemberId: string) {
+  export async function getProjectMemberMaxRoleCode(entityManager: AnyEntityManager, projectMemberId: string) {
     const roles = await entityManager.projectMemberRole.findAll({
       filter: {
         projectMemberId: projectMemberId
@@ -120,7 +140,7 @@ export namespace EntityManagerExtensions {
     return maxRoleCode;
   }
 
-  export async function getUserRoleDomains(entityManager: EntityManager, userId: string): Promise<SecurityDomain[]> {
+  export async function getUserRoleDomains(entityManager: AnyEntityManager, userId: string): Promise<SecurityDomain[]> {
     const maxRoleCode = await getUserMaxRoleCode(entityManager, userId);
     
     // Add all roles with lower precedence
@@ -141,7 +161,7 @@ export namespace EntityManagerExtensions {
     return domains;
   }
 
-  export async function getProjectMemberRoleDomains(entityManager: EntityManager, projectMemberId: string): Promise<SecurityDomain[]> {
+  export async function getProjectMemberRoleDomains(entityManager: AnyEntityManager, projectMemberId: string): Promise<SecurityDomain[]> {
     const maxRoleCode = await getProjectMemberMaxRoleCode(entityManager, projectMemberId);
     
     // Add all roles with lower precedence

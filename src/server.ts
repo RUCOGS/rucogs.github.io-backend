@@ -1,6 +1,5 @@
 import { MongoClient } from 'mongodb';
 import { resolvers as generatedResolvers } from '@src/generated/resolvers'
-import { resolvers as customResolvers } from '@src/resolvers'
 import { mergeTypeDefs } from '@graphql-tools/merge'
 import inputTypeDefs from '@src/generated/operations'
 import schemaTypeDefs from '@src/schema.typedefs'
@@ -13,12 +12,15 @@ import express from 'express';
 import cors from 'cors';
 import passport from 'passport';
 import authRouter from '@src/routes/auth.routes';
+import fileUploadRouter from '@src/routes/file-upload.routes';
 import http from 'http';
 import { createSecureEntityManager, createUnsecureEntityManager, getOperationMetadataFromRequest } from '@src/controllers/entity-manager.controller';
 import { authenticate, authenticateBearerToken, authenticateBasicRootUserPassword, AuthScheme, configPassport, userToSecurityContext } from '@src/controllers/auth.controller';
 import { Db } from 'mongodb';
 import ServerConfig from '@src/config/server.config.json';
 import AuthConfig from '@src/config/auth.config.json';
+import { ApolloResolversContext, Context, HasContext, RequestContext, RequestWithDefaultContext } from './context';
+
 
 async function startServer() {
   const mongoClient = new MongoClient(ServerConfig.mongodbUrl);
@@ -48,16 +50,16 @@ async function startServer() {
 async function startApolloServer(app: express.Application, httpServer: http.Server, mongoDb: Db, endpointPath: string, apolloConfig: Config<ExpressContext>) {
   const server = new ApolloServer({
     ...apolloConfig,
+    debug: false,
     typeDefs: mergeTypeDefs([
       inputTypeDefs,
       schemaTypeDefs,
       typettaDirectivesTypeDefs,
     ]),
     resolvers: mergeResolvers([
-      generatedResolvers,
-      customResolvers
+      generatedResolvers
     ]),
-    context: async ({ req }) => {
+    context: async ({ req }): Promise<ApolloResolversContext> => {
       const [authScheme, authPayload] = await authenticate(req);
       switch (authScheme) {
         case AuthScheme.BasicRoot: {
@@ -111,11 +113,9 @@ function mergeResolvers(resolversArr: any[]) {
 function configExpress(app: Express, entityManager: EntityManager) {
   // ----- CORS ----- //
   // Enable CORS for a specific origin
-  // const corsOptions = {
-  //   origin: 'http://localhost:8081'
-  // };
-  //
-  // app.use(cors(corsOptions));
+  // app.use(cors({
+  //   origin: "http://localhost:8081"
+  // }));
 
   // TODO: Remove in production builds
   // Enable CORS for any origin
@@ -135,10 +135,21 @@ function configExpress(app: Express, entityManager: EntityManager) {
   // We are using JWTs instead of sessions in order
   // to avoid having to store session data on the server.
   // app.use(passport.session());
-  // Simple route
+  
+  // ----- REQUEST CONTEXT ----- //
+  // We need to inject a context into `req` so we
+  // can use it in any of our requests.
+  app.use((req: RequestWithDefaultContext, res, next) => {
+    req.context = {
+      entityManager
+    }
+    next();
+  })
 
   const router = express.Router();
   router.use('/auth', authRouter);
+  router.use('/upload', fileUploadRouter);
+  router.use('/cdn/', express.static("src/uploads"))
 
   router.get('/', (req, res) => {
     res.json({ message: 'Welcome to the RUCOGS backend API!' });

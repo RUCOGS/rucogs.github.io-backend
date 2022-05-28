@@ -278,32 +278,40 @@ export default gql`
   input UserInsertInput {
     avatarLink: String
     bannerLink: String
+    bio: String
     createdAt: Date
+    displayName: String
     email: String!
-    name: String
+    username: String
   }
   input UserUpdateInput {
     avatarLink: String
     bannerLink: String
+    bio: String
     createdAt: Date
+    displayName: String
     email: String
-    name: String
+    username: String
   }
   input UserSortInput {
     avatarLink: SortDirection
     bannerLink: SortDirection
+    bio: SortDirection
     createdAt: SortDirection
+    displayName: SortDirection
     email: SortDirection
     id: SortDirection
-    name: SortDirection
+    username: SortDirection
   }
   input UserFilterInput {
     avatarLink: StringFilterInput
     bannerLink: StringFilterInput
+    bio: StringFilterInput
     createdAt: DateFilterInput
+    displayName: StringFilterInput
     email: StringFilterInput
     id: IDFilterInput
-    name: StringFilterInput
+    username: StringFilterInput
     and_: [UserFilterInput!]
     or_: [UserFilterInput!]
     nor_: [UserFilterInput!]
@@ -403,25 +411,29 @@ export default gql`
   ########### UserSocial ###########
   input UserSocialInsertInput {
     link: String!
-    name: String!
+    platform: String!
     userId: ID!
+    username: String!
   }
   input UserSocialUpdateInput {
     link: String
-    name: String
+    platform: String
     userId: ID
+    username: String
   }
   input UserSocialSortInput {
     id: SortDirection
     link: SortDirection
-    name: SortDirection
+    platform: SortDirection
     userId: SortDirection
+    username: SortDirection
   }
   input UserSocialFilterInput {
     id: IDFilterInput
     link: StringFilterInput
-    name: StringFilterInput
+    platform: StringFilterInput
     userId: IDFilterInput
+    username: StringFilterInput
     and_: [UserSocialFilterInput!]
     or_: [UserSocialFilterInput!]
     nor_: [UserSocialFilterInput!]

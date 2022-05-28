@@ -3,6 +3,7 @@ import { EntityManager } from "@src/generated/typetta";
 import { PERMISSION, projection, UserInputDriverDataTypeAdapterMap } from "@twinlogix/typetta";
 import { MongoClient, Db, ObjectId } from 'mongodb';
 import express from 'express';
+import { getSecurityPolicies } from "./auth.controller";
 
 export type SecurityDomain = { 
   userId?: string;
@@ -18,6 +19,10 @@ export const EMPTY_SECURITY_DOMAIN = {
   projectMemberId: null,
 }
 
+export type EntityManagerMetadata = {
+  securityDomain: OperationSecurityDomain;
+}
+
 export type OperationSecurityDomain = { 
   [K in keyof SecurityDomain]: SecurityDomain[K][];
 }
@@ -27,8 +32,8 @@ export type SecurityContext = {
 export type SecureEntityManagerMetadata = {
   securityDomain: OperationSecurityDomain;
 }
-export type SecureEntityManager = EntityManager<never, SecureEntityManagerMetadata, Permission, SecurityDomain>
-let unsafeDao: SecureEntityManager
+export type AnyEntityManager = EntityManager | SecureEntityManager;
+export type SecureEntityManager = EntityManager<never, SecureEntityManagerMetadata, Permission, SecurityDomain>;
 
 function getScalars(): UserInputDriverDataTypeAdapterMap<Scalars, "mongo"> {
   return {
@@ -66,12 +71,7 @@ export function createUnsecureEntityManager(db: Db): EntityManager {
 }
 
 export function createSecureEntityManager(securityContext: SecurityContext | undefined, db: Db, metadata: SecureEntityManagerMetadata | undefined = undefined): SecureEntityManager {
-  const test = {
-    context: {
-      permissions: securityContext ?? {},
-    }
-  }
-  return new EntityManager<never, { securityDomain: OperationSecurityDomain }, Permission, SecurityDomain>({
+  return new EntityManager<never, EntityManagerMetadata, Permission, SecurityDomain>({
     mongodb: {
       default: db,
     },
@@ -81,86 +81,7 @@ export function createSecureEntityManager(securityContext: SecurityContext | und
       context: {
         permissions: securityContext ?? {},
       },
-      policies: {
-        user: {
-          domain: {
-            userId: "id",
-            projectId: null,
-            roleCode: null,
-            projectMemberId: null,
-          },
-          permissions: {
-            UPDATE_PROFILE: PERMISSION.UPDATE_ONLY,
-            DELETE_PROFILE: PERMISSION.DELETE_ONLY,
-            READ_PROFILE_PRIVATE: PERMISSION.READ_ONLY
-          }, 
-          defaultPermissions: {
-            read: {
-              avatarLink: true,
-              bannerLink: true,
-              createdAt: true,
-              id: true,
-              name: true,
-              projectMembers: true,
-              roles: true,
-              socials: true,
-              
-              email: false,
-              loginIdentities: false,
-            }
-          },
-        },
-        project: {
-          domain: {
-            ...EMPTY_SECURITY_DOMAIN,
-            projectId: "id",
-          },
-          permissions: {
-            CREATE_PROJECT: PERMISSION.CREATE_ONLY,
-            DELETE_PROJECT: PERMISSION.DELETE_ONLY,
-            UPDATE_PROJECT: PERMISSION.UPDATE_ONLY,
-          },
-          defaultPermissions: PERMISSION.READ_ONLY
-        },
-        userLoginIdentity: {
-          domain: {
-            ...EMPTY_SECURITY_DOMAIN,
-            userId: "userId",
-          },
-          permissions: {
-            UPDATE_PROFILE: PERMISSION.ALLOW,
-          }
-        },
-        userSocial: {
-          domain: {
-            ...EMPTY_SECURITY_DOMAIN,
-            userId: "userId",
-          },
-          permissions: {
-            UPDATE_PROFILE: PERMISSION.ALLOW,
-          }
-        },
-        userRole: {
-          domain: {
-            ...EMPTY_SECURITY_DOMAIN,
-            roleCode: "roleCode",
-            userId: "userId",
-          },
-          permissions: {
-            MANAGE_USER_ROLES: PERMISSION.ALLOW,
-          }
-        },
-        projectMemberRole: {
-          domain: {
-            ...EMPTY_SECURITY_DOMAIN,
-            roleCode: "roleCode",
-            projectMemberId: "projectMemberId",
-          },
-          permissions: {
-            MANAGE_PROJECT_MEMBER_ROLES: PERMISSION.ALLOW,
-          }
-        }
-      },
+      policies: getSecurityPolicies(),
       defaultPermission: PERMISSION.DENY,
       // 'metadata' is the metadata passed into a EntityManager call.
       // Here you're specify how you want to fetch the current call's domain.

@@ -571,26 +571,30 @@ export type User = {
   __typename?: 'User'
   avatarLink?: Maybe<Scalars['String']>
   bannerLink?: Maybe<Scalars['String']>
+  bio?: Maybe<Scalars['String']>
   createdAt: Scalars['Date']
+  displayName?: Maybe<Scalars['String']>
   email: Scalars['String']
   id: Scalars['ID']
   loginIdentities: Array<UserLoginIdentity>
-  name?: Maybe<Scalars['String']>
   projectMembers: Array<ProjectMember>
   roles: Array<UserRole>
   socials: Array<UserSocial>
+  username?: Maybe<Scalars['String']>
 }
 
 export type UserFilterInput = {
   and_?: InputMaybe<Array<UserFilterInput>>
   avatarLink?: InputMaybe<StringFilterInput>
   bannerLink?: InputMaybe<StringFilterInput>
+  bio?: InputMaybe<StringFilterInput>
   createdAt?: InputMaybe<DateFilterInput>
+  displayName?: InputMaybe<StringFilterInput>
   email?: InputMaybe<StringFilterInput>
   id?: InputMaybe<IdFilterInput>
-  name?: InputMaybe<StringFilterInput>
   nor_?: InputMaybe<Array<UserFilterInput>>
   or_?: InputMaybe<Array<UserFilterInput>>
+  username?: InputMaybe<StringFilterInput>
 }
 
 export type UserFindInput = {
@@ -604,9 +608,11 @@ export type UserFindInput = {
 export type UserInsertInput = {
   avatarLink?: InputMaybe<Scalars['String']>
   bannerLink?: InputMaybe<Scalars['String']>
+  bio?: InputMaybe<Scalars['String']>
   createdAt?: InputMaybe<Scalars['Date']>
+  displayName?: InputMaybe<Scalars['String']>
   email: Scalars['String']
-  name?: InputMaybe<Scalars['String']>
+  username?: InputMaybe<Scalars['String']>
 }
 
 export type UserLoginIdentity = {
@@ -722,19 +728,21 @@ export type UserSocial = {
   __typename?: 'UserSocial'
   id: Scalars['ID']
   link: Scalars['String']
-  name: Scalars['String']
+  platform: Scalars['String']
   user: User
   userId: Scalars['ID']
+  username: Scalars['String']
 }
 
 export type UserSocialFilterInput = {
   and_?: InputMaybe<Array<UserSocialFilterInput>>
   id?: InputMaybe<IdFilterInput>
   link?: InputMaybe<StringFilterInput>
-  name?: InputMaybe<StringFilterInput>
   nor_?: InputMaybe<Array<UserSocialFilterInput>>
   or_?: InputMaybe<Array<UserSocialFilterInput>>
+  platform?: InputMaybe<StringFilterInput>
   userId?: InputMaybe<IdFilterInput>
+  username?: InputMaybe<StringFilterInput>
 }
 
 export type UserSocialFindInput = {
@@ -747,8 +755,9 @@ export type UserSocialFindInput = {
 
 export type UserSocialInsertInput = {
   link: Scalars['String']
-  name: Scalars['String']
+  platform: Scalars['String']
   userId: Scalars['ID']
+  username: Scalars['String']
 }
 
 export type UserSocialRelationsFilterInput = {
@@ -758,29 +767,35 @@ export type UserSocialRelationsFilterInput = {
 export type UserSocialSortInput = {
   id?: InputMaybe<SortDirection>
   link?: InputMaybe<SortDirection>
-  name?: InputMaybe<SortDirection>
+  platform?: InputMaybe<SortDirection>
   userId?: InputMaybe<SortDirection>
+  username?: InputMaybe<SortDirection>
 }
 
 export type UserSocialUpdateInput = {
   link?: InputMaybe<Scalars['String']>
-  name?: InputMaybe<Scalars['String']>
+  platform?: InputMaybe<Scalars['String']>
   userId?: InputMaybe<Scalars['ID']>
+  username?: InputMaybe<Scalars['String']>
 }
 
 export type UserSortInput = {
   avatarLink?: InputMaybe<SortDirection>
   bannerLink?: InputMaybe<SortDirection>
+  bio?: InputMaybe<SortDirection>
   createdAt?: InputMaybe<SortDirection>
+  displayName?: InputMaybe<SortDirection>
   email?: InputMaybe<SortDirection>
   id?: InputMaybe<SortDirection>
-  name?: InputMaybe<SortDirection>
+  username?: InputMaybe<SortDirection>
 }
 
 export type UserUpdateInput = {
   avatarLink?: InputMaybe<Scalars['String']>
   bannerLink?: InputMaybe<Scalars['String']>
+  bio?: InputMaybe<Scalars['String']>
   createdAt?: InputMaybe<Scalars['Date']>
+  displayName?: InputMaybe<Scalars['String']>
   email?: InputMaybe<Scalars['String']>
-  name?: InputMaybe<Scalars['String']>
+  username?: InputMaybe<Scalars['String']>
 }

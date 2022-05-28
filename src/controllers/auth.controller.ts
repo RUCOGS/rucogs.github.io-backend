@@ -2,16 +2,16 @@ import passport, { PassportStatic } from 'passport';
 import jwt, { VerifyCallback } from 'jsonwebtoken';
 import AuthConfig from '@src/config/auth.config.json';
 import { RequestHandler } from 'express';
-import { EntityManagerExtensions, Extensions, TwoWayMap } from '@src/utils/utils'
+import { EntityManagerExtensions, Extensions, isShallowEquals, TwoWayMap } from '@src/utils/utils'
 import express from 'express';
 import { Strategy as DiscordStrategy } from 'passport-discord';
 import { Strategy as GoogleStrategy, Profile as GoogleStrategyProfile} from 'passport-google-oauth20';
 import OAuth2Strategy, { VerifyFunction } from 'passport-oauth2';
 import { RoleCode, User } from '@src/generated/model.types';
-import { EntityManager, UserInsert } from '@src/generated/typetta';
-import { Context } from '@src/context';
-import { createUnsecureEntityManager, SecurityContext, SecurityDomain } from '@src/controllers/entity-manager.controller';
-import { PERMISSION, projection } from '@twinlogix/typetta';
+import { EntityManager, UserInsert, UserUpdate } from '@src/generated/typetta';
+import { Context, HasContext, RequestWithDefaultContext } from '@src/context';
+import { AnyEntityManager, createUnsecureEntityManager, EMPTY_SECURITY_DOMAIN, OperationSecurityDomain, SecureEntityManager, SecurityContext, SecurityDomain } from '@src/controllers/entity-manager.controller';
+import { EntityManagerSecurtyPolicy, PERMISSION, projection } from '@twinlogix/typetta';
 import { ObjectId } from 'mongodb';
 
 export const Permissions = {
@@ -40,9 +40,10 @@ export function configPassport(passport: PassportStatic, entityManager: EntityMa
         (profile) => profile.id, 
         (profile) => ({
           email: profile.email ?? "",
-          name: profile.displayName,
+          username: profile.username,
           avatarLink: profile.avatar ? `https://cdn.discordapp.com/avatars/${profile.id}/${profile.avatar}.png?size=256` : "",
           bannerLink: profile.banner ? `https://cdn.discordapp.com/banners/${profile.id}/${profile.banner}.png?size=512` : "",
+          displayName: profile.username,
         }),
         (profile) => ({ })
       )
@@ -52,7 +53,8 @@ export function configPassport(passport: PassportStatic, entityManager: EntityMa
         (profile) => profile.id, 
         (profile) => ({
           email: profile._json.email ?? "",
-          name: profile.displayName,
+          username: profile.displayName,
+          displayName: profile.displayName,
           avatarLink: profile._json.picture ?? "",
         }),
         (profile) => ({ })
@@ -78,6 +80,7 @@ function getOAuthStrategyPassportCallback<TProfile extends passport.Profile>(ent
       });
 
       if (userLoginIdentity) {
+        // TODO: Turn this off in production
         const newUser = await entityManager.user.updateOne({
           filter: {
             id: userLoginIdentity.userId
@@ -126,21 +129,6 @@ export type AuthPayload = {
   userId: string;
 }
 
-export async function generateAuthToken(payload: AuthPayload) {
-  return new Promise<string>((resolve, reject) => { 
-    jwt.sign(payload, AuthConfig.jwt.secret, {
-        expiresIn: '7d',
-        issuer: 'rucogs.club'
-      }, 
-      (err, encoded) => {
-        if (err || !encoded) {
-          return reject(err);
-        }
-        resolve(encoded);
-    });
-  });
-}
-
 export const AuthScheme = {
   BasicRoot: "basic-root",
   Bearer: "bearer"
@@ -165,10 +153,10 @@ export async function authenticate(req: express.Request): Promise<[authScheme: s
 
 export async function authenticateBasicRootUserPassword(args: string[]): Promise<AuthPayload> {
   if (args.length !== 2 || args[0].toLowerCase() !== AuthScheme.BasicRoot)
-    throw new Error("Invalid user password authentication!");
+    throw new Error("Invalid user password authentication! Format: 'basic [username]:[password]'.");
   const usernamePassword = args[1].split(':');
   if (usernamePassword.length !== 2)
-    throw new Error("Basic authentication needs username and password. Format: 'basic username:password'.")
+    throw new Error("Basic authentication needs username and password. Format: 'basic [username]:[password]'.")
   const authorized = AuthConfig.rootUsers.some(user => user.username === usernamePassword[0] && user.password === usernamePassword[1]);
   if (!authorized)
     throw new Error("Invalid username/password.");
@@ -176,11 +164,23 @@ export async function authenticateBasicRootUserPassword(args: string[]): Promise
 }
 
 export async function authenticateBearerToken(args: string[]): Promise<AuthPayload> {
-  if (args.length !== 2 || args[0].toLowerCase() !== AuthScheme.Bearer)
-    throw new Error("Invalid JWT authentication!");
-  
-  const token = args[1];
-  return await new Promise<AuthPayload>((resolve, reject) => {
+  try {
+    if (args.length !== 2 || args[0].toLowerCase() !== AuthScheme.Bearer)
+      throw new Error("Invalid JWT authentication! Format: 'bearer [token]'.");
+    
+    const token = args[1];
+    const payload = await jwtVerifyAsync(token);
+    return payload;
+  } catch (error: any) {
+    let errorMessage = "Token unauthorized: ";
+    if (error instanceof Error)
+      errorMessage += error.message;
+    throw new Error(errorMessage);
+  }
+}
+
+export async function jwtVerifyAsync(token: string) {
+  return new Promise<AuthPayload>((resolve, reject) => {
     jwt.verify(token, AuthConfig.jwt.secret, (err, decoded) => {
       const payload = decoded as AuthPayload;
 
@@ -190,8 +190,42 @@ export async function authenticateBearerToken(args: string[]): Promise<AuthPaylo
 
       resolve(payload);
     });
-  })
+  });
 }
+
+export async function jwtSignAsync(payload: AuthPayload) {
+  return new Promise<string>((resolve, reject) => {
+    jwt.sign(payload, AuthConfig.jwt.secret, {
+        expiresIn: '7d',
+        issuer: 'rucogs.club'
+      }, 
+      (err, encoded) => {
+        if (err || !encoded) {
+          return reject(err);
+        }
+        resolve(encoded);
+    });
+  });
+}
+
+// export async function processRefreshToken(req: express.Request, res: express.Response, next: express.NextFunction) {
+//   const postData = req.body;
+//   if(postData.refreshToken) {
+//     const refreshPayload = await jwtVerifyAsync(postData.refreshToken);
+//     const payload: AuthPayload = {
+//       userId: 
+//     }
+    
+//     const token = await jwtSignAsync(refreshPayload);
+//     const response = {
+//       token: token,
+//       accessToken: token,
+//     }
+//     res.status(200).json(response);        
+//   } else {
+//     res.status(404).send('Invalid request')
+//   }
+// }
 
 // Authenticates with passport and sends a JWT accessToken back.
 export function passportAuthenticateUserAndSendAuthToken(strategy: string) {
@@ -207,7 +241,7 @@ export function passportAuthenticateUserAndSendAuthToken(strategy: string) {
       // Each passport strategy returns a different user,
       // therefore we have to customize how we return
       // a token using each type of user.
-      const authToken = await generateAuthToken({ userId: user.id });
+      const authToken = await jwtSignAsync({ userId: user.id });
       console.log(`Authenticated user:\n${JSON.stringify(user)}\n using strategy '${strategy}' with token '${authToken}'`);
 
       const message = JSON.stringify({
@@ -231,7 +265,139 @@ export const ProjectMemberRoleCodeRanking = new TwoWayMap<string, number>({
   [RoleCode.ProjectOwner]: 1,
 });
 
-export async function userToSecurityContext(entityManager: EntityManager, userId: string): Promise<SecurityContext> {
+// Checks if a security permissionmatches the current domain.
+// This method is used to check if a user has a certain permission,
+// given what we want to access.
+export function isPermissionValidForDomain(permission: true | SecurityDomain[] | undefined, operationDomain: OperationSecurityDomain) {
+  if (permission === undefined)
+    return false;
+  if (permission == true)
+    return true;
+  const validDomains = permission as SecurityDomain[];
+  for (const validDomain of validDomains) {
+    let matchedAllDomainProps = true;
+    for (const key in operationDomain) {
+      if (validDomain.hasOwnProperty(key)) {
+        // OperationSecurityDomain format:
+        // const operationDomain = {
+        //   userId: ["dsfdsf2023f8j3f", /*OR*/ "w023f920sdfdsf", /*OR*/ "fj230f89fjfef" ],
+        //   /*AND*/
+        //   roleCode: ["USER", /*OR*/ "MODERATOR", /*OR*/ "SUPER_ADMIN" ],
+        //   /*AND*/
+        //   roleCode: ["USER", /*OR*/ "MODERATOR", /*OR*/ "SUPER_ADMIN" ],
+        // }
+        // If we didn't get a match inside this array
+        if (!((<any>operationDomain)[key].some((x: any) => x === (<any>validDomain)[key]))) {
+          matchedAllDomainProps = false;
+          break;
+        }
+      }
+    }
+    if (matchedAllDomainProps) {
+      return true;
+    }
+  }
+  return false;
+}
+
+export function getSecurityPolicies(): any {
+  return {
+    user: {
+      domain: {
+        ...EMPTY_SECURITY_DOMAIN,
+        userId: "id",
+      },
+      permissions: {
+        UPDATE_PROFILE: PERMISSION.UPDATE_ONLY,
+        DELETE_PROFILE: PERMISSION.DELETE_ONLY,
+        READ_PROFILE_PRIVATE: PERMISSION.READ_ONLY
+      }, 
+      defaultPermissions: {
+        read: {
+          avatarLink: true,
+          bannerLink: true,
+          createdAt: true,
+          id: true,
+          name: true,
+          projectMembers: true,
+          roles: true,
+          socials: true,
+          
+          email: false,
+          loginIdentities: false,
+        }
+      },
+    },
+    project: {
+      domain: {
+        ...EMPTY_SECURITY_DOMAIN,
+        projectId: "id",
+      },
+      permissions: {
+        CREATE_PROJECT: PERMISSION.CREATE_ONLY,
+        DELETE_PROJECT: PERMISSION.DELETE_ONLY,
+        UPDATE_PROJECT: PERMISSION.UPDATE_ONLY,
+      },
+      defaultPermissions: PERMISSION.READ_ONLY
+    },
+    userLoginIdentity: {
+      domain: {
+        ...EMPTY_SECURITY_DOMAIN,
+        userId: "userId",
+      },
+      permissions: {
+        UPDATE_PROFILE: PERMISSION.ALLOW,
+      }
+    },
+    userSocial: {
+      domain: {
+        ...EMPTY_SECURITY_DOMAIN,
+        userId: "userId",
+      },
+      permissions: {
+        UPDATE_PROFILE: PERMISSION.ALLOW,
+      },
+      defaultPermissions: PERMISSION.READ_ONLY,
+    },
+    userRole: {
+      domain: {
+        ...EMPTY_SECURITY_DOMAIN,
+        roleCode: "roleCode",
+        userId: "userId",
+      },
+      permissions: {
+        MANAGE_USER_ROLES: PERMISSION.ALLOW,
+      }
+    },
+    projectMemberRole: {
+      domain: {
+        ...EMPTY_SECURITY_DOMAIN,
+        roleCode: "roleCode",
+        projectMemberId: "projectMemberId",
+      },
+      permissions: {
+        MANAGE_PROJECT_MEMBER_ROLES: PERMISSION.ALLOW,
+      }
+    }
+  }
+}
+
+export async function authAddSecurityContext(req: RequestWithDefaultContext, res: express.Response, next: express.NextFunction) {
+  if (!req.context)
+    return;
+  
+  try {
+    const entityManager = req.context.entityManager;
+    const [authScheme, authPayload] = await authenticate(req);
+    const securityContext = await userToSecurityContext(entityManager, authPayload.userId);
+    req.context.securityContext = securityContext;
+    next();
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function userToSecurityContext(entityManager: AnyEntityManager, userId: string): Promise<SecurityContext> {
   const userRoles = await entityManager.userRole.findAll({
     filter: {
       userId: { eq: userId }
@@ -250,7 +416,7 @@ export async function userToSecurityContext(entityManager: EntityManager, userId
   return securityContext;
 }
 
-export async function userRoleCodeToSecurityContext(entityManager: EntityManager, userId: string, role: RoleCode): Promise<SecurityContext> {
+export async function userRoleCodeToSecurityContext(entityManager: AnyEntityManager, userId: string, role: RoleCode): Promise<SecurityContext> {
   
   switch (role) {
     case RoleCode.User:
