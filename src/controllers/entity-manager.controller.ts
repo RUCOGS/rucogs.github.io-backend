@@ -1,37 +1,12 @@
 import { Permission, Scalars } from "@src/generated/model.types";
 import { EntityManager } from "@src/generated/typetta";
-import { PERMISSION, projection, UserInputDriverDataTypeAdapterMap } from "@twinlogix/typetta";
-import { MongoClient, Db, ObjectId } from 'mongodb';
+import { PERMISSION, UserInputDriverDataTypeAdapterMap } from "@twinlogix/typetta";
+import { Db, ObjectId } from 'mongodb';
+import { EntityManagerMetadata, SecureEntityManagerMetadata, SecurityContext, SecurityDomain } from "@src/shared/security.types";
+import { SecurityPolicies } from "@src/controllers/auth.controller";
 import express from 'express';
-import { getSecurityPolicies } from "./auth.controller";
+import { HttpError } from "@src/shared/utils";
 
-export type SecurityDomain = { 
-  userId?: string;
-  projectId?: string;
-  roleCode?: string;
-  projectMemberId?: string;
-}
-
-export const EMPTY_SECURITY_DOMAIN = {
-  userId: null,
-  projectId: null,
-  roleCode: null,
-  projectMemberId: null,
-}
-
-export type EntityManagerMetadata = {
-  securityDomain: OperationSecurityDomain;
-}
-
-export type OperationSecurityDomain = { 
-  [K in keyof SecurityDomain]: SecurityDomain[K][];
-}
-export type SecurityContext = {
-  [K in Permission]?: SecurityDomain[] | true | undefined;
-}
-export type SecureEntityManagerMetadata = {
-  securityDomain: OperationSecurityDomain;
-}
 export type AnyEntityManager = EntityManager | SecureEntityManager;
 export type SecureEntityManager = EntityManager<never, SecureEntityManagerMetadata, Permission, SecurityDomain>;
 
@@ -43,7 +18,7 @@ function getScalars(): UserInputDriverDataTypeAdapterMap<Scalars, "mongo"> {
         if (value && typeof value === 'object') {
           return value.toString()
         } else {
-          throw new Error('Unexpected value for ID.')
+          throw new HttpError(400, 'Unexpected value for ID.')
         }
       }
     },
@@ -81,7 +56,7 @@ export function createSecureEntityManager(securityContext: SecurityContext | und
       context: {
         permissions: securityContext ?? {},
       },
-      policies: getSecurityPolicies(),
+      policies: <any>SecurityPolicies,
       defaultPermission: PERMISSION.DENY,
       // 'metadata' is the metadata passed into a EntityManager call.
       // Here you're specify how you want to fetch the current call's domain.

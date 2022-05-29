@@ -1,19 +1,18 @@
 import passport, { PassportStatic } from 'passport';
 import jwt from 'jsonwebtoken';
+import express from 'express';
 import AuthConfig from '@src/config/auth.config.json';
 import { EntityManagerExtensions, TwoWayMap } from '@src/utils/utils'
-import express from 'express';
 import { Strategy as DiscordStrategy } from 'passport-discord';
-import { Strategy as GoogleStrategy, Profile as GoogleStrategyProfile} from 'passport-google-oauth20';
+import { Strategy as GoogleStrategy, Profile as GoogleStrategyProfile } from 'passport-google-oauth20';
 import OAuth2Strategy from 'passport-oauth2';
 import { RoleCode, User } from '@src/generated/model.types';
 import { EntityManager, UserInsert } from '@src/generated/typetta';
-import { RequestWithDefaultContext } from '@src/context';
-import { AnyEntityManager, EMPTY_SECURITY_DOMAIN, OperationSecurityDomain, SecurityContext, SecurityDomain } from '@src/controllers/entity-manager.controller';
+import { RequestWithDefaultContext } from '@src/shared/context';
+import { AnyEntityManager } from '@src/controllers/entity-manager.controller';
+import { OperationSecurityDomain, SecurityContext, SecurityDomain } from '@src/shared/security.types';
 import { PERMISSION } from '@twinlogix/typetta';
-import { MutationResolvers, QueryResolvers } from '@src/generated/resolvers.types';
-import { gql } from 'apollo-server';
-import { Permission } from '@src/generated/model.types';
+import { HttpError } from '@src/shared/utils';
 
 // #region // ----- AUTHENTICATION ----- //
 export const Permissions = {
@@ -136,10 +135,10 @@ export const AuthScheme = {
   Bearer: "bearer"
 }
 
-export async function authenticate(req: express.Request): Promise<[authScheme: string, payload: AuthPayload]>{
+export async function authenticate(req: express.Request): Promise<[authScheme: string, payload: AuthPayload] | undefined>{
   const authHeader = req.headers['authorization'];
   if (!authHeader)
-    throw new Error("Protected GraphQL endpoint must have authorization in request!");
+    return undefined;
   const args = authHeader.split(' ');
   
   const authScheme = args[0].toLowerCase();
@@ -149,26 +148,26 @@ export async function authenticate(req: express.Request): Promise<[authScheme: s
     case AuthScheme.Bearer:
       return [authScheme, await authenticateBearerToken(args)];
     default:
-      throw new Error("Unknown authentication scheme.");
+      return undefined;
   }
 }
 
 export async function authenticateBasicRootUserPassword(args: string[]): Promise<AuthPayload> {
   if (args.length !== 2 || args[0].toLowerCase() !== AuthScheme.BasicRoot)
-    throw new Error("Invalid user password authentication! Format: 'basic [username]:[password]'.");
+    throw new HttpError(401, "Invalid user password authentication! Format: 'basic [username]:[password]'.");
   const usernamePassword = args[1].split(':');
   if (usernamePassword.length !== 2)
-    throw new Error("Basic authentication needs username and password. Format: 'basic [username]:[password]'.")
+    throw new HttpError(401, "Basic authentication needs username and password. Format: 'basic [username]:[password]'.")
   const authorized = AuthConfig.rootUsers.some(user => user.username === usernamePassword[0] && user.password === usernamePassword[1]);
   if (!authorized)
-    throw new Error("Invalid username/password.");
+    throw new HttpError(401, "Invalid username/password.");
   return { userId: usernamePassword[0] };
 }
 
 export async function authenticateBearerToken(args: string[]): Promise<AuthPayload> {
   try {
     if (args.length !== 2 || args[0].toLowerCase() !== AuthScheme.Bearer)
-      throw new Error("Invalid JWT authentication! Format: 'bearer [token]'.");
+      throw new HttpError(401, "Invalid JWT authentication! Format: 'bearer [token]'.");
     
     const token = args[1];
     const payload = await jwtVerifyAsync(token);
@@ -177,7 +176,7 @@ export async function authenticateBearerToken(args: string[]): Promise<AuthPaylo
     let errorMessage = "Token unauthorized: ";
     if (error instanceof Error)
       errorMessage += error.message;
-    throw new Error(errorMessage);
+    throw new HttpError(401, errorMessage);
   }
 }
 
@@ -253,7 +252,7 @@ export const ProjectMemberRoleCodeRanking = new TwoWayMap<string, number>({
 // Checks if a security permissionmatches the current domain.
 // This method is used to check if a user has a certain permission,
 // given what we want to access.
-export function isPermissionValidForDomain(permission: true | SecurityDomain[] | undefined, operationDomain: OperationSecurityDomain) {
+export function isPermissionDomainValidForOpDomain(permission: true | SecurityDomain[] | undefined, operationDomain: OperationSecurityDomain) {
   if (permission === undefined)
     return false;
   if (permission == true)
@@ -285,87 +284,82 @@ export function isPermissionValidForDomain(permission: true | SecurityDomain[] |
   return false;
 }
 
-export function getSecurityPolicies(): any {
-  return {
-    user: {
-      domain: {
-        ...EMPTY_SECURITY_DOMAIN,
-        userId: "id",
-      },
-      permissions: {
-        UPDATE_PROFILE: PERMISSION.UPDATE_ONLY,
-        DELETE_PROFILE: PERMISSION.DELETE_ONLY,
-        READ_PROFILE_PRIVATE: PERMISSION.READ_ONLY
-      }, 
-      defaultPermissions: {
-        read: {
-          avatarLink: true,
-          bannerLink: true,
-          createdAt: true,
-          id: true,
-          name: true,
-          projectMembers: true,
-          roles: true,
-          socials: true,
-          
-          email: false,
-          loginIdentities: false,
-        }
-      },
+export const SecurityPolicies = {
+  user: {
+    domain: {
+      userId: "id",
     },
-    project: {
-      domain: {
-        ...EMPTY_SECURITY_DOMAIN,
-        projectId: "id",
-      },
-      permissions: {
-        CREATE_PROJECT: PERMISSION.CREATE_ONLY,
-        DELETE_PROJECT: PERMISSION.DELETE_ONLY,
-        UPDATE_PROJECT: PERMISSION.UPDATE_ONLY,
-      },
-      defaultPermissions: PERMISSION.READ_ONLY
-    },
-    userLoginIdentity: {
-      domain: {
-        ...EMPTY_SECURITY_DOMAIN,
-        userId: "userId",
-      },
-      permissions: {
-        UPDATE_PROFILE: PERMISSION.ALLOW,
+    permissions: {
+      UPDATE_PROFILE: PERMISSION.UPDATE_ONLY,
+      DELETE_PROFILE: PERMISSION.DELETE_ONLY,
+      READ_PROFILE_PRIVATE: PERMISSION.READ_ONLY
+    }, 
+    defaultPermissions: {
+      read: {
+        __typename: true,
+        avatarLink: true,
+        bannerLink: true,
+        createdAt: true,
+        id: true,
+        username: true,
+        displayName: true,
+        projectMembers: true,
+        roles: true,
+        socials: true,
+        bio: true,
+        
+        email: false,
+        loginIdentities: false,
       }
     },
-    userSocial: {
-      domain: {
-        ...EMPTY_SECURITY_DOMAIN,
-        userId: "userId",
-      },
-      permissions: {
-        UPDATE_PROFILE: PERMISSION.ALLOW,
-      },
-      defaultPermissions: PERMISSION.READ_ONLY,
+  },
+  project: {
+    domain: {
+      projectId: "id",
     },
-    userRole: {
-      domain: {
-        ...EMPTY_SECURITY_DOMAIN,
-        roleCode: "roleCode",
-        userId: "userId",
-      },
-      permissions: {
-        MANAGE_USER_ROLES: PERMISSION.ALLOW,
-      }
+    permissions: {
+      CREATE_PROJECT: PERMISSION.CREATE_ONLY,
+      DELETE_PROJECT: PERMISSION.DELETE_ONLY,
+      UPDATE_PROJECT: PERMISSION.UPDATE_ONLY,
     },
-    projectMemberRole: {
-      domain: {
-        ...EMPTY_SECURITY_DOMAIN,
-        roleCode: "roleCode",
-        projectMemberId: "projectMemberId",
-      },
-      permissions: {
-        MANAGE_PROJECT_MEMBER_ROLES: PERMISSION.ALLOW,
-      }
+    defaultPermissions: PERMISSION.READ_ONLY
+  },
+  userLoginIdentity: {
+    domain: {
+      userId: "userId",
+    },
+    permissions: {
+      UPDATE_PROFILE: PERMISSION.ALLOW,
+    }
+  },
+  userSocial: {
+    domain: {
+      userId: "userId",
+    },
+    permissions: {
+      UPDATE_PROFILE: PERMISSION.ALLOW,
+    },
+    defaultPermissions: PERMISSION.READ_ONLY,
+  },
+  userRole: {
+    domain: {
+      roleCode: "roleCode",
+      userId: "userId",
+    },
+    permissions: {
+      MANAGE_USER_ROLES: PERMISSION.ALLOW,
+    }
+  },
+  projectMemberRole: {
+    domain: {
+      roleCode: "roleCode",
+      projectMemberId: "projectMemberId",
+    },
+    permissions: {
+      MANAGE_PROJECT_MEMBER_ROLES: PERMISSION.ALLOW,
     }
   }
-}
+};
 
 export async function authAddSecurityContext(req: RequestWithDefaultContext, res: express.Response, next: express.NextFunction) {
   if (!req.context)
@@ -373,9 +367,15 @@ export async function authAddSecurityContext(req: RequestWithDefaultContext, res
   
   try {
     const entityManager = req.context.entityManager;
-    const [authScheme, authPayload] = await authenticate(req);
-    const securityContext = await userToSecurityContext(entityManager, authPayload.userId);
-    req.context.securityContext = securityContext;
+    const authenticated = await authenticate(req);
+    if (authenticated) {
+      const [authScheme, authPayload] = authenticated;
+      const securityContext = await userToSecurityContext(entityManager, authPayload.userId);
+      req.context.securityContext = securityContext;
+    } else {
+      // Fallback to no security context
+      req.context.securityContext = {};
+    }
     next();
   } catch (err) {
     next(err);

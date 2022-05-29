@@ -1,7 +1,6 @@
 import { MongoClient } from 'mongodb';
 import { EntityManager } from '@src/generated/typetta'
 import { ApolloServer as ExpressApolloServer, ExpressContext } from 'apollo-server-express'
-import { ApolloServer } from 'apollo-server';
 import { Express } from 'express';
 import { ApolloServerPluginDrainHttpServer, Config } from 'apollo-server-core';
 import express from 'express';
@@ -14,8 +13,8 @@ import { createSecureEntityManager, createUnsecureEntityManager, getOperationMet
 import { authenticate, AuthScheme, configPassport, userToSecurityContext } from '@src/controllers/auth.controller';
 import { Db } from 'mongodb';
 import ServerConfig from '@src/config/server.config.json';
-import { ApolloResolversContext, RequestWithDefaultContext } from '@src/context';
-import { typeDefs, resolvers } from '@src/typedefs-resolvers';
+import { ApolloResolversContext, RequestWithDefaultContext } from '@src/shared/context';
+import { typeDefs, resolvers } from '@src/shared/typedefs-resolvers';
 
 
 async function startServer(debug: boolean) {
@@ -54,26 +53,36 @@ async function startApolloServer(app: express.Application, mongoDb: Db, endpoint
     ...apolloConfig,
     context: async ({ req }): Promise<ApolloResolversContext> => {
       if (securityEnabled) {
-        const [authScheme, authPayload] = await authenticate(req);
-        switch (authScheme) {
-          case AuthScheme.BasicRoot: {
-            const entityManager = createUnsecureEntityManager(mongoDb);
-            return {
-              entityManager,
-            };
+        const authenticated = await authenticate(req);
+        if (authenticated) {
+          const [authScheme, authPayload] = authenticated;
+          switch (authScheme) {
+            case AuthScheme.BasicRoot: {
+              const entityManager = createUnsecureEntityManager(mongoDb);
+              return {
+                entityManager,
+              };
+            }
+            case AuthScheme.Bearer:
+            default: {
+              const securityContext = await userToSecurityContext(createUnsecureEntityManager(mongoDb), authPayload.userId);
+              const metadata = getOperationMetadataFromRequest(req);
+              const entityManager = createSecureEntityManager(securityContext, mongoDb, metadata);
+              return {
+                entityManager,
+                securityContext,
+                authUserId: authPayload.userId,
+              };
+            }
           }
-          case AuthScheme.Bearer: {
-            const securityContext = await userToSecurityContext(createUnsecureEntityManager(mongoDb), authPayload.userId);
-            const metadata = getOperationMetadataFromRequest(req);
-            const entityManager = createSecureEntityManager(securityContext, mongoDb, metadata);
-            return {
-              entityManager,
-              securityContext,
-              authUserId: authPayload.userId,
-            };
+        } else {
+          // Fallback to public api
+          const securityContext = {};
+          const entityManager = createSecureEntityManager(securityContext, mongoDb);
+          return {
+            entityManager,
+            securityContext
           }
-          default:
-            throw new Error("Unknown authScheme.");
         }
       } else {
         return {

@@ -4,9 +4,11 @@ import AuthConfig from '@src/config/auth.config.json';
 import passport from 'passport';
 import multer from 'multer';
 import path from 'path';
-import { RequestContext, RequestWithContext, RequestWithDefaultContext } from '@src/context';
+import { RequestContext, RequestWithContext, RequestWithDefaultContext } from '@src/shared/context';
 import { getOperationMetadataFromRequest } from '@src/controllers/entity-manager.controller';
 import { deleteSelfHostedFile, isSelfHostedFile, relativeToSelfHostedFilePath } from '@src/controllers/file-upload.controller';
+import { HttpQueryError } from 'apollo-server-core';
+import { HttpError } from '@src/shared/utils';
 
 const router = express.Router();
 
@@ -46,29 +48,28 @@ router.post(
   authController.authAddSecurityContext,
   async function(req: RequestWithContext<RequestContext & PostUserContext>, res, next) {
     if (!req.context || !req.context.securityContext) {
-      next(new Error("Expected context and context.securityContext."))
+      next(new HttpError(400, "Expected context and context.securityContext."))
       return;
     }
 
     try {
       const metadata: {
-        userId: string
+        userId: string[]
       } = getOperationMetadataFromRequest(req);
       const entityManager = req.context.entityManager;
       const securityContext = req.context.securityContext;
 
       // Check permissions
-      if (!authController.isPermissionValidForDomain(securityContext.MANAGE_USER_ROLES, {
-        userId: [ metadata.userId ]
+      if (!metadata || metadata.userId.length == 0 || !authController.isPermissionDomainValidForOpDomain(securityContext.MANAGE_USER_ROLES, {
+        userId: [ metadata.userId[0] ]
       })) {
-        next(new Error("Not authorized!"));
-        return;
+        throw new HttpError(401, "Not authorized!");
       }
 
       // Ensure userId is valid
       const user = await entityManager.user.findOne({
         filter: {
-          id: metadata.userId
+          id: metadata.userId[0]
         },
         projection: {
           id: true,
@@ -77,8 +78,7 @@ router.post(
         }
       });
       if (!user) {
-        next(new Error("Invalid userId!"));
-        return; 
+        throw new HttpError(401, "Invalid userId!");
       }
 
       req.context.user = user;
@@ -101,7 +101,7 @@ router.post(
   // Return file paths
   async function(req: RequestWithContext<RequestContext & PostUserContext>, res, next) {
     if (!req.context || !req.context.securityContext || !req.context.user) {
-      next(new Error("Expected context, context.securityContext, and context.metadata."))
+      next(new HttpError(400, "Expected context, context.securityContext, and context.metadata."))
       return;
     }
     

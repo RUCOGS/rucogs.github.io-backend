@@ -1,4 +1,5 @@
-import { AnyEntityManager, SecurityDomain } from "@src/controllers/entity-manager.controller";
+import { AnyEntityManager } from "@src/controllers/entity-manager.controller";
+import { SecurityDomain } from "@src/shared/security.types";
 import { ProjectMemberRoleCodeRanking, UserRoleCodeRanking } from "@src/controllers/auth.controller";
 import { RoleCode } from "@src/generated/model.types";
 import { EntityManager } from "@src/generated/typetta";
@@ -9,6 +10,8 @@ interface FindOrCreateParams {
   changes: any;
   record?: any;
 }
+
+export type Nullable<T> = { [K in keyof T]: T[K] | null };
 
 // Compares the properties of one object against the
 // properties of another object.

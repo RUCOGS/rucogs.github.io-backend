@@ -4,7 +4,6 @@ export type InputMaybe<T> = Maybe<T>;
 export type Exact<T extends { [key: string]: unknown }> = { [K in keyof T]: T[K] };
 export type MakeOptional<T, K extends keyof T> = Omit<T, K> & { [SubKey in K]?: Maybe<T[SubKey]> };
 export type MakeMaybe<T, K extends keyof T> = Omit<T, K> & { [SubKey in K]: Maybe<T[SubKey]> };
-export type Omit<T, K extends keyof T> = Pick<T, Exclude<keyof T, K>>;
 export type RequireFields<T, K extends keyof T> = Omit<T, K> & { [P in K]-?: NonNullable<T[P]> };
 /** All built-in and custom scalars, mapped to their actual values */
 export type Scalars = {
@@ -23,11 +22,6 @@ export type BooleanFilterInput = {
   in?: InputMaybe<Array<Scalars['Boolean']>>;
   ne?: InputMaybe<Scalars['Boolean']>;
   nin?: InputMaybe<Array<Scalars['Boolean']>>;
-};
-
-export type BooleanType = {
-  __typename?: 'BooleanType';
-  boolean?: Maybe<Scalars['Boolean']>;
 };
 
 export type DateFilterInput = {
@@ -76,11 +70,6 @@ export type JsonFilterInput = {
   in?: InputMaybe<Array<Scalars['Json']>>;
   ne?: InputMaybe<Scalars['Json']>;
   nin?: InputMaybe<Array<Scalars['Json']>>;
-};
-
-export type JsonType = {
-  __typename?: 'JsonType';
-  json?: Maybe<Scalars['Json']>;
 };
 
 export type KeyValue = {
@@ -255,8 +244,6 @@ export enum Permission {
   UpdateProject = 'UPDATE_PROJECT'
 }
 
-export type PermissionDomains = BooleanType | SecurityDomains;
-
 export type PermissionFilterInput = {
   contains?: InputMaybe<Scalars['String']>;
   endsWith?: InputMaybe<Scalars['String']>;
@@ -268,8 +255,6 @@ export type PermissionFilterInput = {
   nin?: InputMaybe<Array<Permission>>;
   startsWith?: InputMaybe<Scalars['String']>;
 };
-
-export type PermissionOperationDomain = BooleanType | JsonType;
 
 export type Project = {
   __typename?: 'Project';
@@ -459,20 +444,16 @@ export type ProjectUpdateInput = {
 
 export type Query = {
   __typename?: 'Query';
-  getSecurityContext?: Maybe<SecurityContext>;
   projectMemberRoles: Array<ProjectMemberRole>;
   projectMembers: Array<ProjectMember>;
   projects: Array<Project>;
   roles: Array<Role>;
+  securityContext?: Maybe<Scalars['Json']>;
+  securityPolicies?: Maybe<Scalars['Json']>;
   userLoginIdentitys: Array<UserLoginIdentity>;
   userRoles: Array<UserRole>;
   userSocials: Array<UserSocial>;
   users: Array<User>;
-};
-
-
-export type QueryGetSecurityContextArgs = {
-  userId?: InputMaybe<Scalars['ID']>;
 };
 
 
@@ -508,6 +489,11 @@ export type QueryRolesArgs = {
   limit?: InputMaybe<Scalars['Int']>;
   skip?: InputMaybe<Scalars['Int']>;
   sorts?: InputMaybe<Array<RoleSortInput>>;
+};
+
+
+export type QuerySecurityContextArgs = {
+  userId?: InputMaybe<Scalars['ID']>;
 };
 
 
@@ -604,31 +590,6 @@ export type RoleSortInput = {
 
 export type RoleUpdateInput = {
   permissions?: InputMaybe<Array<InputMaybe<Permission>>>;
-};
-
-export type SecurityContext = {
-  __typename?: 'SecurityContext';
-  CREATE_PROJECT?: Maybe<PermissionDomains>;
-  DELETE_PROFILE?: Maybe<PermissionDomains>;
-  DELETE_PROJECT?: Maybe<PermissionDomains>;
-  MANAGE_PROJECT_MEMBER_ROLES?: Maybe<PermissionDomains>;
-  MANAGE_USER_ROLES?: Maybe<PermissionDomains>;
-  READ_PROFILE_PRIVATE?: Maybe<PermissionDomains>;
-  UPDATE_PROFILE?: Maybe<PermissionDomains>;
-  UPDATE_PROJECT?: Maybe<PermissionDomains>;
-};
-
-export type SecurityDomain = {
-  __typename?: 'SecurityDomain';
-  delete?: Maybe<PermissionOperationDomain>;
-  read?: Maybe<PermissionOperationDomain>;
-  update?: Maybe<PermissionOperationDomain>;
-  write?: Maybe<PermissionOperationDomain>;
-};
-
-export type SecurityDomains = {
-  __typename?: 'SecurityDomains';
-  domains?: Maybe<Array<SecurityDomain>>;
 };
 
 export enum SortDirection {
@@ -957,7 +918,6 @@ export type DirectiveResolverFn<TResult = {}, TParent = {}, TContext = {}, TArgs
 export type ResolversTypes = {
   Boolean: ResolverTypeWrapper<Scalars['Boolean']>;
   BooleanFilterInput: BooleanFilterInput;
-  BooleanType: ResolverTypeWrapper<BooleanType>;
   Date: ResolverTypeWrapper<Scalars['Date']>;
   DateFilterInput: DateFilterInput;
   Float: ResolverTypeWrapper<Scalars['Float']>;
@@ -968,13 +928,10 @@ export type ResolversTypes = {
   IntFilterInput: IntFilterInput;
   Json: ResolverTypeWrapper<Scalars['Json']>;
   JsonFilterInput: JsonFilterInput;
-  JsonType: ResolverTypeWrapper<JsonType>;
   KeyValue: KeyValue;
   Mutation: ResolverTypeWrapper<{}>;
   Permission: Permission;
-  PermissionDomains: ResolversTypes['BooleanType'] | ResolversTypes['SecurityDomains'];
   PermissionFilterInput: PermissionFilterInput;
-  PermissionOperationDomain: ResolversTypes['BooleanType'] | ResolversTypes['JsonType'];
   Project: ResolverTypeWrapper<Project>;
   ProjectFilterInput: ProjectFilterInput;
   ProjectFindInput: ProjectFindInput;
@@ -1006,9 +963,6 @@ export type ResolversTypes = {
   RoleInsertInput: RoleInsertInput;
   RoleSortInput: RoleSortInput;
   RoleUpdateInput: RoleUpdateInput;
-  SecurityContext: ResolverTypeWrapper<Omit<SecurityContext, 'CREATE_PROJECT' | 'DELETE_PROFILE' | 'DELETE_PROJECT' | 'MANAGE_PROJECT_MEMBER_ROLES' | 'MANAGE_USER_ROLES' | 'READ_PROFILE_PRIVATE' | 'UPDATE_PROFILE' | 'UPDATE_PROJECT'> & { CREATE_PROJECT?: Maybe<ResolversTypes['PermissionDomains']>, DELETE_PROFILE?: Maybe<ResolversTypes['PermissionDomains']>, DELETE_PROJECT?: Maybe<ResolversTypes['PermissionDomains']>, MANAGE_PROJECT_MEMBER_ROLES?: Maybe<ResolversTypes['PermissionDomains']>, MANAGE_USER_ROLES?: Maybe<ResolversTypes['PermissionDomains']>, READ_PROFILE_PRIVATE?: Maybe<ResolversTypes['PermissionDomains']>, UPDATE_PROFILE?: Maybe<ResolversTypes['PermissionDomains']>, UPDATE_PROJECT?: Maybe<ResolversTypes['PermissionDomains']> }>;
-  SecurityDomain: ResolverTypeWrapper<Omit<SecurityDomain, 'delete' | 'read' | 'update' | 'write'> & { delete?: Maybe<ResolversTypes['PermissionOperationDomain']>, read?: Maybe<ResolversTypes['PermissionOperationDomain']>, update?: Maybe<ResolversTypes['PermissionOperationDomain']>, write?: Maybe<ResolversTypes['PermissionOperationDomain']> }>;
-  SecurityDomains: ResolverTypeWrapper<SecurityDomains>;
   SortDirection: SortDirection;
   String: ResolverTypeWrapper<Scalars['String']>;
   StringFilterInput: StringFilterInput;
@@ -1047,7 +1001,6 @@ export type ResolversTypes = {
 export type ResolversParentTypes = {
   Boolean: Scalars['Boolean'];
   BooleanFilterInput: BooleanFilterInput;
-  BooleanType: BooleanType;
   Date: Scalars['Date'];
   DateFilterInput: DateFilterInput;
   Float: Scalars['Float'];
@@ -1058,12 +1011,9 @@ export type ResolversParentTypes = {
   IntFilterInput: IntFilterInput;
   Json: Scalars['Json'];
   JsonFilterInput: JsonFilterInput;
-  JsonType: JsonType;
   KeyValue: KeyValue;
   Mutation: {};
-  PermissionDomains: ResolversParentTypes['BooleanType'] | ResolversParentTypes['SecurityDomains'];
   PermissionFilterInput: PermissionFilterInput;
-  PermissionOperationDomain: ResolversParentTypes['BooleanType'] | ResolversParentTypes['JsonType'];
   Project: Project;
   ProjectFilterInput: ProjectFilterInput;
   ProjectFindInput: ProjectFindInput;
@@ -1094,9 +1044,6 @@ export type ResolversParentTypes = {
   RoleInsertInput: RoleInsertInput;
   RoleSortInput: RoleSortInput;
   RoleUpdateInput: RoleUpdateInput;
-  SecurityContext: Omit<SecurityContext, 'CREATE_PROJECT' | 'DELETE_PROFILE' | 'DELETE_PROJECT' | 'MANAGE_PROJECT_MEMBER_ROLES' | 'MANAGE_USER_ROLES' | 'READ_PROFILE_PRIVATE' | 'UPDATE_PROFILE' | 'UPDATE_PROJECT'> & { CREATE_PROJECT?: Maybe<ResolversParentTypes['PermissionDomains']>, DELETE_PROFILE?: Maybe<ResolversParentTypes['PermissionDomains']>, DELETE_PROJECT?: Maybe<ResolversParentTypes['PermissionDomains']>, MANAGE_PROJECT_MEMBER_ROLES?: Maybe<ResolversParentTypes['PermissionDomains']>, MANAGE_USER_ROLES?: Maybe<ResolversParentTypes['PermissionDomains']>, READ_PROFILE_PRIVATE?: Maybe<ResolversParentTypes['PermissionDomains']>, UPDATE_PROFILE?: Maybe<ResolversParentTypes['PermissionDomains']>, UPDATE_PROJECT?: Maybe<ResolversParentTypes['PermissionDomains']> };
-  SecurityDomain: Omit<SecurityDomain, 'delete' | 'read' | 'update' | 'write'> & { delete?: Maybe<ResolversParentTypes['PermissionOperationDomain']>, read?: Maybe<ResolversParentTypes['PermissionOperationDomain']>, update?: Maybe<ResolversParentTypes['PermissionOperationDomain']>, write?: Maybe<ResolversParentTypes['PermissionOperationDomain']> };
-  SecurityDomains: SecurityDomains;
   String: Scalars['String'];
   StringFilterInput: StringFilterInput;
   User: User;
@@ -1213,11 +1160,6 @@ export type TextualDirectiveArgs = { };
 
 export type TextualDirectiveResolver<Result, Parent, ContextType = any, Args = TextualDirectiveArgs> = DirectiveResolverFn<Result, Parent, ContextType, Args>;
 
-export type BooleanTypeResolvers<ContextType = any, ParentType extends ResolversParentTypes['BooleanType'] = ResolversParentTypes['BooleanType']> = {
-  boolean?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-};
-
 export interface DateScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['Date'], any> {
   name: 'Date';
 }
@@ -1225,11 +1167,6 @@ export interface DateScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes
 export interface JsonScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['Json'], any> {
   name: 'Json';
 }
-
-export type JsonTypeResolvers<ContextType = any, ParentType extends ResolversParentTypes['JsonType'] = ResolversParentTypes['JsonType']> = {
-  json?: Resolver<Maybe<ResolversTypes['Json']>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-};
 
 export type MutationResolvers<ContextType = any, ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']> = {
   createProject?: Resolver<ResolversTypes['Project'], ParentType, ContextType, RequireFields<MutationCreateProjectArgs, 'record'>>;
@@ -1256,14 +1193,6 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   updateUserRoles?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationUpdateUserRolesArgs, 'changes' | 'filter'>>;
   updateUserSocials?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationUpdateUserSocialsArgs, 'changes' | 'filter'>>;
   updateUsers?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationUpdateUsersArgs, 'changes' | 'filter'>>;
-};
-
-export type PermissionDomainsResolvers<ContextType = any, ParentType extends ResolversParentTypes['PermissionDomains'] = ResolversParentTypes['PermissionDomains']> = {
-  __resolveType: TypeResolveFn<'BooleanType' | 'SecurityDomains', ParentType, ContextType>;
-};
-
-export type PermissionOperationDomainResolvers<ContextType = any, ParentType extends ResolversParentTypes['PermissionOperationDomain'] = ResolversParentTypes['PermissionOperationDomain']> = {
-  __resolveType: TypeResolveFn<'BooleanType' | 'JsonType', ParentType, ContextType>;
 };
 
 export type ProjectResolvers<ContextType = any, ParentType extends ResolversParentTypes['Project'] = ResolversParentTypes['Project']> = {
@@ -1303,11 +1232,12 @@ export type ProjectMemberRoleResolvers<ContextType = any, ParentType extends Res
 };
 
 export type QueryResolvers<ContextType = any, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = {
-  getSecurityContext?: Resolver<Maybe<ResolversTypes['SecurityContext']>, ParentType, ContextType, Partial<QueryGetSecurityContextArgs>>;
   projectMemberRoles?: Resolver<Array<ResolversTypes['ProjectMemberRole']>, ParentType, ContextType, Partial<QueryProjectMemberRolesArgs>>;
   projectMembers?: Resolver<Array<ResolversTypes['ProjectMember']>, ParentType, ContextType, Partial<QueryProjectMembersArgs>>;
   projects?: Resolver<Array<ResolversTypes['Project']>, ParentType, ContextType, Partial<QueryProjectsArgs>>;
   roles?: Resolver<Array<ResolversTypes['Role']>, ParentType, ContextType, Partial<QueryRolesArgs>>;
+  securityContext?: Resolver<Maybe<ResolversTypes['Json']>, ParentType, ContextType, Partial<QuerySecurityContextArgs>>;
+  securityPolicies?: Resolver<Maybe<ResolversTypes['Json']>, ParentType, ContextType>;
   userLoginIdentitys?: Resolver<Array<ResolversTypes['UserLoginIdentity']>, ParentType, ContextType, Partial<QueryUserLoginIdentitysArgs>>;
   userRoles?: Resolver<Array<ResolversTypes['UserRole']>, ParentType, ContextType, Partial<QueryUserRolesArgs>>;
   userSocials?: Resolver<Array<ResolversTypes['UserSocial']>, ParentType, ContextType, Partial<QueryUserSocialsArgs>>;
@@ -1317,31 +1247,6 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
 export type RoleResolvers<ContextType = any, ParentType extends ResolversParentTypes['Role'] = ResolversParentTypes['Role']> = {
   code?: Resolver<ResolversTypes['RoleCode'], ParentType, ContextType>;
   permissions?: Resolver<Array<Maybe<ResolversTypes['Permission']>>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-};
-
-export type SecurityContextResolvers<ContextType = any, ParentType extends ResolversParentTypes['SecurityContext'] = ResolversParentTypes['SecurityContext']> = {
-  CREATE_PROJECT?: Resolver<Maybe<ResolversTypes['PermissionDomains']>, ParentType, ContextType>;
-  DELETE_PROFILE?: Resolver<Maybe<ResolversTypes['PermissionDomains']>, ParentType, ContextType>;
-  DELETE_PROJECT?: Resolver<Maybe<ResolversTypes['PermissionDomains']>, ParentType, ContextType>;
-  MANAGE_PROJECT_MEMBER_ROLES?: Resolver<Maybe<ResolversTypes['PermissionDomains']>, ParentType, ContextType>;
-  MANAGE_USER_ROLES?: Resolver<Maybe<ResolversTypes['PermissionDomains']>, ParentType, ContextType>;
-  READ_PROFILE_PRIVATE?: Resolver<Maybe<ResolversTypes['PermissionDomains']>, ParentType, ContextType>;
-  UPDATE_PROFILE?: Resolver<Maybe<ResolversTypes['PermissionDomains']>, ParentType, ContextType>;
-  UPDATE_PROJECT?: Resolver<Maybe<ResolversTypes['PermissionDomains']>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-};
-
-export type SecurityDomainResolvers<ContextType = any, ParentType extends ResolversParentTypes['SecurityDomain'] = ResolversParentTypes['SecurityDomain']> = {
-  delete?: Resolver<Maybe<ResolversTypes['PermissionOperationDomain']>, ParentType, ContextType>;
-  read?: Resolver<Maybe<ResolversTypes['PermissionOperationDomain']>, ParentType, ContextType>;
-  update?: Resolver<Maybe<ResolversTypes['PermissionOperationDomain']>, ParentType, ContextType>;
-  write?: Resolver<Maybe<ResolversTypes['PermissionOperationDomain']>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-};
-
-export type SecurityDomainsResolvers<ContextType = any, ParentType extends ResolversParentTypes['SecurityDomains'] = ResolversParentTypes['SecurityDomains']> = {
-  domains?: Resolver<Maybe<Array<ResolversTypes['SecurityDomain']>>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -1391,21 +1296,14 @@ export type UserSocialResolvers<ContextType = any, ParentType extends ResolversP
 };
 
 export type Resolvers<ContextType = any> = {
-  BooleanType?: BooleanTypeResolvers<ContextType>;
   Date?: GraphQLScalarType;
   Json?: GraphQLScalarType;
-  JsonType?: JsonTypeResolvers<ContextType>;
   Mutation?: MutationResolvers<ContextType>;
-  PermissionDomains?: PermissionDomainsResolvers<ContextType>;
-  PermissionOperationDomain?: PermissionOperationDomainResolvers<ContextType>;
   Project?: ProjectResolvers<ContextType>;
   ProjectMember?: ProjectMemberResolvers<ContextType>;
   ProjectMemberRole?: ProjectMemberRoleResolvers<ContextType>;
   Query?: QueryResolvers<ContextType>;
   Role?: RoleResolvers<ContextType>;
-  SecurityContext?: SecurityContextResolvers<ContextType>;
-  SecurityDomain?: SecurityDomainResolvers<ContextType>;
-  SecurityDomains?: SecurityDomainsResolvers<ContextType>;
   User?: UserResolvers<ContextType>;
   UserLoginIdentity?: UserLoginIdentityResolvers<ContextType>;
   UserRole?: UserRoleResolvers<ContextType>;

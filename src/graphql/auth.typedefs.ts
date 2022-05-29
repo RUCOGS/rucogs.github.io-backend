@@ -11,33 +11,8 @@ for (const perm in Permission) {
 }
 
 export default gql`
-type JsonType {
-  json: Json
-}
-
-type BooleanType {
-  boolean: Boolean
-}
-
-union PermissionOperationDomain = JsonType | BooleanType
-
-type SecurityDomain {
-  read: PermissionOperationDomain,
-  write: PermissionOperationDomain,
-  update: PermissionOperationDomain,
-  delete: PermissionOperationDomain
-}
-
-type SecurityDomains {
-  domains: [SecurityDomain!]
-}
-
-union PermissionDomains = SecurityDomains | BooleanType
-
 extend type Query {
-  getSecurityContext(userId: ID): SecurityContext
+  securityContext(userId: ID): Json
+  securityPolicies: Json
 }
-
-type SecurityPolicies {
-${permFields}}
 `;

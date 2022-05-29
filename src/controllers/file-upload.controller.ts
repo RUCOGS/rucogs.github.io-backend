@@ -1,3 +1,4 @@
+import { HttpError } from "@src/shared/utils";
 import fs from "fs";
 import path from "path";
 
@@ -11,7 +12,7 @@ export function isSelfHostedFile(selfHostedFilePath: string) {
 
 export function selfHostedToRelativeFilePath(selfHostedFilePath: string) {
   if (!isSelfHostedFile(selfHostedFilePath))
-    throw new Error("Cannot get self hosted filepath from filepath that isn't self hosted.");
+    throw new HttpError(400, "Cannot get self hosted filepath from filepath that isn't self hosted.");
   // Trim `self://` from the start
   return selfHostedFilePath.substring(SELF_HOSTED_PREFIX.length);
 }
@@ -26,7 +27,7 @@ export function relativeToSelfHostedFilePath(relativeFilePath: string) {
 
 export async function deleteSelfHostedFile(selfHostedFilePath: string) {
   if (!isSelfHostedFile(selfHostedFilePath))
-    throw new Error("Expected a self hosted file path.");
+    throw new HttpError(400, "Expected a self hosted file path.");
   const relativeFilePath = selfHostedToRelativeFilePath(selfHostedFilePath);
   return await fs.promises.unlink(UPLOAD_DIRECTORY + "/" + relativeFilePath);
 }
