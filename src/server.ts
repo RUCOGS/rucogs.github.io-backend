@@ -1,11 +1,7 @@
 import { MongoClient } from 'mongodb';
-import { resolvers as generatedResolvers } from '@src/generated/resolvers'
-import { mergeTypeDefs } from '@graphql-tools/merge'
-import inputTypeDefs from '@src/generated/operations'
-import schemaTypeDefs from '@src/schema.typedefs'
-import { AbstractDAO, FindOneParams, PERMISSION, typeDefs as typettaDirectivesTypeDefs } from '@twinlogix/typetta'
 import { EntityManager } from '@src/generated/typetta'
-import { ApolloServer, ExpressContext } from 'apollo-server-express'
+import { ApolloServer as ExpressApolloServer, ExpressContext } from 'apollo-server-express'
+import { ApolloServer } from 'apollo-server';
 import { Express } from 'express';
 import { ApolloServerPluginDrainHttpServer, Config } from 'apollo-server-core';
 import express from 'express';
@@ -15,14 +11,14 @@ import authRouter from '@src/routes/auth.routes';
 import fileUploadRouter from '@src/routes/file-upload.routes';
 import http from 'http';
 import { createSecureEntityManager, createUnsecureEntityManager, getOperationMetadataFromRequest } from '@src/controllers/entity-manager.controller';
-import { authenticate, authenticateBearerToken, authenticateBasicRootUserPassword, AuthScheme, configPassport, userToSecurityContext } from '@src/controllers/auth.controller';
+import { authenticate, AuthScheme, configPassport, userToSecurityContext } from '@src/controllers/auth.controller';
 import { Db } from 'mongodb';
 import ServerConfig from '@src/config/server.config.json';
-import AuthConfig from '@src/config/auth.config.json';
-import { ApolloResolversContext, Context, HasContext, RequestContext, RequestWithDefaultContext } from './context';
+import { ApolloResolversContext, RequestWithDefaultContext } from '@src/context';
+import { typeDefs, resolvers } from '@src/typedefs-resolvers';
 
 
-async function startServer() {
+async function startServer(debug: boolean) {
   const mongoClient = new MongoClient(ServerConfig.mongodbUrl);
   const mongoDb = mongoClient.db(ServerConfig.mongodbDbName);
 
@@ -35,7 +31,13 @@ async function startServer() {
 
   const httpServer = http.createServer(app);
 
-  startApolloServer(app, httpServer, mongoDb, ServerConfig.baseUrl + "/api/graphql", {});
+  startApolloServer(app, mongoDb, ServerConfig.baseUrl + "/api/graphql", {
+    debug,
+    csrfPrevention: true,
+    typeDefs,
+    resolvers,
+    plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
+  });
   // Set port, listen for requests
   const port = ServerConfig.port;
   // Promisfy httpServer.listen();
@@ -47,67 +49,47 @@ async function startServer() {
   );  
 }
 
-async function startApolloServer(app: express.Application, httpServer: http.Server, mongoDb: Db, endpointPath: string, apolloConfig: Config<ExpressContext>) {
-  const server = new ApolloServer({
+async function startApolloServer(app: express.Application, mongoDb: Db, endpointPath: string, apolloConfig: Config<ExpressContext>, securityEnabled: boolean = true) {
+  const server = new ExpressApolloServer({
     ...apolloConfig,
-    debug: false,
-    typeDefs: mergeTypeDefs([
-      inputTypeDefs,
-      schemaTypeDefs,
-      typettaDirectivesTypeDefs,
-    ]),
-    resolvers: mergeResolvers([
-      generatedResolvers
-    ]),
     context: async ({ req }): Promise<ApolloResolversContext> => {
-      const [authScheme, authPayload] = await authenticate(req);
-      switch (authScheme) {
-        case AuthScheme.BasicRoot: {
-          const entityManager = createUnsecureEntityManager(mongoDb);
-          return {
-            entityManager,
-          };
+      if (securityEnabled) {
+        const [authScheme, authPayload] = await authenticate(req);
+        switch (authScheme) {
+          case AuthScheme.BasicRoot: {
+            const entityManager = createUnsecureEntityManager(mongoDb);
+            return {
+              entityManager,
+            };
+          }
+          case AuthScheme.Bearer: {
+            const securityContext = await userToSecurityContext(createUnsecureEntityManager(mongoDb), authPayload.userId);
+            const metadata = getOperationMetadataFromRequest(req);
+            const entityManager = createSecureEntityManager(securityContext, mongoDb, metadata);
+            return {
+              entityManager,
+              securityContext,
+              authUserId: authPayload.userId,
+            };
+          }
+          default:
+            throw new Error("Unknown authScheme.");
         }
-        case AuthScheme.Bearer: {
-          const securityContext = await userToSecurityContext(createUnsecureEntityManager(mongoDb), authPayload.userId);
-          const metadata = getOperationMetadataFromRequest(req);
-          const entityManager = createSecureEntityManager(securityContext, mongoDb, metadata);
-          return {
-            entityManager,
-          };
-        }
-        default:
-          throw new Error("Unknown authScheme.");
+      } else {
+        return {
+          entityManager: createUnsecureEntityManager(mongoDb)
+        };
       }
     },
-    csrfPrevention: true,
-    plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
   });
 
   await server.start();
   server.applyMiddleware({ app, path: endpointPath });
 
-    console.log(
+  console.log(
     `\
 📈 GraphQL API ready at: ${server.graphqlPath}`,
   );  
-}
-
-function mergeResolvers(resolversArr: any[]) {
-  let mergedResolvers = { Query: {}, Mutation: {}};
-  for (const resolvers of resolversArr) {
-    mergedResolvers = {
-      Query: {
-        ...mergedResolvers.Query,
-        ...resolvers.Query
-      },
-      Mutation: {
-        ...mergedResolvers.Mutation,
-        ...resolvers.Mutation
-      }
-    }
-  }
-  return mergedResolvers;
 }
 
 function configExpress(app: Express, entityManager: EntityManager) {
@@ -158,4 +140,14 @@ function configExpress(app: Express, entityManager: EntityManager) {
   app.use(ServerConfig.baseUrl, router);
 }
 
-startServer();
+// Parse command line arguments
+const args = process.argv.slice(2);
+switch (args[0]) {
+  case "debug":
+    startServer(true);
+    break;
+  case "production":
+  default:
+    startServer(false);
+    break;
+}

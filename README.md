@@ -22,7 +22,7 @@ To recompile the typescript files and run the backend, without regenerating Type
 
 2. Before you start development, you must have Node.js installed. "Node.js" is a runtime environment, and downloading it should also give you the "npm" package manager. You can download the latest version of Node.js with npm from [here](https://nodejs.org/en/download/).
 
-3. Install all the relevant dependecies by running the following inside the folder containing the repository.
+3. Install all the relevant dependencies by running the following inside the folder containing the repository.
   ```bash
   > npm i
   ``` 

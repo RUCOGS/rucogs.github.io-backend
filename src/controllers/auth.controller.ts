@@ -1,19 +1,21 @@
 import passport, { PassportStatic } from 'passport';
-import jwt, { VerifyCallback } from 'jsonwebtoken';
+import jwt from 'jsonwebtoken';
 import AuthConfig from '@src/config/auth.config.json';
-import { RequestHandler } from 'express';
-import { EntityManagerExtensions, Extensions, isShallowEquals, TwoWayMap } from '@src/utils/utils'
+import { EntityManagerExtensions, TwoWayMap } from '@src/utils/utils'
 import express from 'express';
 import { Strategy as DiscordStrategy } from 'passport-discord';
 import { Strategy as GoogleStrategy, Profile as GoogleStrategyProfile} from 'passport-google-oauth20';
-import OAuth2Strategy, { VerifyFunction } from 'passport-oauth2';
+import OAuth2Strategy from 'passport-oauth2';
 import { RoleCode, User } from '@src/generated/model.types';
-import { EntityManager, UserInsert, UserUpdate } from '@src/generated/typetta';
-import { Context, HasContext, RequestWithDefaultContext } from '@src/context';
-import { AnyEntityManager, createUnsecureEntityManager, EMPTY_SECURITY_DOMAIN, OperationSecurityDomain, SecureEntityManager, SecurityContext, SecurityDomain } from '@src/controllers/entity-manager.controller';
-import { EntityManagerSecurtyPolicy, PERMISSION, projection } from '@twinlogix/typetta';
-import { ObjectId } from 'mongodb';
+import { EntityManager, UserInsert } from '@src/generated/typetta';
+import { RequestWithDefaultContext } from '@src/context';
+import { AnyEntityManager, EMPTY_SECURITY_DOMAIN, OperationSecurityDomain, SecurityContext, SecurityDomain } from '@src/controllers/entity-manager.controller';
+import { PERMISSION } from '@twinlogix/typetta';
+import { MutationResolvers, QueryResolvers } from '@src/generated/resolvers.types';
+import { gql } from 'apollo-server';
+import { Permission } from '@src/generated/model.types';
 
+// #region // ----- AUTHENTICATION ----- //
 export const Permissions = {
   EDIT_PROJECT: "EDIT_PROJECT",
   CREATE_PROJECT: "EDIT_PROJECT",
@@ -208,25 +210,6 @@ export async function jwtSignAsync(payload: AuthPayload) {
   });
 }
 
-// export async function processRefreshToken(req: express.Request, res: express.Response, next: express.NextFunction) {
-//   const postData = req.body;
-//   if(postData.refreshToken) {
-//     const refreshPayload = await jwtVerifyAsync(postData.refreshToken);
-//     const payload: AuthPayload = {
-//       userId: 
-//     }
-    
-//     const token = await jwtSignAsync(refreshPayload);
-//     const response = {
-//       token: token,
-//       accessToken: token,
-//     }
-//     res.status(200).json(response);        
-//   } else {
-//     res.status(404).send('Invalid request')
-//   }
-// }
-
 // Authenticates with passport and sends a JWT accessToken back.
 export function passportAuthenticateUserAndSendAuthToken(strategy: string) {
   return function(req: any, res: any, next: any): void {
@@ -253,7 +236,9 @@ export function passportAuthenticateUserAndSendAuthToken(strategy: string) {
     })(req, res, next);
   };
 }
+// #endregion // -- AUTHENTICATION ----- //
 
+// #region // ----- PERMISSIONS ----- //
 export const UserRoleCodeRanking = new TwoWayMap<string, number>({
   [RoleCode.User]: 0,
   [RoleCode.Moderator]: 1,
@@ -482,3 +467,4 @@ export async function projectMemberRoleCodeToSecurityContext(entityManager: Enti
       return {};
   }
 }
+// #endregion // -- PERMISSIONS ----- //

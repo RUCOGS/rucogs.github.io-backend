@@ -1,6 +1,5 @@
 import fs from "fs";
 import path from "path";
-import sanitize from "sanitize-filename";
 
 export const UPLOAD_DIRECTORY = "src/uploads";
 export const SELF_HOSTED_PREFIX = "cdn://";

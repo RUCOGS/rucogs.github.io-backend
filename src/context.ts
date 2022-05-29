@@ -2,12 +2,13 @@ import { EntityManager } from "@src/generated/typetta"
 import { AnyEntityManager, EntityManagerMetadata, OperationSecurityDomain, SecurityContext } from "@src/controllers/entity-manager.controller";
 import express from "express";
 
-export type Context = {
+export type ApolloResolversContext = {
   entityManager: AnyEntityManager
-}
-
-export type ApolloResolversContext = Context;
-export type RequestContext = Context & {
+  securityContext?: SecurityContext;
+  authUserId?: string;
+};
+export type RequestContext = {
+  entityManager: AnyEntityManager
   securityContext?: SecurityContext;
 };
 

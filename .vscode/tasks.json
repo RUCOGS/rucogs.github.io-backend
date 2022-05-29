@@ -2,9 +2,9 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "npm: build - app",
+      "label": "npm: build",
       "type": "npm",
-      "script": "compile",
+      "script": "compile:app",
       "group": "build",
     },
     {
@@ -12,7 +12,7 @@
       "type": "shell",
       "command": "echo prepare app to debug",
       "dependsOrder": "sequence",
-      "dependsOn": ["npm: build - app"]
+      "dependsOn": ["npm: build"]
     },
   ]
 }

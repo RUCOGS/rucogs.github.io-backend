@@ -1,5 +1,11 @@
 import { gql } from 'graphql-tag'
 
+const someVar = `
+type Query {
+  oof(sdfsd: String!): Boolean
+}
+`
+
 export default gql`
 
 scalar Date
