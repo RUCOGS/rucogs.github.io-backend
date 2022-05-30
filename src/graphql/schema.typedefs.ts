@@ -77,7 +77,6 @@ type EBoard @entity @mongodb {
 
 type EBoardRole @entity @mongodb {
   id: ID! @id(from: "db") @alias(value: "_id")
-  role: Role! @innerRef(refFrom: "roleCode", refTo: "code")
   roleCode: RoleCode!
   eboard: EBoard! @innerRef
   eboardId: ID!
@@ -85,7 +84,6 @@ type EBoardRole @entity @mongodb {
 
 type UserRole @entity @mongodb {
   id: ID! @id(from: "db") @alias(value: "_id")
-  role: Role! @innerRef(refFrom: "roleCode", refTo: "code")
   roleCode: RoleCode! @schema(metadata: [{unique: 0}])
   user: User! @innerRef
   userId: ID! @schema(metadata: [{unique: 0}])
@@ -136,7 +134,6 @@ type ProjectMember @entity @mongodb {
 
 type ProjectMemberRole @entity @mongodb {
   id: ID! @id(from: "db") @alias(value: "_id")
-  role: Role! @innerRef(refFrom: "roleCode", refTo: "code") @schema(metadata: [{unique: 0}])
   roleCode: RoleCode! @schema(metadata: [{unique: 0}])
   projectMember: ProjectMember! @innerRef
   projectMemberId: ID!

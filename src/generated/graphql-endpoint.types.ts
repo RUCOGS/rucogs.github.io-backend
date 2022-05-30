@@ -76,7 +76,6 @@ export type EBoardRole = {
   eboard: EBoard;
   eboardId: Scalars['ID'];
   id: Scalars['ID'];
-  role: Role;
   roleCode: RoleCode;
 };
 
@@ -104,7 +103,6 @@ export type EBoardRoleInsertInput = {
 
 export type EBoardRoleRelationsFilterInput = {
   eboard?: InputMaybe<EBoardFindInput>;
-  role?: InputMaybe<RoleFindInput>;
 };
 
 export type EBoardRoleSortInput = {
@@ -183,7 +181,6 @@ export type Mutation = {
   createProject: Project;
   createProjectMember: ProjectMember;
   createProjectMemberRole: ProjectMemberRole;
-  createRole: Role;
   createUser: User;
   createUserLoginIdentity: UserLoginIdentity;
   createUserRole: UserRole;
@@ -193,7 +190,6 @@ export type Mutation = {
   deleteProjectMemberRoles?: Maybe<Scalars['Boolean']>;
   deleteProjectMembers?: Maybe<Scalars['Boolean']>;
   deleteProjects?: Maybe<Scalars['Boolean']>;
-  deleteRoles?: Maybe<Scalars['Boolean']>;
   deleteUserLoginIdentitys?: Maybe<Scalars['Boolean']>;
   deleteUserRoles?: Maybe<Scalars['Boolean']>;
   deleteUserSocials?: Maybe<Scalars['Boolean']>;
@@ -203,7 +199,6 @@ export type Mutation = {
   updateProjectMemberRoles?: Maybe<Scalars['Boolean']>;
   updateProjectMembers?: Maybe<Scalars['Boolean']>;
   updateProjects?: Maybe<Scalars['Boolean']>;
-  updateRoles?: Maybe<Scalars['Boolean']>;
   updateUserLoginIdentitys?: Maybe<Scalars['Boolean']>;
   updateUserRoles?: Maybe<Scalars['Boolean']>;
   updateUserSocials?: Maybe<Scalars['Boolean']>;
@@ -233,11 +228,6 @@ export type MutationCreateProjectMemberArgs = {
 
 export type MutationCreateProjectMemberRoleArgs = {
   record: ProjectMemberRoleInsertInput;
-};
-
-
-export type MutationCreateRoleArgs = {
-  record: RoleInsertInput;
 };
 
 
@@ -283,11 +273,6 @@ export type MutationDeleteProjectMembersArgs = {
 
 export type MutationDeleteProjectsArgs = {
   filter: ProjectFilterInput;
-};
-
-
-export type MutationDeleteRolesArgs = {
-  filter: RoleFilterInput;
 };
 
 
@@ -338,12 +323,6 @@ export type MutationUpdateProjectMembersArgs = {
 export type MutationUpdateProjectsArgs = {
   changes: ProjectUpdateInput;
   filter: ProjectFilterInput;
-};
-
-
-export type MutationUpdateRolesArgs = {
-  changes: RoleUpdateInput;
-  filter: RoleFilterInput;
 };
 
 
@@ -494,7 +473,6 @@ export type ProjectMemberRole = {
   id: Scalars['ID'];
   projectMember: ProjectMember;
   projectMemberId: Scalars['ID'];
-  role: Role;
   roleCode: RoleCode;
 };
 
@@ -522,7 +500,6 @@ export type ProjectMemberRoleInsertInput = {
 
 export type ProjectMemberRoleRelationsFilterInput = {
   projectMember?: InputMaybe<ProjectMemberFindInput>;
-  role?: InputMaybe<RoleFindInput>;
 };
 
 export type ProjectMemberRoleSortInput = {
@@ -587,7 +564,6 @@ export type Query = {
   projectMemberRoles: Array<ProjectMemberRole>;
   projectMembers: Array<ProjectMember>;
   projects: Array<Project>;
-  roles: Array<Role>;
   securityContext?: Maybe<Scalars['Json']>;
   securityPolicies?: Maybe<Scalars['Json']>;
   userLoginIdentitys: Array<UserLoginIdentity>;
@@ -642,14 +618,6 @@ export type QueryProjectsArgs = {
 };
 
 
-export type QueryRolesArgs = {
-  filter?: InputMaybe<RoleFilterInput>;
-  limit?: InputMaybe<Scalars['Int']>;
-  skip?: InputMaybe<Scalars['Int']>;
-  sorts?: InputMaybe<Array<RoleSortInput>>;
-};
-
-
 export type QuerySecurityContextArgs = {
   userId?: InputMaybe<Scalars['ID']>;
 };
@@ -695,12 +663,6 @@ export type RefPointer = {
   refTo?: InputMaybe<Scalars['String']>;
 };
 
-export type Role = {
-  __typename?: 'Role';
-  code: RoleCode;
-  permissions: Array<Maybe<Permission>>;
-};
-
 export enum RoleCode {
   Alumni = 'ALUMNI',
   Artist = 'ARTIST',
@@ -734,35 +696,6 @@ export type RoleCodeFilterInput = {
   ne?: InputMaybe<RoleCode>;
   nin?: InputMaybe<Array<RoleCode>>;
   startsWith?: InputMaybe<Scalars['String']>;
-};
-
-export type RoleFilterInput = {
-  and_?: InputMaybe<Array<RoleFilterInput>>;
-  code?: InputMaybe<RoleCodeFilterInput>;
-  nor_?: InputMaybe<Array<RoleFilterInput>>;
-  or_?: InputMaybe<Array<RoleFilterInput>>;
-  permissions?: InputMaybe<PermissionFilterInput>;
-};
-
-export type RoleFindInput = {
-  filter?: InputMaybe<RoleFilterInput>;
-  limit?: InputMaybe<Scalars['Int']>;
-  skip?: InputMaybe<Scalars['Int']>;
-  sorts?: InputMaybe<Array<RoleSortInput>>;
-};
-
-export type RoleInsertInput = {
-  code: RoleCode;
-  permissions: Array<InputMaybe<Permission>>;
-};
-
-export type RoleSortInput = {
-  code?: InputMaybe<SortDirection>;
-  permissions?: InputMaybe<SortDirection>;
-};
-
-export type RoleUpdateInput = {
-  permissions?: InputMaybe<Array<InputMaybe<Permission>>>;
 };
 
 export enum SortDirection {
@@ -902,7 +835,6 @@ export type UserRelationsFilterInput = {
 export type UserRole = {
   __typename?: 'UserRole';
   id: Scalars['ID'];
-  role: Role;
   roleCode: RoleCode;
   user: User;
   userId: Scalars['ID'];
@@ -931,7 +863,6 @@ export type UserRoleInsertInput = {
 };
 
 export type UserRoleRelationsFilterInput = {
-  role?: InputMaybe<RoleFindInput>;
   user?: InputMaybe<UserFindInput>;
 };
 
@@ -1144,14 +1075,8 @@ export type ResolversTypes = {
   ProjectUpdateInput: ProjectUpdateInput;
   Query: ResolverTypeWrapper<{}>;
   RefPointer: RefPointer;
-  Role: ResolverTypeWrapper<Role>;
   RoleCode: RoleCode;
   RoleCodeFilterInput: RoleCodeFilterInput;
-  RoleFilterInput: RoleFilterInput;
-  RoleFindInput: RoleFindInput;
-  RoleInsertInput: RoleInsertInput;
-  RoleSortInput: RoleSortInput;
-  RoleUpdateInput: RoleUpdateInput;
   SortDirection: SortDirection;
   String: ResolverTypeWrapper<Scalars['String']>;
   StringFilterInput: StringFilterInput;
@@ -1240,13 +1165,7 @@ export type ResolversParentTypes = {
   ProjectUpdateInput: ProjectUpdateInput;
   Query: {};
   RefPointer: RefPointer;
-  Role: Role;
   RoleCodeFilterInput: RoleCodeFilterInput;
-  RoleFilterInput: RoleFilterInput;
-  RoleFindInput: RoleFindInput;
-  RoleInsertInput: RoleInsertInput;
-  RoleSortInput: RoleSortInput;
-  RoleUpdateInput: RoleUpdateInput;
   String: Scalars['String'];
   StringFilterInput: StringFilterInput;
   User: User;
@@ -1381,7 +1300,6 @@ export type EBoardRoleResolvers<ContextType = any, ParentType extends ResolversP
   eboard?: Resolver<ResolversTypes['EBoard'], ParentType, ContextType>;
   eboardId?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
-  role?: Resolver<ResolversTypes['Role'], ParentType, ContextType>;
   roleCode?: Resolver<ResolversTypes['RoleCode'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
@@ -1396,7 +1314,6 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   createProject?: Resolver<ResolversTypes['Project'], ParentType, ContextType, RequireFields<MutationCreateProjectArgs, 'record'>>;
   createProjectMember?: Resolver<ResolversTypes['ProjectMember'], ParentType, ContextType, RequireFields<MutationCreateProjectMemberArgs, 'record'>>;
   createProjectMemberRole?: Resolver<ResolversTypes['ProjectMemberRole'], ParentType, ContextType, RequireFields<MutationCreateProjectMemberRoleArgs, 'record'>>;
-  createRole?: Resolver<ResolversTypes['Role'], ParentType, ContextType, RequireFields<MutationCreateRoleArgs, 'record'>>;
   createUser?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationCreateUserArgs, 'record'>>;
   createUserLoginIdentity?: Resolver<ResolversTypes['UserLoginIdentity'], ParentType, ContextType, RequireFields<MutationCreateUserLoginIdentityArgs, 'record'>>;
   createUserRole?: Resolver<ResolversTypes['UserRole'], ParentType, ContextType, RequireFields<MutationCreateUserRoleArgs, 'record'>>;
@@ -1406,7 +1323,6 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   deleteProjectMemberRoles?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationDeleteProjectMemberRolesArgs, 'filter'>>;
   deleteProjectMembers?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationDeleteProjectMembersArgs, 'filter'>>;
   deleteProjects?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationDeleteProjectsArgs, 'filter'>>;
-  deleteRoles?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationDeleteRolesArgs, 'filter'>>;
   deleteUserLoginIdentitys?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationDeleteUserLoginIdentitysArgs, 'filter'>>;
   deleteUserRoles?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationDeleteUserRolesArgs, 'filter'>>;
   deleteUserSocials?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationDeleteUserSocialsArgs, 'filter'>>;
@@ -1416,7 +1332,6 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   updateProjectMemberRoles?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationUpdateProjectMemberRolesArgs, 'changes' | 'filter'>>;
   updateProjectMembers?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationUpdateProjectMembersArgs, 'changes' | 'filter'>>;
   updateProjects?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationUpdateProjectsArgs, 'changes' | 'filter'>>;
-  updateRoles?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationUpdateRolesArgs, 'changes' | 'filter'>>;
   updateUserLoginIdentitys?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationUpdateUserLoginIdentitysArgs, 'changes' | 'filter'>>;
   updateUserRoles?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationUpdateUserRolesArgs, 'changes' | 'filter'>>;
   updateUserSocials?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationUpdateUserSocialsArgs, 'changes' | 'filter'>>;
@@ -1454,7 +1369,6 @@ export type ProjectMemberRoleResolvers<ContextType = any, ParentType extends Res
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   projectMember?: Resolver<ResolversTypes['ProjectMember'], ParentType, ContextType>;
   projectMemberId?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
-  role?: Resolver<ResolversTypes['Role'], ParentType, ContextType>;
   roleCode?: Resolver<ResolversTypes['RoleCode'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
@@ -1465,19 +1379,12 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   projectMemberRoles?: Resolver<Array<ResolversTypes['ProjectMemberRole']>, ParentType, ContextType, Partial<QueryProjectMemberRolesArgs>>;
   projectMembers?: Resolver<Array<ResolversTypes['ProjectMember']>, ParentType, ContextType, Partial<QueryProjectMembersArgs>>;
   projects?: Resolver<Array<ResolversTypes['Project']>, ParentType, ContextType, Partial<QueryProjectsArgs>>;
-  roles?: Resolver<Array<ResolversTypes['Role']>, ParentType, ContextType, Partial<QueryRolesArgs>>;
   securityContext?: Resolver<Maybe<ResolversTypes['Json']>, ParentType, ContextType, Partial<QuerySecurityContextArgs>>;
   securityPolicies?: Resolver<Maybe<ResolversTypes['Json']>, ParentType, ContextType>;
   userLoginIdentitys?: Resolver<Array<ResolversTypes['UserLoginIdentity']>, ParentType, ContextType, Partial<QueryUserLoginIdentitysArgs>>;
   userRoles?: Resolver<Array<ResolversTypes['UserRole']>, ParentType, ContextType, Partial<QueryUserRolesArgs>>;
   userSocials?: Resolver<Array<ResolversTypes['UserSocial']>, ParentType, ContextType, Partial<QueryUserSocialsArgs>>;
   users?: Resolver<Array<ResolversTypes['User']>, ParentType, ContextType, Partial<QueryUsersArgs>>;
-};
-
-export type RoleResolvers<ContextType = any, ParentType extends ResolversParentTypes['Role'] = ResolversParentTypes['Role']> = {
-  code?: Resolver<ResolversTypes['RoleCode'], ParentType, ContextType>;
-  permissions?: Resolver<Array<Maybe<ResolversTypes['Permission']>>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
 export type UserResolvers<ContextType = any, ParentType extends ResolversParentTypes['User'] = ResolversParentTypes['User']> = {
@@ -1509,7 +1416,6 @@ export type UserLoginIdentityResolvers<ContextType = any, ParentType extends Res
 
 export type UserRoleResolvers<ContextType = any, ParentType extends ResolversParentTypes['UserRole'] = ResolversParentTypes['UserRole']> = {
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
-  role?: Resolver<ResolversTypes['Role'], ParentType, ContextType>;
   roleCode?: Resolver<ResolversTypes['RoleCode'], ParentType, ContextType>;
   user?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
   userId?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
@@ -1536,7 +1442,6 @@ export type Resolvers<ContextType = any> = {
   ProjectMember?: ProjectMemberResolvers<ContextType>;
   ProjectMemberRole?: ProjectMemberRoleResolvers<ContextType>;
   Query?: QueryResolvers<ContextType>;
-  Role?: RoleResolvers<ContextType>;
   User?: UserResolvers<ContextType>;
   UserLoginIdentity?: UserLoginIdentityResolvers<ContextType>;
   UserRole?: UserRoleResolvers<ContextType>;

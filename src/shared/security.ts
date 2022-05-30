@@ -1,6 +1,4 @@
-import { AnyEntityManager } from "@src/controllers/entity-manager.controller";
-import { Permission, RoleCode, RoleSortInput } from "@src/generated/model.types";
-import { OneToManyTwoWayMap, TwoWayMap } from "@src/shared/utils";
+import { Permission, RoleCode } from "@src/generated/model.types";
 
 export type SecurityDomain = Partial<CompleteSecurityDomain>
 

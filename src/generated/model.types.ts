@@ -74,7 +74,6 @@ export type EBoardRole = {
   eboard: EBoard
   eboardId: Scalars['ID']
   id: Scalars['ID']
-  role: Role
   roleCode: RoleCode
 }
 
@@ -102,7 +101,6 @@ export type EBoardRoleInsertInput = {
 
 export type EBoardRoleRelationsFilterInput = {
   eboard?: InputMaybe<EBoardFindInput>
-  role?: InputMaybe<RoleFindInput>
 }
 
 export type EBoardRoleSortInput = {
@@ -176,7 +174,6 @@ export type Mutation = {
   createProject: Project
   createProjectMember: ProjectMember
   createProjectMemberRole: ProjectMemberRole
-  createRole: Role
   createUser: User
   createUserLoginIdentity: UserLoginIdentity
   createUserRole: UserRole
@@ -186,7 +183,6 @@ export type Mutation = {
   deleteProjectMemberRoles?: Maybe<Scalars['Boolean']>
   deleteProjectMembers?: Maybe<Scalars['Boolean']>
   deleteProjects?: Maybe<Scalars['Boolean']>
-  deleteRoles?: Maybe<Scalars['Boolean']>
   deleteUserLoginIdentitys?: Maybe<Scalars['Boolean']>
   deleteUserRoles?: Maybe<Scalars['Boolean']>
   deleteUserSocials?: Maybe<Scalars['Boolean']>
@@ -196,7 +192,6 @@ export type Mutation = {
   updateProjectMemberRoles?: Maybe<Scalars['Boolean']>
   updateProjectMembers?: Maybe<Scalars['Boolean']>
   updateProjects?: Maybe<Scalars['Boolean']>
-  updateRoles?: Maybe<Scalars['Boolean']>
   updateUserLoginIdentitys?: Maybe<Scalars['Boolean']>
   updateUserRoles?: Maybe<Scalars['Boolean']>
   updateUserSocials?: Maybe<Scalars['Boolean']>
@@ -221,10 +216,6 @@ export type MutationCreateProjectMemberArgs = {
 
 export type MutationCreateProjectMemberRoleArgs = {
   record: ProjectMemberRoleInsertInput
-}
-
-export type MutationCreateRoleArgs = {
-  record: RoleInsertInput
 }
 
 export type MutationCreateUserArgs = {
@@ -261,10 +252,6 @@ export type MutationDeleteProjectMembersArgs = {
 
 export type MutationDeleteProjectsArgs = {
   filter: ProjectFilterInput
-}
-
-export type MutationDeleteRolesArgs = {
-  filter: RoleFilterInput
 }
 
 export type MutationDeleteUserLoginIdentitysArgs = {
@@ -306,11 +293,6 @@ export type MutationUpdateProjectMembersArgs = {
 export type MutationUpdateProjectsArgs = {
   changes: ProjectUpdateInput
   filter: ProjectFilterInput
-}
-
-export type MutationUpdateRolesArgs = {
-  changes: RoleUpdateInput
-  filter: RoleFilterInput
 }
 
 export type MutationUpdateUserLoginIdentitysArgs = {
@@ -458,7 +440,6 @@ export type ProjectMemberRole = {
   id: Scalars['ID']
   projectMember: ProjectMember
   projectMemberId: Scalars['ID']
-  role: Role
   roleCode: RoleCode
 }
 
@@ -486,7 +467,6 @@ export type ProjectMemberRoleInsertInput = {
 
 export type ProjectMemberRoleRelationsFilterInput = {
   projectMember?: InputMaybe<ProjectMemberFindInput>
-  role?: InputMaybe<RoleFindInput>
 }
 
 export type ProjectMemberRoleSortInput = {
@@ -551,7 +531,6 @@ export type Query = {
   projectMemberRoles: Array<ProjectMemberRole>
   projectMembers: Array<ProjectMember>
   projects: Array<Project>
-  roles: Array<Role>
   userLoginIdentitys: Array<UserLoginIdentity>
   userRoles: Array<UserRole>
   userSocials: Array<UserSocial>
@@ -598,13 +577,6 @@ export type QueryProjectsArgs = {
   sorts?: InputMaybe<Array<ProjectSortInput>>
 }
 
-export type QueryRolesArgs = {
-  filter?: InputMaybe<RoleFilterInput>
-  limit?: InputMaybe<Scalars['Int']>
-  skip?: InputMaybe<Scalars['Int']>
-  sorts?: InputMaybe<Array<RoleSortInput>>
-}
-
 export type QueryUserLoginIdentitysArgs = {
   filter?: InputMaybe<UserLoginIdentityFilterInput>
   limit?: InputMaybe<Scalars['Int']>
@@ -635,12 +607,6 @@ export type QueryUsersArgs = {
   relations?: InputMaybe<UserRelationsFilterInput>
   skip?: InputMaybe<Scalars['Int']>
   sorts?: InputMaybe<Array<UserSortInput>>
-}
-
-export type Role = {
-  __typename?: 'Role'
-  code: RoleCode
-  permissions: Array<Maybe<Permission>>
 }
 
 export const RoleCode = {
@@ -677,35 +643,6 @@ export type RoleCodeFilterInput = {
   ne?: InputMaybe<RoleCode>
   nin?: InputMaybe<Array<RoleCode>>
   startsWith?: InputMaybe<Scalars['String']>
-}
-
-export type RoleFilterInput = {
-  and_?: InputMaybe<Array<RoleFilterInput>>
-  code?: InputMaybe<RoleCodeFilterInput>
-  nor_?: InputMaybe<Array<RoleFilterInput>>
-  or_?: InputMaybe<Array<RoleFilterInput>>
-  permissions?: InputMaybe<PermissionFilterInput>
-}
-
-export type RoleFindInput = {
-  filter?: InputMaybe<RoleFilterInput>
-  limit?: InputMaybe<Scalars['Int']>
-  skip?: InputMaybe<Scalars['Int']>
-  sorts?: InputMaybe<Array<RoleSortInput>>
-}
-
-export type RoleInsertInput = {
-  code: RoleCode
-  permissions: Array<InputMaybe<Permission>>
-}
-
-export type RoleSortInput = {
-  code?: InputMaybe<SortDirection>
-  permissions?: InputMaybe<SortDirection>
-}
-
-export type RoleUpdateInput = {
-  permissions?: InputMaybe<Array<InputMaybe<Permission>>>
 }
 
 export const SortDirection = {
@@ -847,7 +784,6 @@ export type UserRelationsFilterInput = {
 export type UserRole = {
   __typename?: 'UserRole'
   id: Scalars['ID']
-  role: Role
   roleCode: RoleCode
   user: User
   userId: Scalars['ID']
@@ -876,7 +812,6 @@ export type UserRoleInsertInput = {
 }
 
 export type UserRoleRelationsFilterInput = {
-  role?: InputMaybe<RoleFindInput>
   user?: InputMaybe<UserFindInput>
 }
 

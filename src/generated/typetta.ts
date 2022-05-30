@@ -163,7 +163,7 @@ export class InMemoryEBoardDAO<MetadataType, OperationMetadataType> extends T.Ab
 }
 
 export type EBoardRoleExcludedFields = never
-export type EBoardRoleRelationFields = 'eboard' | 'role'
+export type EBoardRoleRelationFields = 'eboard'
 
 export function eBoardRoleSchema(): T.Schema<types.Scalars> {
   return {
@@ -189,15 +189,6 @@ export function eBoardRoleSchema(): T.Schema<types.Scalars> {
       required: true,
       alias: '_id',
     },
-    role: {
-      type: 'relation',
-      relation: 'inner',
-      schema: () => roleSchema(),
-      refFrom: 'roleCode',
-      refTo: 'code',
-      dao: 'role',
-      required: true,
-    },
     roleCode: {
       type: 'scalar',
       scalar: 'String',
@@ -221,7 +212,6 @@ export type EBoardRoleProjection = {
   eboard?: EBoardProjection | boolean
   eboardId?: boolean
   id?: boolean
-  role?: RoleProjection | boolean
   roleCode?: boolean
 }
 export type EBoardRoleParam<P extends EBoardRoleProjection> = T.ParamProjection<types.EBoardRole, EBoardRoleProjection, P>
@@ -689,7 +679,7 @@ export class InMemoryProjectMemberDAO<MetadataType, OperationMetadataType> exten
 }
 
 export type ProjectMemberRoleExcludedFields = never
-export type ProjectMemberRoleRelationFields = 'projectMember' | 'role'
+export type ProjectMemberRoleRelationFields = 'projectMember'
 
 export function projectMemberRoleSchema(): T.Schema<types.Scalars> {
   return {
@@ -715,16 +705,6 @@ export function projectMemberRoleSchema(): T.Schema<types.Scalars> {
       scalar: 'ID',
       required: true,
     },
-    role: {
-      type: 'relation',
-      relation: 'inner',
-      schema: () => roleSchema(),
-      refFrom: 'roleCode',
-      refTo: 'code',
-      dao: 'role',
-      required: true,
-      metadata: Object.fromEntries([['undefined', 'undefined']]),
-    },
     roleCode: {
       type: 'scalar',
       scalar: 'String',
@@ -749,7 +729,6 @@ export type ProjectMemberRoleProjection = {
   id?: boolean
   projectMember?: ProjectMemberProjection | boolean
   projectMemberId?: boolean
-  role?: RoleProjection | boolean
   roleCode?: boolean
 }
 export type ProjectMemberRoleParam<P extends ProjectMemberRoleProjection> = T.ParamProjection<types.ProjectMemberRole, ProjectMemberRoleProjection, P>
@@ -828,121 +807,6 @@ export class InMemoryProjectMemberRoleDAO<MetadataType, OperationMetadataType> e
     super({
       ...params,
       schema: projectMemberRoleSchema(),
-    })
-  }
-}
-
-export type RoleExcludedFields = never
-export type RoleRelationFields = never
-
-export function roleSchema(): T.Schema<types.Scalars> {
-  return {
-    code: {
-      type: 'scalar',
-      scalar: 'String',
-      isId: true,
-      generationStrategy: 'user',
-      required: true,
-      isEnum: true,
-    },
-    permissions: {
-      type: 'scalar',
-      scalar: 'String',
-      required: true,
-      isList: true,
-      isEnum: true,
-    },
-  }
-}
-
-type RoleFilterFields = {
-  code?: types.RoleCode | null | T.EqualityOperators<types.RoleCode> | T.ElementOperators | T.StringOperators
-  permissions?: types.Permission[] | null | T.EqualityOperators<types.Permission[]> | T.ElementOperators | T.StringOperators
-}
-export type RoleFilter = RoleFilterFields & T.LogicalOperators<RoleFilterFields | RoleRawFilter>
-export type RoleRawFilter = () => M.Filter<M.Document>
-
-export type RoleRelations = Record<never, string>
-
-export type RoleProjection = {
-  code?: boolean
-  permissions?: boolean
-}
-export type RoleParam<P extends RoleProjection> = T.ParamProjection<types.Role, RoleProjection, P>
-
-export type RoleSortKeys = 'code' | 'permissions'
-export type RoleSort = Partial<Record<RoleSortKeys, T.SortDirection>>
-export type RoleRawSort = () => M.Sort
-
-export type RoleUpdate = {
-  code?: types.RoleCode
-  permissions?: (null | types.Permission)[]
-}
-export type RoleRawUpdate = () => M.UpdateFilter<M.Document>
-
-export type RoleInsert = {
-  code: types.RoleCode
-  permissions: (null | types.Permission)[]
-}
-
-type RoleDAOGenerics<MetadataType, OperationMetadataType> = T.MongoDBDAOGenerics<
-  types.Role,
-  'code',
-  'String',
-  RoleFilter,
-  RoleRawFilter,
-  RoleRelations,
-  RoleProjection,
-  RoleSort,
-  RoleRawSort,
-  RoleInsert,
-  RoleUpdate,
-  RoleRawUpdate,
-  RoleExcludedFields,
-  RoleRelationFields,
-  MetadataType,
-  OperationMetadataType,
-  types.Scalars,
-  'role',
-  EntityManager<MetadataType, OperationMetadataType>
->
-export type RoleDAOParams<MetadataType, OperationMetadataType> = Omit<
-  T.MongoDBDAOParams<RoleDAOGenerics<MetadataType, OperationMetadataType>>,
-  'idGenerator' | 'idField' | 'schema' | 'idScalar' | 'idGeneration'
->
-export type InMemoryRoleDAOParams<MetadataType, OperationMetadataType> = Omit<
-  T.InMemoryDAOParams<RoleDAOGenerics<MetadataType, OperationMetadataType>>,
-  'idGenerator' | 'idField' | 'schema' | 'idScalar' | 'idGeneration'
->
-
-export class RoleDAO<MetadataType, OperationMetadataType> extends T.AbstractMongoDBDAO<RoleDAOGenerics<MetadataType, OperationMetadataType>> {
-  public static projection<P extends RoleProjection>(p: P) {
-    return p
-  }
-  public static mergeProjection<P1 extends RoleProjection, P2 extends RoleProjection>(p1: P1, p2: P2): T.SelectProjection<RoleProjection, P1, P2> {
-    return T.mergeProjections(p1, p2) as T.SelectProjection<RoleProjection, P1, P2>
-  }
-
-  public constructor(params: RoleDAOParams<MetadataType, OperationMetadataType>) {
-    super({
-      ...params,
-      schema: roleSchema(),
-    })
-  }
-}
-
-export class InMemoryRoleDAO<MetadataType, OperationMetadataType> extends T.AbstractInMemoryDAO<RoleDAOGenerics<MetadataType, OperationMetadataType>> {
-  public static projection<P extends RoleProjection>(p: P) {
-    return p
-  }
-  public static mergeProjection<P1 extends RoleProjection, P2 extends RoleProjection>(p1: P1, p2: P2): T.SelectProjection<RoleProjection, P1, P2> {
-    return T.mergeProjections(p1, p2) as T.SelectProjection<RoleProjection, P1, P2>
-  }
-
-  public constructor(params: InMemoryRoleDAOParams<MetadataType, OperationMetadataType>) {
-    super({
-      ...params,
-      schema: roleSchema(),
     })
   }
 }
@@ -1345,7 +1209,7 @@ export class InMemoryUserLoginIdentityDAO<MetadataType, OperationMetadataType> e
 }
 
 export type UserRoleExcludedFields = never
-export type UserRoleRelationFields = 'role' | 'user'
+export type UserRoleRelationFields = 'user'
 
 export function userRoleSchema(): T.Schema<types.Scalars> {
   return {
@@ -1356,15 +1220,6 @@ export function userRoleSchema(): T.Schema<types.Scalars> {
       generationStrategy: 'db',
       required: true,
       alias: '_id',
-    },
-    role: {
-      type: 'relation',
-      relation: 'inner',
-      schema: () => roleSchema(),
-      refFrom: 'roleCode',
-      refTo: 'code',
-      dao: 'role',
-      required: true,
     },
     roleCode: {
       type: 'scalar',
@@ -1403,7 +1258,6 @@ export type UserRoleRelations = Record<never, string>
 
 export type UserRoleProjection = {
   id?: boolean
-  role?: RoleProjection | boolean
   roleCode?: boolean
   user?: UserProjection | boolean
   userId?: boolean
@@ -1646,7 +1500,6 @@ export type EntityManagerParams<MetadataType, OperationMetadataType, Permissions
     project?: Pick<Partial<ProjectDAOParams<MetadataType, OperationMetadataType>>, 'middlewares' | 'metadata'>
     projectMember?: Pick<Partial<ProjectMemberDAOParams<MetadataType, OperationMetadataType>>, 'middlewares' | 'metadata'>
     projectMemberRole?: Pick<Partial<ProjectMemberRoleDAOParams<MetadataType, OperationMetadataType>>, 'middlewares' | 'metadata'>
-    role?: Pick<Partial<RoleDAOParams<MetadataType, OperationMetadataType>>, 'middlewares' | 'metadata'>
     user?: Pick<Partial<UserDAOParams<MetadataType, OperationMetadataType>>, 'middlewares' | 'metadata'>
     userLoginIdentity?: Pick<Partial<UserLoginIdentityDAOParams<MetadataType, OperationMetadataType>>, 'middlewares' | 'metadata'>
     userRole?: Pick<Partial<UserRoleDAOParams<MetadataType, OperationMetadataType>>, 'middlewares' | 'metadata'>
@@ -1654,7 +1507,7 @@ export type EntityManagerParams<MetadataType, OperationMetadataType, Permissions
   }
   mongodb: Record<'default', M.Db | 'mock'>
   scalars?: T.UserInputDriverDataTypeAdapterMap<types.Scalars, 'mongo'>
-  log?: T.LogInput<'eBoard' | 'eBoardRole' | 'project' | 'projectMember' | 'projectMemberRole' | 'role' | 'user' | 'userLoginIdentity' | 'userRole' | 'userSocial'>
+  log?: T.LogInput<'eBoard' | 'eBoardRole' | 'project' | 'projectMember' | 'projectMemberRole' | 'user' | 'userLoginIdentity' | 'userRole' | 'userSocial'>
   security?: T.EntityManagerSecurtyPolicy<DAOGenericsMap<MetadataType, OperationMetadataType>, OperationMetadataType, Permissions, SecurityDomain>
 }
 
@@ -1671,7 +1524,6 @@ export class EntityManager<MetadataType = never, OperationMetadataType = never, 
   private _project: ProjectDAO<MetadataType, OperationMetadataType> | undefined
   private _projectMember: ProjectMemberDAO<MetadataType, OperationMetadataType> | undefined
   private _projectMemberRole: ProjectMemberRoleDAO<MetadataType, OperationMetadataType> | undefined
-  private _role: RoleDAO<MetadataType, OperationMetadataType> | undefined
   private _user: UserDAO<MetadataType, OperationMetadataType> | undefined
   private _userLoginIdentity: UserLoginIdentityDAO<MetadataType, OperationMetadataType> | undefined
   private _userRole: UserRoleDAO<MetadataType, OperationMetadataType> | undefined
@@ -1684,7 +1536,7 @@ export class EntityManager<MetadataType = never, OperationMetadataType = never, 
 
   private middlewares: (EntityManagerMiddleware<MetadataType, OperationMetadataType> | GroupMiddleware<any, MetadataType, OperationMetadataType>)[]
 
-  private logger?: T.LogFunction<'eBoard' | 'eBoardRole' | 'project' | 'projectMember' | 'projectMemberRole' | 'role' | 'user' | 'userLoginIdentity' | 'userRole' | 'userSocial'>
+  private logger?: T.LogFunction<'eBoard' | 'eBoardRole' | 'project' | 'projectMember' | 'projectMemberRole' | 'user' | 'userLoginIdentity' | 'userRole' | 'userSocial'>
 
   get eBoard(): EBoardDAO<MetadataType, OperationMetadataType> {
     if (!this._eBoard) {
@@ -1851,33 +1703,6 @@ export class EntityManager<MetadataType = never, OperationMetadataType = never, 
     }
     return this._projectMemberRole
   }
-  get role(): RoleDAO<MetadataType, OperationMetadataType> {
-    if (!this._role) {
-      const db = this.mongodb.default
-      this._role =
-        db === 'mock'
-          ? (new InMemoryRoleDAO({
-              entityManager: this,
-              datasource: null,
-              metadata: this.metadata,
-              ...this.overrides?.role,
-              middlewares: [...(this.overrides?.role?.middlewares || []), ...(selectMiddleware('role', this.middlewares) as T.DAOMiddleware<RoleDAOGenerics<MetadataType, OperationMetadataType>>[])],
-              name: 'role',
-              logger: this.logger,
-            }) as unknown as RoleDAO<MetadataType, OperationMetadataType>)
-          : new RoleDAO({
-              entityManager: this,
-              datasource: 'default',
-              metadata: this.metadata,
-              ...this.overrides?.role,
-              collection: db.collection('roles'),
-              middlewares: [...(this.overrides?.role?.middlewares || []), ...(selectMiddleware('role', this.middlewares) as T.DAOMiddleware<RoleDAOGenerics<MetadataType, OperationMetadataType>>[])],
-              name: 'role',
-              logger: this.logger,
-            })
-    }
-    return this._role
-  }
   get user(): UserDAO<MetadataType, OperationMetadataType> {
     if (!this._user) {
       const db = this.mongodb.default
@@ -2037,7 +1862,6 @@ export class EntityManager<MetadataType = never, OperationMetadataType = never, 
         project: M.Collection<M.Document> | null
         projectMember: M.Collection<M.Document> | null
         projectMemberRole: M.Collection<M.Document> | null
-        role: M.Collection<M.Document> | null
         user: M.Collection<M.Document> | null
         userLoginIdentity: M.Collection<M.Document> | null
         userRole: M.Collection<M.Document> | null
@@ -2053,7 +1877,6 @@ export class EntityManager<MetadataType = never, OperationMetadataType = never, 
         project: this.mongodb.default === 'mock' ? null : this.mongodb.default.collection('projects'),
         projectMember: this.mongodb.default === 'mock' ? null : this.mongodb.default.collection('projectMembers'),
         projectMemberRole: this.mongodb.default === 'mock' ? null : this.mongodb.default.collection('projectMemberRoles'),
-        role: this.mongodb.default === 'mock' ? null : this.mongodb.default.collection('roles'),
         user: this.mongodb.default === 'mock' ? null : this.mongodb.default.collection('users'),
         userLoginIdentity: this.mongodb.default === 'mock' ? null : this.mongodb.default.collection('userLoginIdentitys'),
         userRole: this.mongodb.default === 'mock' ? null : this.mongodb.default.collection('userRoles'),
@@ -2074,7 +1897,6 @@ type DAOGenericsMap<MetadataType, OperationMetadataType> = {
   project: ProjectDAOGenerics<MetadataType, OperationMetadataType>
   projectMember: ProjectMemberDAOGenerics<MetadataType, OperationMetadataType>
   projectMemberRole: ProjectMemberRoleDAOGenerics<MetadataType, OperationMetadataType>
-  role: RoleDAOGenerics<MetadataType, OperationMetadataType>
   user: UserDAOGenerics<MetadataType, OperationMetadataType>
   userLoginIdentity: UserLoginIdentityDAOGenerics<MetadataType, OperationMetadataType>
   userRole: UserRoleDAOGenerics<MetadataType, OperationMetadataType>

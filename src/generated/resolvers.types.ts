@@ -106,14 +106,8 @@ export type ResolversTypes = {
   ProjectSortInput: types.ProjectSortInput
   ProjectUpdateInput: types.ProjectUpdateInput
   Query: ResolverTypeWrapper<{}>
-  Role: ResolverTypeWrapper<types.Role>
   RoleCode: types.RoleCode
   RoleCodeFilterInput: types.RoleCodeFilterInput
-  RoleFilterInput: types.RoleFilterInput
-  RoleFindInput: types.RoleFindInput
-  RoleInsertInput: types.RoleInsertInput
-  RoleSortInput: types.RoleSortInput
-  RoleUpdateInput: types.RoleUpdateInput
   SortDirection: types.SortDirection
   String: ResolverTypeWrapper<types.Scalars['String']>
   StringFilterInput: types.StringFilterInput
@@ -200,13 +194,7 @@ export type ResolversParentTypes = {
   ProjectSortInput: types.ProjectSortInput
   ProjectUpdateInput: types.ProjectUpdateInput
   Query: {}
-  Role: types.Role
   RoleCodeFilterInput: types.RoleCodeFilterInput
-  RoleFilterInput: types.RoleFilterInput
-  RoleFindInput: types.RoleFindInput
-  RoleInsertInput: types.RoleInsertInput
-  RoleSortInput: types.RoleSortInput
-  RoleUpdateInput: types.RoleUpdateInput
   String: types.Scalars['String']
   StringFilterInput: types.StringFilterInput
   User: types.User
@@ -257,7 +245,6 @@ export type EBoardRoleResolvers<ContextType = any, ParentType extends ResolversP
   eboard?: Resolver<ResolversTypes['EBoard'], ParentType, ContextType>
   eboardId?: Resolver<ResolversTypes['ID'], ParentType, ContextType>
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>
-  role?: Resolver<ResolversTypes['Role'], ParentType, ContextType>
   roleCode?: Resolver<ResolversTypes['RoleCode'], ParentType, ContextType>
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>
 }
@@ -272,7 +259,6 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   createProject?: Resolver<ResolversTypes['Project'], ParentType, ContextType, RequireFields<types.MutationCreateProjectArgs, 'record'>>
   createProjectMember?: Resolver<ResolversTypes['ProjectMember'], ParentType, ContextType, RequireFields<types.MutationCreateProjectMemberArgs, 'record'>>
   createProjectMemberRole?: Resolver<ResolversTypes['ProjectMemberRole'], ParentType, ContextType, RequireFields<types.MutationCreateProjectMemberRoleArgs, 'record'>>
-  createRole?: Resolver<ResolversTypes['Role'], ParentType, ContextType, RequireFields<types.MutationCreateRoleArgs, 'record'>>
   createUser?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<types.MutationCreateUserArgs, 'record'>>
   createUserLoginIdentity?: Resolver<ResolversTypes['UserLoginIdentity'], ParentType, ContextType, RequireFields<types.MutationCreateUserLoginIdentityArgs, 'record'>>
   createUserRole?: Resolver<ResolversTypes['UserRole'], ParentType, ContextType, RequireFields<types.MutationCreateUserRoleArgs, 'record'>>
@@ -282,7 +268,6 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   deleteProjectMemberRoles?: Resolver<types.Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<types.MutationDeleteProjectMemberRolesArgs, 'filter'>>
   deleteProjectMembers?: Resolver<types.Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<types.MutationDeleteProjectMembersArgs, 'filter'>>
   deleteProjects?: Resolver<types.Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<types.MutationDeleteProjectsArgs, 'filter'>>
-  deleteRoles?: Resolver<types.Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<types.MutationDeleteRolesArgs, 'filter'>>
   deleteUserLoginIdentitys?: Resolver<types.Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<types.MutationDeleteUserLoginIdentitysArgs, 'filter'>>
   deleteUserRoles?: Resolver<types.Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<types.MutationDeleteUserRolesArgs, 'filter'>>
   deleteUserSocials?: Resolver<types.Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<types.MutationDeleteUserSocialsArgs, 'filter'>>
@@ -292,7 +277,6 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   updateProjectMemberRoles?: Resolver<types.Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<types.MutationUpdateProjectMemberRolesArgs, 'changes' | 'filter'>>
   updateProjectMembers?: Resolver<types.Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<types.MutationUpdateProjectMembersArgs, 'changes' | 'filter'>>
   updateProjects?: Resolver<types.Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<types.MutationUpdateProjectsArgs, 'changes' | 'filter'>>
-  updateRoles?: Resolver<types.Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<types.MutationUpdateRolesArgs, 'changes' | 'filter'>>
   updateUserLoginIdentitys?: Resolver<types.Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<types.MutationUpdateUserLoginIdentitysArgs, 'changes' | 'filter'>>
   updateUserRoles?: Resolver<types.Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<types.MutationUpdateUserRolesArgs, 'changes' | 'filter'>>
   updateUserSocials?: Resolver<types.Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<types.MutationUpdateUserSocialsArgs, 'changes' | 'filter'>>
@@ -330,7 +314,6 @@ export type ProjectMemberRoleResolvers<ContextType = any, ParentType extends Res
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>
   projectMember?: Resolver<ResolversTypes['ProjectMember'], ParentType, ContextType>
   projectMemberId?: Resolver<ResolversTypes['ID'], ParentType, ContextType>
-  role?: Resolver<ResolversTypes['Role'], ParentType, ContextType>
   roleCode?: Resolver<ResolversTypes['RoleCode'], ParentType, ContextType>
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>
 }
@@ -341,17 +324,10 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   projectMemberRoles?: Resolver<Array<ResolversTypes['ProjectMemberRole']>, ParentType, ContextType, Partial<types.QueryProjectMemberRolesArgs>>
   projectMembers?: Resolver<Array<ResolversTypes['ProjectMember']>, ParentType, ContextType, Partial<types.QueryProjectMembersArgs>>
   projects?: Resolver<Array<ResolversTypes['Project']>, ParentType, ContextType, Partial<types.QueryProjectsArgs>>
-  roles?: Resolver<Array<ResolversTypes['Role']>, ParentType, ContextType, Partial<types.QueryRolesArgs>>
   userLoginIdentitys?: Resolver<Array<ResolversTypes['UserLoginIdentity']>, ParentType, ContextType, Partial<types.QueryUserLoginIdentitysArgs>>
   userRoles?: Resolver<Array<ResolversTypes['UserRole']>, ParentType, ContextType, Partial<types.QueryUserRolesArgs>>
   userSocials?: Resolver<Array<ResolversTypes['UserSocial']>, ParentType, ContextType, Partial<types.QueryUserSocialsArgs>>
   users?: Resolver<Array<ResolversTypes['User']>, ParentType, ContextType, Partial<types.QueryUsersArgs>>
-}
-
-export type RoleResolvers<ContextType = any, ParentType extends ResolversParentTypes['Role'] = ResolversParentTypes['Role']> = {
-  code?: Resolver<ResolversTypes['RoleCode'], ParentType, ContextType>
-  permissions?: Resolver<Array<types.Maybe<ResolversTypes['Permission']>>, ParentType, ContextType>
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>
 }
 
 export type UserResolvers<ContextType = any, ParentType extends ResolversParentTypes['User'] = ResolversParentTypes['User']> = {
@@ -383,7 +359,6 @@ export type UserLoginIdentityResolvers<ContextType = any, ParentType extends Res
 
 export type UserRoleResolvers<ContextType = any, ParentType extends ResolversParentTypes['UserRole'] = ResolversParentTypes['UserRole']> = {
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>
-  role?: Resolver<ResolversTypes['Role'], ParentType, ContextType>
   roleCode?: Resolver<ResolversTypes['RoleCode'], ParentType, ContextType>
   user?: Resolver<ResolversTypes['User'], ParentType, ContextType>
   userId?: Resolver<ResolversTypes['ID'], ParentType, ContextType>
@@ -410,7 +385,6 @@ export type Resolvers<ContextType = any> = {
   ProjectMember?: ProjectMemberResolvers<ContextType>
   ProjectMemberRole?: ProjectMemberRoleResolvers<ContextType>
   Query?: QueryResolvers<ContextType>
-  Role?: RoleResolvers<ContextType>
   User?: UserResolvers<ContextType>
   UserLoginIdentity?: UserLoginIdentityResolvers<ContextType>
   UserRole?: UserRoleResolvers<ContextType>

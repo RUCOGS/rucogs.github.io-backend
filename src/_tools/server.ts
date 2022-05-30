@@ -1,4 +1,4 @@
-import { typeDefs } from '@src/shared/typedefs-resolvers';
+import { typeDefs } from '@src/misc/typedefs-resolvers';
 import { ApolloServer } from 'apollo-server';
 import { exec } from 'child_process';
 

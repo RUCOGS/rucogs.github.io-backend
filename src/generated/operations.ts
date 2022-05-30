@@ -169,7 +169,6 @@ export default gql`
   }
   input EBoardRoleRelationsFilterInput {
     eboard: EBoardFindInput
-    role: RoleFindInput
   }
   input EBoardRoleFindInput {
     filter: EBoardRoleFilterInput
@@ -310,7 +309,6 @@ export default gql`
   }
   input ProjectMemberRoleRelationsFilterInput {
     projectMember: ProjectMemberFindInput
-    role: RoleFindInput
   }
   input ProjectMemberRoleFindInput {
     filter: ProjectMemberRoleFilterInput
@@ -320,33 +318,6 @@ export default gql`
     relations: ProjectMemberRoleRelationsFilterInput
   }
   ########### ProjectMemberRole ###########
-
-  ########### Role ###########
-  input RoleInsertInput {
-    code: RoleCode!
-    permissions: [Permission]!
-  }
-  input RoleUpdateInput {
-    permissions: [Permission]
-  }
-  input RoleSortInput {
-    code: SortDirection
-    permissions: SortDirection
-  }
-  input RoleFilterInput {
-    code: RoleCodeFilterInput
-    permissions: PermissionFilterInput
-    and_: [RoleFilterInput!]
-    or_: [RoleFilterInput!]
-    nor_: [RoleFilterInput!]
-  }
-  input RoleFindInput {
-    filter: RoleFilterInput
-    sorts: [RoleSortInput!]
-    skip: Int
-    limit: Int
-  }
-  ########### Role ###########
 
   ########### User ###########
   input UserInsertInput {
@@ -471,7 +442,6 @@ export default gql`
     nor_: [UserRoleFilterInput!]
   }
   input UserRoleRelationsFilterInput {
-    role: RoleFindInput
     user: UserFindInput
   }
   input UserRoleFindInput {
@@ -531,7 +501,6 @@ export default gql`
     projects(filter: ProjectFilterInput, sorts: [ProjectSortInput!], relations: ProjectRelationsFilterInput, skip: Int, limit: Int): [Project!]!
     projectMembers(filter: ProjectMemberFilterInput, sorts: [ProjectMemberSortInput!], relations: ProjectMemberRelationsFilterInput, skip: Int, limit: Int): [ProjectMember!]!
     projectMemberRoles(filter: ProjectMemberRoleFilterInput, sorts: [ProjectMemberRoleSortInput!], relations: ProjectMemberRoleRelationsFilterInput, skip: Int, limit: Int): [ProjectMemberRole!]!
-    roles(filter: RoleFilterInput, sorts: [RoleSortInput!], skip: Int, limit: Int): [Role!]!
     users(filter: UserFilterInput, sorts: [UserSortInput!], relations: UserRelationsFilterInput, skip: Int, limit: Int): [User!]!
     userLoginIdentitys(filter: UserLoginIdentityFilterInput, sorts: [UserLoginIdentitySortInput!], relations: UserLoginIdentityRelationsFilterInput, skip: Int, limit: Int): [UserLoginIdentity!]!
     userRoles(filter: UserRoleFilterInput, sorts: [UserRoleSortInput!], relations: UserRoleRelationsFilterInput, skip: Int, limit: Int): [UserRole!]!
@@ -554,9 +523,6 @@ export default gql`
     createProjectMemberRole(record: ProjectMemberRoleInsertInput!): ProjectMemberRole!
     updateProjectMemberRoles(filter: ProjectMemberRoleFilterInput!, changes: ProjectMemberRoleUpdateInput!): Boolean
     deleteProjectMemberRoles(filter: ProjectMemberRoleFilterInput!): Boolean
-    createRole(record: RoleInsertInput!): Role!
-    updateRoles(filter: RoleFilterInput!, changes: RoleUpdateInput!): Boolean
-    deleteRoles(filter: RoleFilterInput!): Boolean
     createUser(record: UserInsertInput!): User!
     updateUsers(filter: UserFilterInput!, changes: UserUpdateInput!): Boolean
     deleteUsers(filter: UserFilterInput!): Boolean
