@@ -86,7 +86,7 @@ export class TwoWayMap<K extends string | number | symbol, V extends string | nu
 }
 
 export namespace Extensions {
-  async function modifyOrCreate<T extends DAOGenerics>(dao: AbstractDAO<T>, params: FindOrCreateParams) {
+  export async function modifyOrCreate<T extends DAOGenerics>(dao: AbstractDAO<T>, params: FindOrCreateParams) {
     try {
       await dao.updateOne({ filter: params.filter, changes: params.changes});
     } catch(e) {
@@ -94,7 +94,7 @@ export namespace Extensions {
     }
   }
 
-  async function findAndModifyOrCreate<T extends DAOGenerics>(dao: AbstractDAO<T>, params: FindOrCreateParams) {
+  export async function findAndModifyOrCreate<T extends DAOGenerics>(dao: AbstractDAO<T>, params: FindOrCreateParams) {
     await modifyOrCreate(dao, params);
     return dao.findOne({ filter: params.filter });
   }
@@ -183,5 +183,14 @@ export namespace EntityManagerExtensions {
     }
 
     return domains;
+  }
+}
+
+export class HttpError extends Error {
+  constructor(
+    public statusCode: number,
+    public message: string
+  ) {
+    super(message);
   }
 }

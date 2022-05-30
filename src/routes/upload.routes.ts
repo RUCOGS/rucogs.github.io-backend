@@ -1,14 +1,11 @@
 import express from 'express';
 import * as authController from '@src/controllers/auth.controller';
-import AuthConfig from '@src/config/auth.config.json';
-import passport from 'passport';
 import multer from 'multer';
-import path from 'path';
 import { RequestContext, RequestWithContext, RequestWithDefaultContext } from '@src/shared/context';
 import { getOperationMetadataFromRequest } from '@src/controllers/entity-manager.controller';
-import { deleteSelfHostedFile, isSelfHostedFile, relativeToSelfHostedFilePath } from '@src/controllers/file-upload.controller';
-import { HttpQueryError } from 'apollo-server-core';
-import { HttpError } from '@src/shared/utils';
+import { deleteSelfHostedFile, isSelfHostedFile, relativeToSelfHostedFilePath, uniqueFileName } from '@src/controllers/cdn.controller';
+import { Extensions, HttpError } from '@src/utils/utils';
+import { UserSocial } from '@src/generated/model.types';
 
 const router = express.Router();
 
@@ -26,7 +23,7 @@ const storage = multer.diskStorage({
   },
   filename: (req, file, cb) => {
     console.log(file);
-    cb(null, Date.now() + path.extname(file.originalname));
+    cb(null, uniqueFileName(file.originalname));
   }
 });
 
@@ -108,7 +105,68 @@ router.post(
     try {
       const user = req.context.user;
       const files = req.files as { [fieldname: string]: Express.Multer.File[] };
+      const entityManager = req.context.entityManager;
       
+      const socialsUpdated = req.body.socials;
+      const socials: {
+        platform: string,
+        username: string,
+        link: string,
+      }[] = JSON.parse(req.body.socials);
+      if (socialsUpdated) {
+        // Delete socials that aren't part of our new updated batch.
+        const deletedSocials = await entityManager.userSocial.findAll({
+          filter: {
+            $and: [
+              { 
+                userId: user.id, 
+              },
+              { 
+                $nor: socials.map(x => ({ 
+                  username: x.username, 
+                  platform: x.platform,
+                }))
+              }
+            ]
+          },
+          projection: {
+            id: true
+          }
+        });
+        await entityManager.userSocial.deleteAll({
+          filter: {
+            id: { in: deletedSocials.map(x => x.id) }
+          }
+        })
+        // Insert the new updated batch of socials
+        for (const social of socials) {
+          const foundSocial = await entityManager.userSocial.findOne({
+            filter: {
+              userId: user.id,
+              platform: social.platform,
+              username: social.username
+            }
+          });
+          if (foundSocial) {
+            await entityManager.userSocial.updateOne({
+              filter: {
+                userId: user.id,
+                platform: social.platform,
+                username: social.username
+              },
+              changes: foundSocial
+            });
+          } else {
+            await entityManager.userSocial.insertOne({
+              record: {
+                ...social,
+                userId: user.id
+              }
+            });
+          }
+        }
+      }
+
       const avatarUpdated = files['avatar'] && files['avatar'].length == 1;
       const avatarSelfHostedFilePath = avatarUpdated ? relativeToSelfHostedFilePath(files['avatar'][0].path) : "";
       // TODO: Make avatar readonly, and let it only be set here. Otherwise users can 
@@ -128,7 +186,6 @@ router.post(
         deleteSelfHostedFile(user.bannerLink);
       }
 
-      const entityManager = req.context.entityManager;
       await entityManager.user.updateOne({
         filter: {
           id: user.id
@@ -144,6 +201,7 @@ router.post(
       res.status(201).send({
         message: "User upload success!",
         data: {
+          ...(socialsUpdated && { socials }),
           ...(req.body.displayName && { displayName: req.body.displayName }),
           ...(req.body.bio && { bio: req.body.bio }),
           ...(avatarUpdated && { avatarLink: avatarSelfHostedFilePath }),

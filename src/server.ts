@@ -7,7 +7,7 @@ import express from 'express';
 import cors from 'cors';
 import passport from 'passport';
 import authRouter from '@src/routes/auth.routes';
-import fileUploadRouter from '@src/routes/file-upload.routes';
+import fileUploadRouter from '@src/routes/upload.routes';
 import http from 'http';
 import { createSecureEntityManager, createUnsecureEntityManager, getOperationMetadataFromRequest } from '@src/controllers/entity-manager.controller';
 import { authenticate, AuthScheme, configPassport, userToSecurityContext } from '@src/controllers/auth.controller';

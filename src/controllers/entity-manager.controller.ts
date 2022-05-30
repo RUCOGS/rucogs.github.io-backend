@@ -5,7 +5,7 @@ import { Db, ObjectId } from 'mongodb';
 import { EntityManagerMetadata, SecureEntityManagerMetadata, SecurityContext, SecurityDomain } from "@src/shared/security.types";
 import { SecurityPolicies } from "@src/controllers/auth.controller";
 import express from 'express';
-import { HttpError } from "@src/shared/utils";
+import { HttpError } from "@src/utils/utils";
 
 export type AnyEntityManager = EntityManager | SecureEntityManager;
 export type SecureEntityManager = EntityManager<never, SecureEntityManagerMetadata, Permission, SecurityDomain>;

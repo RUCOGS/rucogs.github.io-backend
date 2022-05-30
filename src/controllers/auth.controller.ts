@@ -12,7 +12,8 @@ import { RequestWithDefaultContext } from '@src/shared/context';
 import { AnyEntityManager } from '@src/controllers/entity-manager.controller';
 import { OperationSecurityDomain, SecurityContext, SecurityDomain } from '@src/shared/security.types';
 import { PERMISSION } from '@twinlogix/typetta';
-import { HttpError } from '@src/shared/utils';
+import { downloadToCdn } from '@src/controllers/cdn.controller';
+import { HttpError } from '@src/utils/utils';
 
 // #region // ----- AUTHENTICATION ----- //
 export const Permissions = {
@@ -38,37 +39,38 @@ export interface OAuthStrategyConfig {
 export function configPassport(passport: PassportStatic, entityManager: EntityManager) {
     passport.use(new DiscordStrategy(<DiscordStrategy.StrategyOptions>AuthConfig.oauth.discord.strategyConfig,
       getOAuthStrategyPassportCallback<DiscordStrategy.Profile>(entityManager, "discord", 
-        (profile) => profile.id, 
-        (profile) => ({
+        async (profile) => profile.id, 
+        async (profile) => ({
           email: profile.email ?? "",
           username: profile.username,
-          avatarLink: profile.avatar ? `https://cdn.discordapp.com/avatars/${profile.id}/${profile.avatar}.png?size=256` : "",
-          bannerLink: profile.banner ? `https://cdn.discordapp.com/banners/${profile.id}/${profile.banner}.png?size=512` : "",
+          avatarLink: profile.avatar ? await downloadToCdn(`https://cdn.discordapp.com/avatars/${profile.id}/${profile.avatar}?size=256`, "avatar") : "",
+          bannerLink: profile.banner ? await downloadToCdn(`https://cdn.discordapp.com/banners/${profile.id}/${profile.banner}?size=512`, "banner") : "",
           displayName: profile.username,
         }),
-        (profile) => ({ })
+        async (profile) => ({ })
       )
     ));
     passport.use(new GoogleStrategy(AuthConfig.oauth.google.strategyConfig,
       getOAuthStrategyPassportCallback<GoogleStrategyProfile>(entityManager,  "google", 
-        (profile) => profile.id, 
-        (profile) => ({
+        async (profile) => profile.id, 
+        async (profile) => ({
           email: profile._json.email ?? "",
-          username: profile.displayName,
+          username: profile.displayName.replace(" ", ""),
           displayName: profile.displayName,
-          avatarLink: profile._json.picture ?? "",
+          avatarLink: profile._json.picture ? await downloadToCdn(profile._json.picture) : "",
+          bannerLink: ""
         }),
-        (profile) => ({ })
+        async (profile) => ({ })
       )
     ));
 }
 
-function getOAuthStrategyPassportCallback<TProfile extends passport.Profile>(entityManager: EntityManager, strategyName: string, profileToIdentityID: (profile: TProfile) => string, profileToNewUser: (profile: TProfile) => UserInsert, profileToData: (profile: TProfile) => unknown) {
+function getOAuthStrategyPassportCallback<TProfile extends passport.Profile>(entityManager: EntityManager, strategyName: string, profileToIdentityID: (profile: TProfile) => Promise<string>, profileToNewUser: (profile: TProfile) => Promise<UserInsert>, profileToData: (profile: TProfile) => Promise<unknown>) {
   // Use the arguments to construct the specialized callback funciton
   return (accessToken: string, refreshToken: string, profile: TProfile, done: OAuth2Strategy.VerifyCallback) => {
     // Wrap the contents of this async function to convert the result into the done function
     (async () => {
-      const identityId = profileToIdentityID(profile); 
+      const identityId = await profileToIdentityID(profile); 
       
       const userLoginIdentity = await entityManager.userLoginIdentity.findOne({
         filter: {
@@ -81,13 +83,12 @@ function getOAuthStrategyPassportCallback<TProfile extends passport.Profile>(ent
       });
 
       if (userLoginIdentity) {
-        // TODO: Turn this off in production
-        const newUser = await entityManager.user.updateOne({
+        await entityManager.user.updateOne({
           filter: {
-            id: userLoginIdentity.userId
+            id: { eq: userLoginIdentity.userId }
           },
-          changes: profileToNewUser(profile)
-        });
+          changes: await profileToNewUser(profile)
+        })
 
         const user = await entityManager.user.findOne({ 
           filter: {
@@ -98,7 +99,7 @@ function getOAuthStrategyPassportCallback<TProfile extends passport.Profile>(ent
       }
 
       const newUser = await entityManager.user.insertOne({
-        record: profileToNewUser(profile)
+        record: await profileToNewUser(profile)
       });
 
       await entityManager.userRole.insertOne({
@@ -112,7 +113,7 @@ function getOAuthStrategyPassportCallback<TProfile extends passport.Profile>(ent
         record: {
           name: strategyName,
           identityId: identityId,
-          data: profileToData(profile),
+          data: await profileToData(profile),
           userId: newUser.id
         }
       });
