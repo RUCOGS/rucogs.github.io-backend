@@ -32,6 +32,105 @@ export type DateFilterInput = {
   nin?: InputMaybe<Array<Scalars['Date']>>;
 };
 
+export type EBoard = {
+  __typename?: 'EBoard';
+  createdAt: Scalars['Date'];
+  graduatedAt?: Maybe<Scalars['Date']>;
+  id: Scalars['ID'];
+  roles: Array<EBoardRole>;
+  user: User;
+  userId: Scalars['ID'];
+};
+
+export type EBoardFilterInput = {
+  and_?: InputMaybe<Array<EBoardFilterInput>>;
+  createdAt?: InputMaybe<DateFilterInput>;
+  graduatedAt?: InputMaybe<DateFilterInput>;
+  id?: InputMaybe<IdFilterInput>;
+  nor_?: InputMaybe<Array<EBoardFilterInput>>;
+  or_?: InputMaybe<Array<EBoardFilterInput>>;
+  userId?: InputMaybe<IdFilterInput>;
+};
+
+export type EBoardFindInput = {
+  filter?: InputMaybe<EBoardFilterInput>;
+  limit?: InputMaybe<Scalars['Int']>;
+  relations?: InputMaybe<EBoardRelationsFilterInput>;
+  skip?: InputMaybe<Scalars['Int']>;
+  sorts?: InputMaybe<Array<EBoardSortInput>>;
+};
+
+export type EBoardInsertInput = {
+  createdAt?: InputMaybe<Scalars['Date']>;
+  graduatedAt?: InputMaybe<Scalars['Date']>;
+  userId: Scalars['ID'];
+};
+
+export type EBoardRelationsFilterInput = {
+  roles?: InputMaybe<EBoardRoleFindInput>;
+  user?: InputMaybe<UserFindInput>;
+};
+
+export type EBoardRole = {
+  __typename?: 'EBoardRole';
+  eboard: EBoard;
+  eboardId: Scalars['ID'];
+  id: Scalars['ID'];
+  role: Role;
+  roleCode: RoleCode;
+};
+
+export type EBoardRoleFilterInput = {
+  and_?: InputMaybe<Array<EBoardRoleFilterInput>>;
+  eboardId?: InputMaybe<IdFilterInput>;
+  id?: InputMaybe<IdFilterInput>;
+  nor_?: InputMaybe<Array<EBoardRoleFilterInput>>;
+  or_?: InputMaybe<Array<EBoardRoleFilterInput>>;
+  roleCode?: InputMaybe<RoleCodeFilterInput>;
+};
+
+export type EBoardRoleFindInput = {
+  filter?: InputMaybe<EBoardRoleFilterInput>;
+  limit?: InputMaybe<Scalars['Int']>;
+  relations?: InputMaybe<EBoardRoleRelationsFilterInput>;
+  skip?: InputMaybe<Scalars['Int']>;
+  sorts?: InputMaybe<Array<EBoardRoleSortInput>>;
+};
+
+export type EBoardRoleInsertInput = {
+  eboardId: Scalars['ID'];
+  roleCode: RoleCode;
+};
+
+export type EBoardRoleRelationsFilterInput = {
+  eboard?: InputMaybe<EBoardFindInput>;
+  role?: InputMaybe<RoleFindInput>;
+};
+
+export type EBoardRoleSortInput = {
+  eboardId?: InputMaybe<SortDirection>;
+  id?: InputMaybe<SortDirection>;
+  roleCode?: InputMaybe<SortDirection>;
+};
+
+export type EBoardRoleUpdateInput = {
+  eboardId?: InputMaybe<Scalars['ID']>;
+  roleCode?: InputMaybe<RoleCode>;
+};
+
+export type EBoardSortInput = {
+  createdAt?: InputMaybe<SortDirection>;
+  graduatedAt?: InputMaybe<SortDirection>;
+  id?: InputMaybe<SortDirection>;
+  userId?: InputMaybe<SortDirection>;
+};
+
+export type EBoardUpdateInput = {
+  createdAt?: InputMaybe<Scalars['Date']>;
+  graduatedAt?: InputMaybe<Scalars['Date']>;
+  userId?: InputMaybe<Scalars['ID']>;
+};
+
 export type FloatFilterInput = {
   eq?: InputMaybe<Scalars['Float']>;
   exists?: InputMaybe<Scalars['Boolean']>;
@@ -79,6 +178,8 @@ export type KeyValue = {
 
 export type Mutation = {
   __typename?: 'Mutation';
+  createEBoard: EBoard;
+  createEBoardRole: EBoardRole;
   createProject: Project;
   createProjectMember: ProjectMember;
   createProjectMemberRole: ProjectMemberRole;
@@ -87,6 +188,8 @@ export type Mutation = {
   createUserLoginIdentity: UserLoginIdentity;
   createUserRole: UserRole;
   createUserSocial: UserSocial;
+  deleteEBoardRoles?: Maybe<Scalars['Boolean']>;
+  deleteEBoards?: Maybe<Scalars['Boolean']>;
   deleteProjectMemberRoles?: Maybe<Scalars['Boolean']>;
   deleteProjectMembers?: Maybe<Scalars['Boolean']>;
   deleteProjects?: Maybe<Scalars['Boolean']>;
@@ -95,6 +198,8 @@ export type Mutation = {
   deleteUserRoles?: Maybe<Scalars['Boolean']>;
   deleteUserSocials?: Maybe<Scalars['Boolean']>;
   deleteUsers?: Maybe<Scalars['Boolean']>;
+  updateEBoardRoles?: Maybe<Scalars['Boolean']>;
+  updateEBoards?: Maybe<Scalars['Boolean']>;
   updateProjectMemberRoles?: Maybe<Scalars['Boolean']>;
   updateProjectMembers?: Maybe<Scalars['Boolean']>;
   updateProjects?: Maybe<Scalars['Boolean']>;
@@ -103,6 +208,16 @@ export type Mutation = {
   updateUserRoles?: Maybe<Scalars['Boolean']>;
   updateUserSocials?: Maybe<Scalars['Boolean']>;
   updateUsers?: Maybe<Scalars['Boolean']>;
+};
+
+
+export type MutationCreateEBoardArgs = {
+  record: EBoardInsertInput;
+};
+
+
+export type MutationCreateEBoardRoleArgs = {
+  record: EBoardRoleInsertInput;
 };
 
 
@@ -146,6 +261,16 @@ export type MutationCreateUserSocialArgs = {
 };
 
 
+export type MutationDeleteEBoardRolesArgs = {
+  filter: EBoardRoleFilterInput;
+};
+
+
+export type MutationDeleteEBoardsArgs = {
+  filter: EBoardFilterInput;
+};
+
+
 export type MutationDeleteProjectMemberRolesArgs = {
   filter: ProjectMemberRoleFilterInput;
 };
@@ -183,6 +308,18 @@ export type MutationDeleteUserSocialsArgs = {
 
 export type MutationDeleteUsersArgs = {
   filter: UserFilterInput;
+};
+
+
+export type MutationUpdateEBoardRolesArgs = {
+  changes: EBoardRoleUpdateInput;
+  filter: EBoardRoleFilterInput;
+};
+
+
+export type MutationUpdateEBoardsArgs = {
+  changes: EBoardUpdateInput;
+  filter: EBoardFilterInput;
 };
 
 
@@ -237,6 +374,7 @@ export enum Permission {
   CreateProject = 'CREATE_PROJECT',
   DeleteProfile = 'DELETE_PROFILE',
   DeleteProject = 'DELETE_PROJECT',
+  ManageEboard = 'MANAGE_EBOARD',
   ManageProjectMemberRoles = 'MANAGE_PROJECT_MEMBER_ROLES',
   ManageUserRoles = 'MANAGE_USER_ROLES',
   ReadProfilePrivate = 'READ_PROFILE_PRIVATE',
@@ -444,6 +582,8 @@ export type ProjectUpdateInput = {
 
 export type Query = {
   __typename?: 'Query';
+  eBoardRoles: Array<EBoardRole>;
+  eBoards: Array<EBoard>;
   projectMemberRoles: Array<ProjectMemberRole>;
   projectMembers: Array<ProjectMember>;
   projects: Array<Project>;
@@ -454,6 +594,24 @@ export type Query = {
   userRoles: Array<UserRole>;
   userSocials: Array<UserSocial>;
   users: Array<User>;
+};
+
+
+export type QueryEBoardRolesArgs = {
+  filter?: InputMaybe<EBoardRoleFilterInput>;
+  limit?: InputMaybe<Scalars['Int']>;
+  relations?: InputMaybe<EBoardRoleRelationsFilterInput>;
+  skip?: InputMaybe<Scalars['Int']>;
+  sorts?: InputMaybe<Array<EBoardRoleSortInput>>;
+};
+
+
+export type QueryEBoardsArgs = {
+  filter?: InputMaybe<EBoardFilterInput>;
+  limit?: InputMaybe<Scalars['Int']>;
+  relations?: InputMaybe<EBoardRelationsFilterInput>;
+  skip?: InputMaybe<Scalars['Int']>;
+  sorts?: InputMaybe<Array<EBoardSortInput>>;
 };
 
 
@@ -544,11 +702,26 @@ export type Role = {
 };
 
 export enum RoleCode {
+  Alumni = 'ALUMNI',
+  Artist = 'ARTIST',
+  BotDeveloper = 'BOT_DEVELOPER',
+  ClubGraphicArtist = 'CLUB_GRAPHIC_ARTIST',
+  Eboard = 'EBOARD',
+  GameDesigner = 'GAME_DESIGNER',
   Moderator = 'MODERATOR',
+  Musician = 'MUSICIAN',
+  Outreach = 'OUTREACH',
+  President = 'PRESIDENT',
+  Programmer = 'PROGRAMMER',
   ProjectMember = 'PROJECT_MEMBER',
   ProjectOwner = 'PROJECT_OWNER',
+  SoundDesigner = 'SOUND_DESIGNER',
   SuperAdmin = 'SUPER_ADMIN',
-  User = 'USER'
+  Treasurer = 'TREASURER',
+  User = 'USER',
+  VicePresident = 'VICE_PRESIDENT',
+  Webmaster = 'WEBMASTER',
+  Writer = 'WRITER'
 }
 
 export type RoleCodeFilterInput = {
@@ -621,6 +794,7 @@ export type User = {
   bio?: Maybe<Scalars['String']>;
   createdAt: Scalars['Date'];
   displayName?: Maybe<Scalars['String']>;
+  eboard?: Maybe<EBoard>;
   email: Scalars['String'];
   id: Scalars['ID'];
   loginIdentities: Array<UserLoginIdentity>;
@@ -718,6 +892,7 @@ export type UserLoginIdentityUpdateInput = {
 };
 
 export type UserRelationsFilterInput = {
+  eboard?: InputMaybe<EBoardFindInput>;
   loginIdentities?: InputMaybe<UserLoginIdentityFindInput>;
   projectMembers?: InputMaybe<ProjectMemberFindInput>;
   roles?: InputMaybe<UserRoleFindInput>;
@@ -920,6 +1095,20 @@ export type ResolversTypes = {
   BooleanFilterInput: BooleanFilterInput;
   Date: ResolverTypeWrapper<Scalars['Date']>;
   DateFilterInput: DateFilterInput;
+  EBoard: ResolverTypeWrapper<EBoard>;
+  EBoardFilterInput: EBoardFilterInput;
+  EBoardFindInput: EBoardFindInput;
+  EBoardInsertInput: EBoardInsertInput;
+  EBoardRelationsFilterInput: EBoardRelationsFilterInput;
+  EBoardRole: ResolverTypeWrapper<EBoardRole>;
+  EBoardRoleFilterInput: EBoardRoleFilterInput;
+  EBoardRoleFindInput: EBoardRoleFindInput;
+  EBoardRoleInsertInput: EBoardRoleInsertInput;
+  EBoardRoleRelationsFilterInput: EBoardRoleRelationsFilterInput;
+  EBoardRoleSortInput: EBoardRoleSortInput;
+  EBoardRoleUpdateInput: EBoardRoleUpdateInput;
+  EBoardSortInput: EBoardSortInput;
+  EBoardUpdateInput: EBoardUpdateInput;
   Float: ResolverTypeWrapper<Scalars['Float']>;
   FloatFilterInput: FloatFilterInput;
   ID: ResolverTypeWrapper<Scalars['ID']>;
@@ -1003,6 +1192,20 @@ export type ResolversParentTypes = {
   BooleanFilterInput: BooleanFilterInput;
   Date: Scalars['Date'];
   DateFilterInput: DateFilterInput;
+  EBoard: EBoard;
+  EBoardFilterInput: EBoardFilterInput;
+  EBoardFindInput: EBoardFindInput;
+  EBoardInsertInput: EBoardInsertInput;
+  EBoardRelationsFilterInput: EBoardRelationsFilterInput;
+  EBoardRole: EBoardRole;
+  EBoardRoleFilterInput: EBoardRoleFilterInput;
+  EBoardRoleFindInput: EBoardRoleFindInput;
+  EBoardRoleInsertInput: EBoardRoleInsertInput;
+  EBoardRoleRelationsFilterInput: EBoardRoleRelationsFilterInput;
+  EBoardRoleSortInput: EBoardRoleSortInput;
+  EBoardRoleUpdateInput: EBoardRoleUpdateInput;
+  EBoardSortInput: EBoardSortInput;
+  EBoardUpdateInput: EBoardUpdateInput;
   Float: Scalars['Float'];
   FloatFilterInput: FloatFilterInput;
   ID: Scalars['ID'];
@@ -1164,11 +1367,32 @@ export interface DateScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes
   name: 'Date';
 }
 
+export type EBoardResolvers<ContextType = any, ParentType extends ResolversParentTypes['EBoard'] = ResolversParentTypes['EBoard']> = {
+  createdAt?: Resolver<ResolversTypes['Date'], ParentType, ContextType>;
+  graduatedAt?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  roles?: Resolver<Array<ResolversTypes['EBoardRole']>, ParentType, ContextType>;
+  user?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
+  userId?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type EBoardRoleResolvers<ContextType = any, ParentType extends ResolversParentTypes['EBoardRole'] = ResolversParentTypes['EBoardRole']> = {
+  eboard?: Resolver<ResolversTypes['EBoard'], ParentType, ContextType>;
+  eboardId?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  role?: Resolver<ResolversTypes['Role'], ParentType, ContextType>;
+  roleCode?: Resolver<ResolversTypes['RoleCode'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
 export interface JsonScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['Json'], any> {
   name: 'Json';
 }
 
 export type MutationResolvers<ContextType = any, ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']> = {
+  createEBoard?: Resolver<ResolversTypes['EBoard'], ParentType, ContextType, RequireFields<MutationCreateEBoardArgs, 'record'>>;
+  createEBoardRole?: Resolver<ResolversTypes['EBoardRole'], ParentType, ContextType, RequireFields<MutationCreateEBoardRoleArgs, 'record'>>;
   createProject?: Resolver<ResolversTypes['Project'], ParentType, ContextType, RequireFields<MutationCreateProjectArgs, 'record'>>;
   createProjectMember?: Resolver<ResolversTypes['ProjectMember'], ParentType, ContextType, RequireFields<MutationCreateProjectMemberArgs, 'record'>>;
   createProjectMemberRole?: Resolver<ResolversTypes['ProjectMemberRole'], ParentType, ContextType, RequireFields<MutationCreateProjectMemberRoleArgs, 'record'>>;
@@ -1177,6 +1401,8 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   createUserLoginIdentity?: Resolver<ResolversTypes['UserLoginIdentity'], ParentType, ContextType, RequireFields<MutationCreateUserLoginIdentityArgs, 'record'>>;
   createUserRole?: Resolver<ResolversTypes['UserRole'], ParentType, ContextType, RequireFields<MutationCreateUserRoleArgs, 'record'>>;
   createUserSocial?: Resolver<ResolversTypes['UserSocial'], ParentType, ContextType, RequireFields<MutationCreateUserSocialArgs, 'record'>>;
+  deleteEBoardRoles?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationDeleteEBoardRolesArgs, 'filter'>>;
+  deleteEBoards?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationDeleteEBoardsArgs, 'filter'>>;
   deleteProjectMemberRoles?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationDeleteProjectMemberRolesArgs, 'filter'>>;
   deleteProjectMembers?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationDeleteProjectMembersArgs, 'filter'>>;
   deleteProjects?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationDeleteProjectsArgs, 'filter'>>;
@@ -1185,6 +1411,8 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   deleteUserRoles?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationDeleteUserRolesArgs, 'filter'>>;
   deleteUserSocials?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationDeleteUserSocialsArgs, 'filter'>>;
   deleteUsers?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationDeleteUsersArgs, 'filter'>>;
+  updateEBoardRoles?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationUpdateEBoardRolesArgs, 'changes' | 'filter'>>;
+  updateEBoards?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationUpdateEBoardsArgs, 'changes' | 'filter'>>;
   updateProjectMemberRoles?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationUpdateProjectMemberRolesArgs, 'changes' | 'filter'>>;
   updateProjectMembers?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationUpdateProjectMembersArgs, 'changes' | 'filter'>>;
   updateProjects?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationUpdateProjectsArgs, 'changes' | 'filter'>>;
@@ -1232,6 +1460,8 @@ export type ProjectMemberRoleResolvers<ContextType = any, ParentType extends Res
 };
 
 export type QueryResolvers<ContextType = any, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = {
+  eBoardRoles?: Resolver<Array<ResolversTypes['EBoardRole']>, ParentType, ContextType, Partial<QueryEBoardRolesArgs>>;
+  eBoards?: Resolver<Array<ResolversTypes['EBoard']>, ParentType, ContextType, Partial<QueryEBoardsArgs>>;
   projectMemberRoles?: Resolver<Array<ResolversTypes['ProjectMemberRole']>, ParentType, ContextType, Partial<QueryProjectMemberRolesArgs>>;
   projectMembers?: Resolver<Array<ResolversTypes['ProjectMember']>, ParentType, ContextType, Partial<QueryProjectMembersArgs>>;
   projects?: Resolver<Array<ResolversTypes['Project']>, ParentType, ContextType, Partial<QueryProjectsArgs>>;
@@ -1256,6 +1486,7 @@ export type UserResolvers<ContextType = any, ParentType extends ResolversParentT
   bio?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   createdAt?: Resolver<ResolversTypes['Date'], ParentType, ContextType>;
   displayName?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  eboard?: Resolver<Maybe<ResolversTypes['EBoard']>, ParentType, ContextType>;
   email?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   loginIdentities?: Resolver<Array<ResolversTypes['UserLoginIdentity']>, ParentType, ContextType>;
@@ -1297,6 +1528,8 @@ export type UserSocialResolvers<ContextType = any, ParentType extends ResolversP
 
 export type Resolvers<ContextType = any> = {
   Date?: GraphQLScalarType;
+  EBoard?: EBoardResolvers<ContextType>;
+  EBoardRole?: EBoardRoleResolvers<ContextType>;
   Json?: GraphQLScalarType;
   Mutation?: MutationResolvers<ContextType>;
   Project?: ProjectResolvers<ContextType>;

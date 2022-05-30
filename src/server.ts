@@ -10,11 +10,12 @@ import authRouter from '@src/routes/auth.routes';
 import fileUploadRouter from '@src/routes/upload.routes';
 import http from 'http';
 import { createSecureEntityManager, createUnsecureEntityManager, getOperationMetadataFromRequest } from '@src/controllers/entity-manager.controller';
-import { authenticate, AuthScheme, configPassport, userToSecurityContext } from '@src/controllers/auth.controller';
+import { authenticate, AuthScheme, configPassport } from '@src/controllers/auth.controller';
+import { getCompleteSecurityContext } from '@src/controllers/perms.controller';
 import { Db } from 'mongodb';
 import ServerConfig from '@src/config/server.config.json';
-import { ApolloResolversContext, RequestWithDefaultContext } from '@src/shared/context';
-import { typeDefs, resolvers } from '@src/shared/typedefs-resolvers';
+import { ApolloResolversContext, RequestWithDefaultContext } from '@src/misc/context';
+import { typeDefs, resolvers } from '@src/misc/typedefs-resolvers';
 
 
 async function startServer(debug: boolean) {
@@ -65,7 +66,7 @@ async function startApolloServer(app: express.Application, mongoDb: Db, endpoint
             }
             case AuthScheme.Bearer:
             default: {
-              const securityContext = await userToSecurityContext(createUnsecureEntityManager(mongoDb), authPayload.userId);
+              const securityContext = await getCompleteSecurityContext(createUnsecureEntityManager(mongoDb), authPayload.userId);
               const metadata = getOperationMetadataFromRequest(req);
               const entityManager = createSecureEntityManager(securityContext, mongoDb, metadata);
               return {

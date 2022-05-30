@@ -1,5 +1,5 @@
-import { ApolloResolversContext } from '@src/shared/context';
-import { SecurityPolicies, userToSecurityContext } from '@src/controllers/auth.controller';
+import { ApolloResolversContext } from '@src/misc/context';
+import { SecurityPolicies, getUserSecurityContext } from '@src/controllers/perms.controller';
 import { QueryResolvers, MutationResolvers } from '@src/generated/graphql-endpoint.types';
 
 export default {
@@ -13,7 +13,7 @@ export default {
         // If we are querying for the security context of a another user,
         // then we must generate it, because we cannot reuse the security
         // context generated for ourselves.
-        return await userToSecurityContext(context.entityManager, context.authUserId);
+        return await getUserSecurityContext(context.entityManager, context.authUserId);
       }
       if (context.securityContext)
         return context.securityContext;

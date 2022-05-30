@@ -1,5 +1,5 @@
 import { AnyEntityManager } from "@src/controllers/entity-manager.controller";
-import { SecurityContext } from "@src/shared/security.types";
+import { SecurityContext } from "@src/shared/security";
 import express from "express";
 
 export type ApolloResolversContext = {

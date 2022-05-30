@@ -106,6 +106,80 @@ export default gql`
     mode: StringFilterMode
   }
 
+  ########### EBoard ###########
+  input EBoardInsertInput {
+    createdAt: Date
+    graduatedAt: Date
+    userId: ID!
+  }
+  input EBoardUpdateInput {
+    createdAt: Date
+    graduatedAt: Date
+    userId: ID
+  }
+  input EBoardSortInput {
+    createdAt: SortDirection
+    graduatedAt: SortDirection
+    id: SortDirection
+    userId: SortDirection
+  }
+  input EBoardFilterInput {
+    createdAt: DateFilterInput
+    graduatedAt: DateFilterInput
+    id: IDFilterInput
+    userId: IDFilterInput
+    and_: [EBoardFilterInput!]
+    or_: [EBoardFilterInput!]
+    nor_: [EBoardFilterInput!]
+  }
+  input EBoardRelationsFilterInput {
+    roles: EBoardRoleFindInput
+    user: UserFindInput
+  }
+  input EBoardFindInput {
+    filter: EBoardFilterInput
+    sorts: [EBoardSortInput!]
+    skip: Int
+    limit: Int
+    relations: EBoardRelationsFilterInput
+  }
+  ########### EBoard ###########
+
+  ########### EBoardRole ###########
+  input EBoardRoleInsertInput {
+    eboardId: ID!
+    roleCode: RoleCode!
+  }
+  input EBoardRoleUpdateInput {
+    eboardId: ID
+    roleCode: RoleCode
+  }
+  input EBoardRoleSortInput {
+    eboardId: SortDirection
+    id: SortDirection
+    roleCode: SortDirection
+  }
+  input EBoardRoleFilterInput {
+    eboardId: IDFilterInput
+    id: IDFilterInput
+    roleCode: RoleCodeFilterInput
+    and_: [EBoardRoleFilterInput!]
+    or_: [EBoardRoleFilterInput!]
+    nor_: [EBoardRoleFilterInput!]
+  }
+  input EBoardRoleRelationsFilterInput {
+    eboard: EBoardFindInput
+    role: RoleFindInput
+  }
+  input EBoardRoleFindInput {
+    filter: EBoardRoleFilterInput
+    sorts: [EBoardRoleSortInput!]
+    skip: Int
+    limit: Int
+    relations: EBoardRoleRelationsFilterInput
+  }
+  ########### EBoardRole ###########
+
   ########### Project ###########
   input ProjectInsertInput {
     bannerLink: String
@@ -317,6 +391,7 @@ export default gql`
     nor_: [UserFilterInput!]
   }
   input UserRelationsFilterInput {
+    eboard: EBoardFindInput
     loginIdentities: UserLoginIdentityFindInput
     projectMembers: ProjectMemberFindInput
     roles: UserRoleFindInput
@@ -451,6 +526,8 @@ export default gql`
   ########### UserSocial ###########
 
   type Query {
+    eBoards(filter: EBoardFilterInput, sorts: [EBoardSortInput!], relations: EBoardRelationsFilterInput, skip: Int, limit: Int): [EBoard!]!
+    eBoardRoles(filter: EBoardRoleFilterInput, sorts: [EBoardRoleSortInput!], relations: EBoardRoleRelationsFilterInput, skip: Int, limit: Int): [EBoardRole!]!
     projects(filter: ProjectFilterInput, sorts: [ProjectSortInput!], relations: ProjectRelationsFilterInput, skip: Int, limit: Int): [Project!]!
     projectMembers(filter: ProjectMemberFilterInput, sorts: [ProjectMemberSortInput!], relations: ProjectMemberRelationsFilterInput, skip: Int, limit: Int): [ProjectMember!]!
     projectMemberRoles(filter: ProjectMemberRoleFilterInput, sorts: [ProjectMemberRoleSortInput!], relations: ProjectMemberRoleRelationsFilterInput, skip: Int, limit: Int): [ProjectMemberRole!]!
@@ -462,6 +539,12 @@ export default gql`
   }
 
   type Mutation {
+    createEBoard(record: EBoardInsertInput!): EBoard!
+    updateEBoards(filter: EBoardFilterInput!, changes: EBoardUpdateInput!): Boolean
+    deleteEBoards(filter: EBoardFilterInput!): Boolean
+    createEBoardRole(record: EBoardRoleInsertInput!): EBoardRole!
+    updateEBoardRoles(filter: EBoardRoleFilterInput!, changes: EBoardRoleUpdateInput!): Boolean
+    deleteEBoardRoles(filter: EBoardRoleFilterInput!): Boolean
     createProject(record: ProjectInsertInput!): Project!
     updateProjects(filter: ProjectFilterInput!, changes: ProjectUpdateInput!): Boolean
     deleteProjects(filter: ProjectFilterInput!): Boolean

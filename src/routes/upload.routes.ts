@@ -1,11 +1,11 @@
 import express from 'express';
-import * as authController from '@src/controllers/auth.controller';
 import multer from 'multer';
-import { RequestContext, RequestWithContext, RequestWithDefaultContext } from '@src/shared/context';
+import { RequestContext, RequestWithContext } from '@src/misc/context';
 import { getOperationMetadataFromRequest } from '@src/controllers/entity-manager.controller';
 import { deleteSelfHostedFile, isSelfHostedFile, relativeToSelfHostedFilePath, uniqueFileName } from '@src/controllers/cdn.controller';
-import { Extensions, HttpError } from '@src/utils/utils';
-import { UserSocial } from '@src/generated/model.types';
+import { HttpError } from '@src/utils/utils';
+import { authAddSecurityContext } from '@src/controllers/auth.controller';
+import { isPermissionDomainValidForOpDomain } from '@src/controllers/perms.controller';
 
 const router = express.Router();
 
@@ -42,7 +42,7 @@ type PostUserContext = {
 router.post(
   '/user', 
   // Authenticate and add security context
-  authController.authAddSecurityContext,
+  authAddSecurityContext,
   async function(req: RequestWithContext<RequestContext & PostUserContext>, res, next) {
     if (!req.context || !req.context.securityContext) {
       next(new HttpError(400, "Expected context and context.securityContext."))
@@ -57,7 +57,7 @@ router.post(
       const securityContext = req.context.securityContext;
 
       // Check permissions
-      if (!metadata || metadata.userId.length == 0 || !authController.isPermissionDomainValidForOpDomain(securityContext.MANAGE_USER_ROLES, {
+      if (!metadata || metadata.userId.length == 0 || !isPermissionDomainValidForOpDomain(securityContext.MANAGE_USER_ROLES, {
         userId: [ metadata.userId[0] ]
       })) {
         throw new HttpError(401, "Not authorized!");

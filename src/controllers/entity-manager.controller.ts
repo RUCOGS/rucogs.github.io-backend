@@ -2,10 +2,11 @@ import { Permission, Scalars } from "@src/generated/model.types";
 import { EntityManager } from "@src/generated/typetta";
 import { PERMISSION, UserInputDriverDataTypeAdapterMap } from "@twinlogix/typetta";
 import { Db, ObjectId } from 'mongodb';
-import { EntityManagerMetadata, SecureEntityManagerMetadata, SecurityContext, SecurityDomain } from "@src/shared/security.types";
-import { SecurityPolicies } from "@src/controllers/auth.controller";
+import { EntityManagerMetadata, SecureEntityManagerMetadata, SecurityContext, SecurityDomain } from "@src/shared/security";
+import { SecurityPolicies } from "@src/controllers/perms.controller";
 import express from 'express';
 import { HttpError } from "@src/utils/utils";
+import { ValidationMiddleware } from "@src/middlewares/validation.middleware";
 
 export type AnyEntityManager = EntityManager | SecureEntityManager;
 export type SecureEntityManager = EntityManager<never, SecureEntityManagerMetadata, Permission, SecurityDomain>;
@@ -50,6 +51,18 @@ export function createSecureEntityManager(securityContext: SecurityContext | und
     mongodb: {
       default: db,
     },
+    middlewares: [
+      new ValidationMiddleware({
+        userRole: {
+          roleCode: [
+            async () => {
+              console.log("Heyo, I'm validating!");
+              return true;
+            }
+          ]
+        }
+      })
+    ],
     scalars: getScalars(),    
     security: {
       applySecurity: securityContext != null,

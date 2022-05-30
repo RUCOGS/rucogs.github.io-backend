@@ -17,6 +17,25 @@ enum RoleCode {
   USER,
   PROJECT_MEMBER,
   PROJECT_OWNER,
+  
+  # EBoard Roles
+  PRESIDENT,
+  VICE_PRESIDENT,
+  EBOARD,
+  ALUMNI,
+  WEBMASTER,
+  TREASURER,
+  OUTREACH,
+  BOT_DEVELOPER,
+  CLUB_GRAPHIC_ARTIST,
+
+  # Public roles
+  ARTIST,
+  PROGRAMMER,
+  GAME_DESIGNER,
+  MUSICIAN,
+  SOUND_DESIGNER
+  WRITER,
 }
 
 enum Permission {
@@ -26,13 +45,9 @@ enum Permission {
   UPDATE_PROFILE,
   DELETE_PROFILE,
   READ_PROFILE_PRIVATE,
+  MANAGE_EBOARD,
   MANAGE_USER_ROLES,
   MANAGE_PROJECT_MEMBER_ROLES,
-}
-
-type Role @entity @mongodb {
-  code: RoleCode! @id(from: "user")
-  permissions: [Permission]!
 }
 
 type User @entity @mongodb {
@@ -48,6 +63,24 @@ type User @entity @mongodb {
   socials: [UserSocial!]! @foreignRef(refFrom: "userId")
   projectMembers: [ProjectMember!]! @foreignRef(refFrom: "userId")
   roles: [UserRole!]! @foreignRef(refFrom: "userId")
+  eboard: EBoard @foreignRef(refFrom: "userId")
+}
+
+type EBoard @entity @mongodb {
+  id: ID! @id(from: "db") @alias(value: "_id")
+  user: User! @innerRef
+  userId: ID!
+  createdAt: Date! @default(from: "generator")
+  graduatedAt: Date
+  roles: [EBoardRole!]! @foreignRef(refFrom: "eboardId")
+}
+
+type EBoardRole @entity @mongodb {
+  id: ID! @id(from: "db") @alias(value: "_id")
+  role: Role! @innerRef(refFrom: "roleCode", refTo: "code")
+  roleCode: RoleCode!
+  eboard: EBoard! @innerRef
+  eboardId: ID!
 }
 
 type UserRole @entity @mongodb {

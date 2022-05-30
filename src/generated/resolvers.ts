@@ -1,6 +1,8 @@
 import * as types from './resolvers.types'
 export const resolvers: { Mutation: types.MutationResolvers; Query: types.QueryResolvers } = {
   Query: {
+    eBoards: (parent, args, context, info) => context.entityManager.eBoard.resolvers.read(args, info),
+    eBoardRoles: (parent, args, context, info) => context.entityManager.eBoardRole.resolvers.read(args, info),
     projects: (parent, args, context, info) => context.entityManager.project.resolvers.read(args, info),
     projectMembers: (parent, args, context, info) => context.entityManager.projectMember.resolvers.read(args, info),
     projectMemberRoles: (parent, args, context, info) => context.entityManager.projectMemberRole.resolvers.read(args, info),
@@ -11,6 +13,12 @@ export const resolvers: { Mutation: types.MutationResolvers; Query: types.QueryR
     userSocials: (parent, args, context, info) => context.entityManager.userSocial.resolvers.read(args, info),
   },
   Mutation: {
+    createEBoard: async (parent, args, context, info) => context.entityManager.eBoard.resolvers.create(args, info),
+    updateEBoards: async (parent, args, context) => context.entityManager.eBoard.resolvers.update(args),
+    deleteEBoards: async (parent, args, context) => context.entityManager.eBoard.resolvers.delete(args),
+    createEBoardRole: async (parent, args, context, info) => context.entityManager.eBoardRole.resolvers.create(args, info),
+    updateEBoardRoles: async (parent, args, context) => context.entityManager.eBoardRole.resolvers.update(args),
+    deleteEBoardRoles: async (parent, args, context) => context.entityManager.eBoardRole.resolvers.delete(args),
     createProject: async (parent, args, context, info) => context.entityManager.project.resolvers.create(args, info),
     updateProjects: async (parent, args, context) => context.entityManager.project.resolvers.update(args),
     deleteProjects: async (parent, args, context) => context.entityManager.project.resolvers.delete(args),

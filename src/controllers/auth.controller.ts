@@ -2,18 +2,20 @@ import passport, { PassportStatic } from 'passport';
 import jwt from 'jsonwebtoken';
 import express from 'express';
 import AuthConfig from '@src/config/auth.config.json';
-import { EntityManagerExtensions, TwoWayMap } from '@src/utils/utils'
+import { EntityManagerExtensions, isShallowEquals } from '@src/utils/utils'
 import { Strategy as DiscordStrategy } from 'passport-discord';
 import { Strategy as GoogleStrategy, Profile as GoogleStrategyProfile } from 'passport-google-oauth20';
 import OAuth2Strategy from 'passport-oauth2';
-import { RoleCode, User } from '@src/generated/model.types';
+import { RoleCode, User, UserRole } from '@src/generated/model.types';
 import { EntityManager, UserInsert } from '@src/generated/typetta';
-import { RequestWithDefaultContext } from '@src/shared/context';
+import { RequestWithDefaultContext } from '@src/misc/context';
 import { AnyEntityManager } from '@src/controllers/entity-manager.controller';
-import { OperationSecurityDomain, SecurityContext, SecurityDomain } from '@src/shared/security.types';
+import { OperationSecurityDomain, RoleData, SecurityContext, SecurityDomain } from '@src/shared/security';
 import { PERMISSION } from '@twinlogix/typetta';
 import { downloadToCdn } from '@src/controllers/cdn.controller';
 import { HttpError } from '@src/utils/utils';
+import { RoleBackendData } from '@src/misc/backend-security';
+import { getUserSecurityContext } from './perms.controller';
 
 // #region // ----- AUTHENTICATION ----- //
 export const Permissions = {
@@ -236,131 +238,6 @@ export function passportAuthenticateUserAndSendAuthToken(strategy: string) {
     })(req, res, next);
   };
 }
-// #endregion // -- AUTHENTICATION ----- //
-
-// #region // ----- PERMISSIONS ----- //
-export const UserRoleCodeRanking = new TwoWayMap<string, number>({
-  [RoleCode.User]: 0,
-  [RoleCode.Moderator]: 1,
-  [RoleCode.SuperAdmin]: 2,
-});
-
-export const ProjectMemberRoleCodeRanking = new TwoWayMap<string, number>({
-  [RoleCode.ProjectMember]: 0,
-  [RoleCode.ProjectOwner]: 1,
-});
-
-// Checks if a security permissionmatches the current domain.
-// This method is used to check if a user has a certain permission,
-// given what we want to access.
-export function isPermissionDomainValidForOpDomain(permission: true | SecurityDomain[] | undefined, operationDomain: OperationSecurityDomain) {
-  if (permission === undefined)
-    return false;
-  if (permission == true)
-    return true;
-  const validDomains = permission as SecurityDomain[];
-  for (const validDomain of validDomains) {
-    let matchedAllDomainProps = true;
-    for (const key in operationDomain) {
-      if (validDomain.hasOwnProperty(key)) {
-        // OperationSecurityDomain format:
-        // const operationDomain = {
-        //   userId: ["dsfdsf2023f8j3f", /*OR*/ "w023f920sdfdsf", /*OR*/ "fj230f89fjfef" ],
-        //   /*AND*/
-        //   roleCode: ["USER", /*OR*/ "MODERATOR", /*OR*/ "SUPER_ADMIN" ],
-        //   /*AND*/
-        //   roleCode: ["USER", /*OR*/ "MODERATOR", /*OR*/ "SUPER_ADMIN" ],
-        // }
-        // If we didn't get a match inside this array
-        if (!((<any>operationDomain)[key].some((x: any) => x === (<any>validDomain)[key]))) {
-          matchedAllDomainProps = false;
-          break;
-        }
-      }
-    }
-    if (matchedAllDomainProps) {
-      return true;
-    }
-  }
-  return false;
-}
-
-export const SecurityPolicies = {
-  user: {
-    domain: {
-      userId: "id",
-    },
-    permissions: {
-      UPDATE_PROFILE: PERMISSION.UPDATE_ONLY,
-      DELETE_PROFILE: PERMISSION.DELETE_ONLY,
-      READ_PROFILE_PRIVATE: PERMISSION.READ_ONLY
-    }, 
-    defaultPermissions: {
-      read: {
-        __typename: true,
-        avatarLink: true,
-        bannerLink: true,
-        createdAt: true,
-        id: true,
-        username: true,
-        displayName: true,
-        projectMembers: true,
-        roles: true,
-        socials: true,
-        bio: true,
-        
-        email: false,
-        loginIdentities: false,
-      }
-    },
-  },
-  project: {
-    domain: {
-      projectId: "id",
-    },
-    permissions: {
-      CREATE_PROJECT: PERMISSION.CREATE_ONLY,
-      DELETE_PROJECT: PERMISSION.DELETE_ONLY,
-      UPDATE_PROJECT: PERMISSION.UPDATE_ONLY,
-    },
-    defaultPermissions: PERMISSION.READ_ONLY
-  },
-  userLoginIdentity: {
-    domain: {
-      userId: "userId",
-    },
-    permissions: {
-      UPDATE_PROFILE: PERMISSION.ALLOW,
-    }
-  },
-  userSocial: {
-    domain: {
-      userId: "userId",
-    },
-    permissions: {
-      UPDATE_PROFILE: PERMISSION.ALLOW,
-    },
-    defaultPermissions: PERMISSION.READ_ONLY,
-  },
-  userRole: {
-    domain: {
-      roleCode: "roleCode",
-      userId: "userId",
-    },
-    permissions: {
-      MANAGE_USER_ROLES: PERMISSION.ALLOW,
-    }
-  },
-  projectMemberRole: {
-    domain: {
-      roleCode: "roleCode",
-      projectMemberId: "projectMemberId",
-    },
-    permissions: {
-      MANAGE_PROJECT_MEMBER_ROLES: PERMISSION.ALLOW,
-    }
-  }
-};
 
 export async function authAddSecurityContext(req: RequestWithDefaultContext, res: express.Response, next: express.NextFunction) {
   if (!req.context)
@@ -371,7 +248,7 @@ export async function authAddSecurityContext(req: RequestWithDefaultContext, res
     const authenticated = await authenticate(req);
     if (authenticated) {
       const [authScheme, authPayload] = authenticated;
-      const securityContext = await userToSecurityContext(entityManager, authPayload.userId);
+      const securityContext = await getUserSecurityContext(entityManager, authPayload.userId);
       req.context.securityContext = securityContext;
     } else {
       // Fallback to no security context
@@ -382,90 +259,4 @@ export async function authAddSecurityContext(req: RequestWithDefaultContext, res
     next(err);
   }
 }
-
-export async function userToSecurityContext(entityManager: AnyEntityManager, userId: string): Promise<SecurityContext> {
-  const userRoles = await entityManager.userRole.findAll({
-    filter: {
-      userId: { eq: userId }
-    }
-  });
-
-  // Sort by weakest first, and most powerful last.
-  // This lets us spread the roles, which lets the 
-  // later roles have precedence and can override any
-  // permissions of the weaker roles
-  userRoles.sort((a, b) => UserRoleCodeRanking.get(a.roleCode) - UserRoleCodeRanking.get(b.roleCode));
-  let securityContext: SecurityContext = {};
-  for (const role of userRoles) {
-    securityContext = { ...securityContext, ...(await userRoleCodeToSecurityContext(entityManager, userId, role.roleCode))};
-  }
-  return securityContext;
-}
-
-export async function userRoleCodeToSecurityContext(entityManager: AnyEntityManager, userId: string, role: RoleCode): Promise<SecurityContext> {
-  
-  switch (role) {
-    case RoleCode.User:
-      // ----- Project Domains ----- //
-      const ownedProjectIds = await EntityManagerExtensions.getOwnedProjectIds(entityManager, userId);
-      const projectDomains = ownedProjectIds.map(projectId => <SecurityDomain>{ projectId });
-
-      // ----- Project Member Role Domains ----- //
-      const projectMembers = await entityManager.projectMember.findAll({
-        filter: {
-          userId: { eq: userId },
-        }
-      });
-      let projectMemberRoleDomains: SecurityDomain[] = [];
-      for (const member in projectMembers) {
-        projectMemberRoleDomains = [...projectMemberRoleDomains, ...await EntityManagerExtensions.getProjectMemberRoleDomains(entityManager, userId)];
-      }
-
-      // ----- User Role Domains ----- //
-      const userRoleDomains = await EntityManagerExtensions.getUserRoleDomains(entityManager, userId);
-
-      return {
-        READ_PROFILE_PRIVATE: [{ userId: userId }],
-        UPDATE_PROFILE: [{ userId: userId }],
-        CREATE_PROJECT: true,
-        UPDATE_PROJECT: projectDomains,
-        MANAGE_USER_ROLES: userRoleDomains,
-        MANAGE_PROJECT_MEMBER_ROLES: projectMemberRoleDomains,
-      };
-    case RoleCode.Moderator:
-      return {
-        UPDATE_PROFILE: true,
-        CREATE_PROJECT: true,
-        UPDATE_PROJECT: true,
-        READ_PROFILE_PRIVATE: true,
-        MANAGE_USER_ROLES: await EntityManagerExtensions.getUserRoleDomains(entityManager, userId),
-        MANAGE_PROJECT_MEMBER_ROLES: true,
-      };
-    case RoleCode.SuperAdmin:
-      return {
-        UPDATE_PROFILE: true,
-        DELETE_PROFILE: true,
-        CREATE_PROJECT: true,
-        UPDATE_PROJECT: true,
-        DELETE_PROJECT: true,
-        READ_PROFILE_PRIVATE: true,
-        MANAGE_USER_ROLES: true,
-        MANAGE_PROJECT_MEMBER_ROLES: true,
-      };
-    default:
-      return {};
-  }
-}
-
-export async function projectMemberRoleCodeToSecurityContext(entityManager: EntityManager, projectMemberId: string, role: RoleCode): Promise<SecurityContext> {
-  switch (role) {
-    case RoleCode.ProjectMember:
-    case RoleCode.ProjectOwner:
-      return {
-        MANAGE_PROJECT_MEMBER_ROLES: await EntityManagerExtensions.getProjectMemberRoleDomains(entityManager, projectMemberId),
-      };
-    default:
-      return {};
-  }
-}
-// #endregion // -- PERMISSIONS ----- //
+// #endregion // -- AUTHENTICATION ----- //
