@@ -1,15 +1,24 @@
-import { Permission, Scalars } from "@src/generated/model.types";
+import { Permission, RoleCode, Scalars } from "@src/generated/model.types";
 import { EntityManager } from "@src/generated/typetta";
 import { PERMISSION, UserInputDriverDataTypeAdapterMap } from "@twinlogix/typetta";
 import { Db, ObjectId } from 'mongodb';
-import { EntityManagerMetadata, SecureEntityManagerMetadata, SecurityContext, SecurityDomain } from "@src/shared/security";
-import { SecurityPolicies } from "@src/controllers/perms.controller";
+import { EntityManagerMetadata, TypettaSecurityDomain, SecurityContext } from "@src/shared/security";
+import { roleValidation, SecurityPolicies } from "@src/controllers/perms.controller";
 import express from 'express';
 import { HttpError } from "@src/utils/utils";
-import { ValidationMiddleware } from "@src/middlewares/validation.middleware";
+import { validationMiddleware as validationMiddleware, mergeValidationParams } from "@src/middlewares/validation.middleware";
+import { securityContextToTypettaSecurityContext } from "@src/misc/backend-security";
+
+export type TypettaSecurityContext = {
+  permissions: TypettaSecurityContextPerms;
+}
+
+export type TypettaSecurityContextPerms = {
+  [K in Permission]?: TypettaSecurityDomain[] | true;
+}
 
 export type AnyEntityManager = EntityManager | SecureEntityManager;
-export type SecureEntityManager = EntityManager<never, SecureEntityManagerMetadata, Permission, SecurityDomain>;
+export type SecureEntityManager = EntityManager<never, EntityManagerMetadata, Permission, TypettaSecurityDomain>;
 
 function getScalars(): UserInputDriverDataTypeAdapterMap<Scalars, "mongo"> {
   return {
@@ -46,40 +55,19 @@ export function createUnsecureEntityManager(db: Db): EntityManager {
   });
 }
 
-export function createSecureEntityManager(securityContext: SecurityContext | undefined, db: Db, metadata: SecureEntityManagerMetadata | undefined = undefined): SecureEntityManager {
-  return new EntityManager<never, EntityManagerMetadata, Permission, SecurityDomain>({
+export function createSecureEntityManager(securityContext: SecurityContext, db: Db, overrideMetadata: EntityManagerMetadata | undefined = undefined): SecureEntityManager {
+  const unsecureEntityManager = createUnsecureEntityManager(db);
+  return new EntityManager({
     mongodb: {
       default: db,
     },
+    log: true,
     middlewares: [
-      new ValidationMiddleware({
-        userRole: {
-          roleCode: [
-            async () => {
-              console.log("Heyo, I'm validating!");
-              return true;
-            }
-          ]
-        }
-      })
+      securityMiddleware(),
+      validationMiddleware(
+        roleValidation(unsecureEntityManager, securityContext),
+      )
     ],
-    scalars: getScalars(),    
-    security: {
-      applySecurity: securityContext != null,
-      context: {
-        permissions: securityContext ?? {},
-      },
-      policies: <any>SecurityPolicies,
-      defaultPermission: PERMISSION.DENY,
-      // 'metadata' is the metadata passed into a EntityManager call.
-      // Here you're specify how you want to fetch the current call's domain.
-      // We're planning on storing our current domain under metadata.security.
-      operationDomain: (operationMetadata) => {
-        if (metadata) {
-          return metadata.securityDomain;
-        }
-        return operationMetadata?.securityDomain;
-      }
-    },
+    scalars: getScalars(),
   })
 }

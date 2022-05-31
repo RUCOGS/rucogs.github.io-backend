@@ -1,5 +1,5 @@
 import { AnyEntityManager } from "@src/controllers/entity-manager.controller";
-import { SecurityDomain } from "@src/shared/security";
+import { TypettaSecurityDomain } from "@src/shared/security";
 import { RoleCode } from "@src/generated/model.types";
 import { EntityManager } from "@src/generated/typetta";
 import { AbstractDAO, DAOGenerics } from "@twinlogix/typetta";

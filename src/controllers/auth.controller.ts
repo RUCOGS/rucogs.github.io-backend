@@ -10,7 +10,7 @@ import { RoleCode, User, UserRole } from '@src/generated/model.types';
 import { EntityManager, UserInsert } from '@src/generated/typetta';
 import { RequestWithDefaultContext } from '@src/misc/context';
 import { AnyEntityManager } from '@src/controllers/entity-manager.controller';
-import { OperationSecurityDomain, RoleData, SecurityContext, SecurityDomain } from '@src/shared/security';
+import { TypettaOperationSecurityDomain, RoleData, TypettaSecurityContextPerms, TypettaSecurityDomain } from '@src/shared/security';
 import { PERMISSION } from '@twinlogix/typetta';
 import { downloadToCdn } from '@src/controllers/cdn.controller';
 import { HttpError } from '@src/utils/utils';

@@ -6,48 +6,23 @@ Contains all permissions/roles related code.
 import { EntityManagerExtensions, isShallowEquals } from '@src/utils/utils'
 import { RoleCode, } from '@src/generated/model.types';
 import { AnyEntityManager } from '@src/controllers/entity-manager.controller';
-import { OperationSecurityDomain, RoleData, SecurityContext, SecurityDomain } from '@src/shared/security';
+import { TypettaOperationSecurityDomain, RoleData, TypettaSecurityDomain, SecurityContext } from '@src/shared/security';
 import { PERMISSION } from '@twinlogix/typetta';
 import { HttpError } from '@src/utils/utils';
 import { RoleBackendData } from '@src/misc/backend-security';
+import { ValidationParams } from '@src/middlewares/validation.middleware';
 
-// Checks if a security permissionmatches the current domain.
-// This method is used to check if a user has a certain permission,
-// given what we want to access.
-export function isPermissionDomainValidForOpDomain(permission: true | SecurityDomain[] | undefined, operationDomain: OperationSecurityDomain) {
-  if (permission === undefined)
-    return false;
-  if (permission == true)
-    return true;
-  const validDomains = permission as SecurityDomain[];
-  for (const validDomain of validDomains) {
-    let matchedAllDomainProps = true;
-    let key: keyof OperationSecurityDomain;
-    for (key in operationDomain) {
-      const opDomValue = operationDomain[key];
-      const validDomValue = validDomain[key];
-      if (opDomValue && validDomValue) {
-        // OperationSecurityDomain format:
-        // const operationDomain = {
-        //   userId: ["dsfdsf2023f8j3f", /*OR*/ "w023f920sdfdsf", /*OR*/ "fj230f89fjfef" ],
-        //   /*AND*/
-        //   roleCode: ["USER", /*OR*/ "MODERATOR", /*OR*/ "SUPER_ADMIN" ],
-        //   /*AND*/
-        //   roleCode: ["USER", /*OR*/ "MODERATOR", /*OR*/ "SUPER_ADMIN" ],
-        // }
-        // If we didn't get a match inside this array
-        if (!(opDomValue.some((x) => x === validDomValue))) {
-          matchedAllDomainProps = false;
-          break;
+export function roleValidation(entityManager: AnyEntityManager, securityContext: SecurityContext) {
+  return <ValidationParams>{
+    userRole: {
+      roleCode: [
+        async (newValue: RoleCode) => {
+          console.log("I'm validating from roleCode #1!");
         }
-      }
-    }
-    if (matchedAllDomainProps) {
-      return true;
-    }
+      ]
+    }, 
   }
-  return false;
-}
+};
 
 export const SecurityPolicies = {
   user: {
@@ -95,7 +70,8 @@ export const SecurityPolicies = {
     },
     permissions: {
       UPDATE_PROFILE: PERMISSION.ALLOW,
-    }
+    },
+    defaultPermissions: PERMISSION.READ_ONLY,
   },
   userSocial: {
     domain: {
@@ -112,7 +88,8 @@ export const SecurityPolicies = {
     },
     permissions: {
       MANAGE_USER_ROLES: PERMISSION.ALLOW,
-    }
+    },
+    defaultPermissions: PERMISSION.READ_ONLY,
   },
   projectMemberRole: {
     domain: {
@@ -120,7 +97,8 @@ export const SecurityPolicies = {
     },
     permissions: {
       MANAGE_PROJECT_MEMBER_ROLES: PERMISSION.ALLOW,
-    }
+    },
+    defaultPermissions: PERMISSION.READ_ONLY,
   },
   eBoard: {
     domain: {
@@ -144,10 +122,11 @@ export const SecurityPolicies = {
 
 // Centeral point to get security context.
 export async function getCompleteSecurityContext(entityManager: AnyEntityManager, userId: string) {
-  return mergeManySecurityContexts(
+  const context = mergeManySecurityContexts(
     await getUserSecurityContext(entityManager, userId), 
     await getCompleteProjectMembersSecurityContext(entityManager, userId), 
     await getEBoardSecurityContext(entityManager, userId));
+  return context;
 }
 
 // Each user can only have at most one eboard user, therefore we can identify it using
@@ -261,36 +240,49 @@ export function mergeSecurityContexts(securityContext: SecurityContext, security
 }
 
 // Helper method used by mergeSecurityContext.
-function mergeSecurityContextHalf(securityContext: SecurityContext, securityContextTwo: SecurityContext, checkedKeys: Set<string>) {
+function mergeSecurityContextHalf(contextOne: SecurityContext, contextTwo: SecurityContext, checkedKeys: Set<string>) {
   let mergedContext: SecurityContext = {};
   let key: keyof SecurityContext;
-  for (key in securityContext) {
-    // Typescript isn't happy about key traversal, so we have to use an any type
-    // We skip undefined keys, because they mean nothing to us.
-    if (!securityContext[key])
+  for (key in contextOne) {
+    const oneValue = contextOne[key];
+    const twoValue = contextTwo[key];
+    if (!oneValue)
       continue;
-  
     checkedKeys.add(key);
-    if (securityContext[key] === true) {
-      // We are true, therefore we use it because it's the most open permission
-      mergedContext[key] = true;
-    } else if (securityContextTwo[key]) {
-      // Both contexts have this key
-      if (securityContextTwo[key] === true) {
-        // Other context has a true bool, therefore we use it
-        // because it's the most open permission.
-        mergedContext[key] = true;
+
+    const permConfig: ;
+
+    if (oneValue.data) {
+      if (twoValue && twoValue.data) {
+        // Merge the two datas together
+        permConfig.data = [ ...oneValue.data, ...twoValue.data ]; 
       } else {
-        // Merge two arrays, removing any duplicate items.
-        // We can use shallow equality here because security
-        // domains are only one level deep.
-        const arrOne = securityContextTwo[key] as SecurityDomain[];
-        const arrTwo = securityContextTwo[key] as SecurityDomain[];
-        mergedContext[key] = arrOne.concat(arrTwo.filter(arrTwoItem => !arrOne.some(arrOneItem => isShallowEquals(arrOneItem, arrTwoItem))));
+        mergedContext[key].data = oneValue;
       }
-    } else {
-      // We only have this key, so we use it
-      mergedContext[key] = securityContext[key];
+    }
+
+    if (oneValue.crudDomain) {
+      if (oneValue.crudDomain === true) {
+        // We are true, therefore we use it because it's the most open permission
+        mergedContext[key] = true;
+      } else if (contextTwo[key]) {
+        // Both contexts have this key
+        if (contextTwo[key] === true) {
+          // Other context has a true bool, therefore we use it
+          // because it's the most open permission.
+          mergedContext[key] = true;
+        } else {
+          // Merge two arrays, removing any duplicate items.
+          // We can use shallow equality here because security
+          // domains are only one level deep.
+          const arrOne = contextTwo[key] as TypettaSecurityDomain[];
+          const arrTwo = contextTwo[key] as TypettaSecurityDomain[];
+          mergedContext[key] = arrOne.concat(arrTwo.filter(arrTwoItem => !arrOne.some(arrOneItem => isShallowEquals(arrOneItem, arrTwoItem))));
+        }
+      } else {
+        // We only have this key, so we use it
+        mergedContext[key] = contextOne[key];
+      }
     }
   }
   return mergedContext;

@@ -1,11 +1,11 @@
-import { AnyEntityManager } from "@src/controllers/entity-manager.controller";
+import { AnyEntityManager, TypettaSecurityContext } from "@src/controllers/entity-manager.controller";
 import { RoleCode } from "@src/generated/model.types";
-import { SecurityContext } from "@src/shared/security";
+import { SecurityContext, TypettaSecurityContextPerms } from "@src/shared/security";
 import { EntityManagerExtensions } from "@src/utils/utils";
 
 export const RoleBackendData: {
   [key in RoleCode]?: {
-    getSecurityContext: (entityManager: AnyEntityManager, id: string) => Promise<SecurityContext>;
+    getSecurityContext: (entityManager: AnyEntityManager, id: string) => Promise<TypettaSecurityContextPerms>;
   }
 } = {
 // #region // ----- USER ROLES ----- //
@@ -62,4 +62,18 @@ export const RoleBackendData: {
     }
   }
 // #endregion // -- PROJECT MEMBER ROLES ----- //
+}
+
+export function securityContextToTypettaSecurityContext(securityContext: SecurityContext) {
+  const permissions: TypettaSecurityContextPerms = {};
+  let key: keyof SecurityContext;
+  for (key in securityContext) {
+    const value = securityContext[key];
+    if (value && value.crudDomain) {
+      permissions[key] = value.crudDomain;
+    }
+  }
+  return {
+    permissions
+  };
 }

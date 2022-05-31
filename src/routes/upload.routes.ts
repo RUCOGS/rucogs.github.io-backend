@@ -5,7 +5,7 @@ import { getOperationMetadataFromRequest } from '@src/controllers/entity-manager
 import { deleteSelfHostedFile, isSelfHostedFile, relativeToSelfHostedFilePath, uniqueFileName } from '@src/controllers/cdn.controller';
 import { HttpError } from '@src/utils/utils';
 import { authAddSecurityContext } from '@src/controllers/auth.controller';
-import { isPermissionDomainValidForOpDomain } from '@src/controllers/perms.controller';
+import { isPermDomainValidForOpDomain } from '@src/shared/security';
 
 const router = express.Router();
 
@@ -57,7 +57,7 @@ router.post(
       const securityContext = req.context.securityContext;
 
       // Check permissions
-      if (!metadata || metadata.userId.length == 0 || !isPermissionDomainValidForOpDomain(securityContext.MANAGE_USER_ROLES, {
+      if (!metadata || metadata.userId.length == 0 || !isPermDomainValidForOpDomain(securityContext.MANAGE_USER_ROLES, {
         userId: [ metadata.userId[0] ]
       })) {
         throw new HttpError(401, "Not authorized!");
