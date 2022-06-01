@@ -1,9 +1,9 @@
 import express from 'express';
 import multer from 'multer';
 import { RequestContext, RequestWithContext } from '@src/misc/context';
-import { getOperationMetadataFromRequest } from '@src/controllers/entity-manager.controller';
+import { getOperationMetadataFromRequest } from '@src/controllers/entity-manager.controller/entity-manager';
 import { deleteSelfHostedFile, isSelfHostedFile, relativeToSelfHostedFilePath, uniqueFileName } from '@src/controllers/cdn.controller';
-import { HttpError } from '@src/utils/utils';
+import { HttpError } from '@src/utils';
 import { authAddSecurityContext } from '@src/controllers/auth.controller';
 import { isPermDomainValidForOpDomain } from '@src/shared/security';
 

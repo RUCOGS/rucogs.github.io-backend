@@ -2,20 +2,15 @@ import passport, { PassportStatic } from 'passport';
 import jwt from 'jsonwebtoken';
 import express from 'express';
 import AuthConfig from '@src/config/auth.config.json';
-import { EntityManagerExtensions, isShallowEquals } from '@src/utils/utils'
 import { Strategy as DiscordStrategy } from 'passport-discord';
 import { Strategy as GoogleStrategy, Profile as GoogleStrategyProfile } from 'passport-google-oauth20';
 import OAuth2Strategy from 'passport-oauth2';
-import { RoleCode, User, UserRole } from '@src/generated/model.types';
+import { User } from '@src/generated/model.types';
 import { EntityManager, UserInsert } from '@src/generated/typetta';
 import { RequestWithDefaultContext } from '@src/misc/context';
-import { AnyEntityManager } from '@src/controllers/entity-manager.controller';
-import { TypettaOperationSecurityDomain, RoleData, TypettaSecurityContextPerms, TypettaSecurityDomain } from '@src/shared/security';
-import { PERMISSION } from '@twinlogix/typetta';
 import { downloadToCdn } from '@src/controllers/cdn.controller';
-import { HttpError } from '@src/utils/utils';
-import { RoleBackendData } from '@src/misc/backend-security';
-import { getUserSecurityContext } from './perms.controller';
+import { HttpError } from '@src/utils';
+import { getUserSecurityContext } from './security.controller/security-context';
 
 // #region // ----- AUTHENTICATION ----- //
 export const Permissions = {

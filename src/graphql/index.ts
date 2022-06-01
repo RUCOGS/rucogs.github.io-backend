@@ -2,11 +2,11 @@
 import { resolvers as generatedResolvers } from '@src/generated/resolvers'
 import { mergeTypeDefs } from '@graphql-tools/merge'
 import inputTypeDefs from '@src/generated/operations'
-import schemaTypeDefs from '@src/graphql/schema.typedefs'
+import schemaTypeDefs from './schema.typedefs'
 import { typeDefs as typettaDirectivesTypeDefs } from '@twinlogix/typetta'
-import customResolvers from '@src/graphql/scalar.resolvers';
-import authTypeDefs from '@src/graphql/auth.typedefs';
-import authResolvers from '@src/graphql/auth.resolvers';
+import customResolvers from './scalar.resolvers';
+import authTypeDefs from './auth/auth.typedefs';
+import authResolvers from './auth/auth.resolvers';
 
 export const typeDefs = mergeTypeDefs([
   inputTypeDefs,

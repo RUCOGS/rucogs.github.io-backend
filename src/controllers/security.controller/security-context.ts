@@ -3,13 +3,11 @@
 Contains all permissions/roles related code.
 
  */
-import { EntityManagerExtensions, isShallowEquals } from '@src/utils/utils'
 import { RoleCode, } from '@src/generated/model.types';
-import { AnyEntityManager } from '@src/controllers/entity-manager.controller';
-import { TypettaOperationSecurityDomain, RoleData, TypettaSecurityDomain, SecurityContext } from '@src/shared/security';
-import { PERMISSION } from '@twinlogix/typetta';
-import { HttpError } from '@src/utils/utils';
-import { RoleBackendData } from '@src/misc/backend-security';
+import { AnyEntityManager } from '@src/controllers/entity-manager.controller/entity-manager';
+import { RoleData, SecurityContext, isExtendedSecurityDomain, isBaseSecurityDomain, BaseSecurityDomain, ExtendedSecurityDomain, PermissionCode } from '@src/shared/security';
+import { HttpError } from '@src/utils';
+import { RoleBackendData } from './backend-security-settings';
 import { ValidationParams } from '@src/middlewares/validation.middleware';
 
 export function roleValidation(entityManager: AnyEntityManager, securityContext: SecurityContext) {
@@ -22,102 +20,6 @@ export function roleValidation(entityManager: AnyEntityManager, securityContext:
       ]
     }, 
   }
-};
-
-export const SecurityPolicies = {
-  user: {
-    domain: {
-      userId: "id",
-    },
-    permissions: {
-      UPDATE_PROFILE: PERMISSION.UPDATE_ONLY,
-      DELETE_PROFILE: PERMISSION.DELETE_ONLY,
-      READ_PROFILE_PRIVATE: PERMISSION.READ_ONLY
-    }, 
-    defaultPermissions: {
-      read: {
-        __typename: true,
-        avatarLink: true,
-        bannerLink: true,
-        createdAt: true,
-        id: true,
-        username: true,
-        displayName: true,
-        projectMembers: true,
-        roles: true,
-        socials: true,
-        bio: true,
-        
-        email: false,
-        loginIdentities: false,
-      }
-    },
-  },
-  project: {
-    domain: {
-      projectId: "id",
-    },
-    permissions: {
-      CREATE_PROJECT: PERMISSION.CREATE_ONLY,
-      DELETE_PROJECT: PERMISSION.DELETE_ONLY,
-      UPDATE_PROJECT: PERMISSION.UPDATE_ONLY,
-    },
-    defaultPermissions: PERMISSION.READ_ONLY
-  },
-  userLoginIdentity: {
-    domain: {
-      userId: "userId",
-    },
-    permissions: {
-      UPDATE_PROFILE: PERMISSION.ALLOW,
-    },
-    defaultPermissions: PERMISSION.READ_ONLY,
-  },
-  userSocial: {
-    domain: {
-      userId: "userId",
-    },
-    permissions: {
-      UPDATE_PROFILE: PERMISSION.ALLOW,
-    },
-    defaultPermissions: PERMISSION.READ_ONLY,
-  },
-  userRole: {
-    domain: {
-      userId: "userId",
-    },
-    permissions: {
-      MANAGE_USER_ROLES: PERMISSION.ALLOW,
-    },
-    defaultPermissions: PERMISSION.READ_ONLY,
-  },
-  projectMemberRole: {
-    domain: {
-      projectMemberId: "projectMemberId",
-    },
-    permissions: {
-      MANAGE_PROJECT_MEMBER_ROLES: PERMISSION.ALLOW,
-    },
-    defaultPermissions: PERMISSION.READ_ONLY,
-  },
-  eBoard: {
-    domain: {
-      userId: "userId"
-    },
-    permissions: {
-      MANAGE_EBOARD: PERMISSION.ALLOW
-    },
-    defaultPermissions: PERMISSION.READ_ONLY 
-  },
-  eBoardRole: {
-    domain: {
-      eboardId: "eboardId",
-    },
-    permissions: {
-      MANAGE_EBOARD: PERMISSION.ALLOW,
-    },
-    defaultPermissions: PERMISSION.READ_ONLY
-  },
 };
 
 // Centeral point to get security context.
@@ -182,7 +84,7 @@ export async function getProjectMemberSecurityContext(entityManager: AnyEntityMa
   return rolesToSecurityContext(entityManager, roleCodes, projectMemberId);
 }
 
-export async function getUserSecurityContext(entityManager: AnyEntityManager, userId: string) {
+export async function getUserSecurityContext(entityManager: AnyEntityManager, userId: string): Promise<SecurityContext> {
   const roles = await entityManager.userRole.findAll({
     filter: {
       userId: { eq: userId }
@@ -242,50 +144,119 @@ export function mergeSecurityContexts(securityContext: SecurityContext, security
 // Helper method used by mergeSecurityContext.
 function mergeSecurityContextHalf(contextOne: SecurityContext, contextTwo: SecurityContext, checkedKeys: Set<string>) {
   let mergedContext: SecurityContext = {};
-  let key: keyof SecurityContext;
-  for (key in contextOne) {
-    const oneValue = contextOne[key];
-    const twoValue = contextTwo[key];
+  let permissionCode: keyof SecurityContext;
+  for (permissionCode in contextOne) {
+    const oneValue = contextOne[permissionCode];
+    const twoValue = contextTwo[permissionCode];
     if (!oneValue)
       continue;
-    checkedKeys.add(key);
+    checkedKeys.add(permissionCode);
 
-    const permConfig: ;
-
-    if (oneValue.data) {
-      if (twoValue && twoValue.data) {
-        // Merge the two datas together
-        permConfig.data = [ ...oneValue.data, ...twoValue.data ]; 
-      } else {
-        mergedContext[key].data = oneValue;
-      }
-    }
-
-    if (oneValue.crudDomain) {
-      if (oneValue.crudDomain === true) {
-        // We are true, therefore we use it because it's the most open permission
-        mergedContext[key] = true;
-      } else if (contextTwo[key]) {
-        // Both contexts have this key
-        if (contextTwo[key] === true) {
-          // Other context has a true bool, therefore we use it
-          // because it's the most open permission.
-          mergedContext[key] = true;
-        } else {
-          // Merge two arrays, removing any duplicate items.
-          // We can use shallow equality here because security
-          // domains are only one level deep.
-          const arrOne = contextTwo[key] as TypettaSecurityDomain[];
-          const arrTwo = contextTwo[key] as TypettaSecurityDomain[];
-          mergedContext[key] = arrOne.concat(arrTwo.filter(arrTwoItem => !arrOne.some(arrOneItem => isShallowEquals(arrOneItem, arrTwoItem))));
-        }
-      } else {
-        // We only have this key, so we use it
-        mergedContext[key] = contextOne[key];
-      }
+    if (twoValue) {
+      // We have to merge
+      mergedContext[permissionCode] = mergeDomain(permissionCode, oneValue.baseDomain, twoValue.baseDomain);
+    } else {
+      // No merging necessary!
+      mergedContext[permissionCode] = oneValue;
     }
   }
   return mergedContext;
+}
+
+function mergeBaseDomains(domainOne: BaseSecurityDomain, domainTwo: BaseSecurityDomain) {
+  if (domainOne === true || domainTwo === true)
+    return true;
+  if (domainOne) {
+    
+  } else {
+    if (domainTwo)
+      return domainTwo;
+  }
+}
+
+function mergeExtendedDomains(permissionCode: PermissionCode, domainOne: ExtendedSecurityDomain, domainTwo: ExtendedSecurityDomain) {
+  return <ExtendedSecurityDomain>{
+    baseDomain: mergeBaseDomains(domainOne.baseDomain, domainTwo.baseDomain),
+    extraData: mergeExtraData(permissionCode, domainOne, domainTwo)
+  }
+}
+
+function mergeExtendedDomainWithBaseDomain(extendedDomain: ExtendedSecurityDomain, baseDomain: BaseSecurityDomain) {
+  return <ExtendedSecurityDomain>{
+    baseDomain: mergeBaseDomains(extendedDomain.baseDomain, baseDomain),
+    extraData: extendedDomain.extraData
+  }
+}
+
+function mergeExtendedDomainWithExtraData(permissionCode: PermissionCode, domain: ExtendedSecurityDomain, data: any) {
+  return <ExtendedSecurityDomain>{
+    baseDomain: domain.baseDomain,
+    extraData: mergeExtraData(permissionCode, domain.extraData, data)
+  };
+}
+
+function mergeExtraData(permissionCode: PermissionCode, dataOne: any, dataTwo: any) {
+  if (dataOne === undefined || dataTwo === undefined)
+    return undefined;
+  // TODO: Write this and add another backend setting for helper methods of merging and creating data for 
+  //       roles that use that
+  return dataOne;
+}
+
+function mergeDomain(permissionCode: PermissionCode, domainOne: any, domainTwo: any) {
+  let result = mergeDomainHalf(permissionCode, domainOne, domainTwo);
+  if (result != undefined)
+    return result;
+  result = mergeDomainHalf(permissionCode, domainTwo, domainOne);
+  if (result != undefined)
+    return result;
+  // Finally, default to custom result
+  return mergeExtraData(permissionCode, domainOne, domainTwo);
+}
+
+function mergeBaseDomainWithExtraData(domainOne: BaseSecurityDomain, domainTwo: any) {
+  return <ExtendedSecurityDomain>{
+    baseDomain: domainOne,
+    extraData: domainTwo
+  }
+}
+
+function mergeDomainHalf(permissionCode: PermissionCode, domainOne: any, domainTwo: any): any {
+  /**
+  Extended
+  Base
+  Custom
+
+  Combinations:
+    Extended - Extended
+    Base - Base
+    Custom - Custom
+    Extended - Base
+    Extended - Custom
+    Base - Custom
+   */
+  if (isExtendedSecurityDomain(domainOne)) {
+    if (isExtendedSecurityDomain(domainTwo)) {
+      // Extended - Extended
+      return mergeExtendedDomains(permissionCode, domainOne, domainTwo);
+    } else if (isBaseSecurityDomain(domainTwo)) {
+      // Extended - Base
+      return mergeExtendedDomainWithBaseDomain(domainOne, domainTwo);
+    } else {
+      // Extended - Custom
+      return mergeExtendedDomainWithExtraData(permissionCode, domainOne, domainTwo);
+    }
+  } else if (isBaseSecurityDomain(domainOne)) {
+    if (isBaseSecurityDomain(domainTwo)) {
+      // Base - Base
+      return mergeBaseDomains(domainOne, domainTwo);
+    } else {
+      // Base - Custom
+      return mergeBaseDomainWithExtraData(domainOne, domainTwo);
+    }
+  }
+  // Custom - Custom
+  return undefined
 }
 
 // Topological sorts the role codes such that the lowest priority
@@ -315,4 +286,24 @@ function getTopologicalSortedRoleCodesRecursive(checkedRoles: Set<RoleCode>, rol
   }
   sortedRoles.push(role);
   return sortedRoles;
+}
+
+export function securityContextToTypettaSecurityContext(securityContext: SecurityContext) {
+  const permissions: any = {};
+  let permCode: keyof SecurityContext;
+  for (permCode in securityContext) {
+    const securityDomain = securityContext[permCode];
+    if (isExtendedSecurityDomain(securityDomain)) {
+      const extendedSecurityDomain = securityDomain as ExtendedSecurityDomain;
+      permissions[permCode] = extendedSecurityDomain.baseDomain;
+    } else if (isBaseSecurityDomain(securityDomain)) {
+      const baseSecurityDomain = securityDomain as BaseSecurityDomain;
+      permissions[permCode] = baseSecurityDomain;
+    } else {
+      throw new Error(`Unexpected security domain type! Object: ${JSON.stringify(securityDomain)}`);
+    }
+  }
+  return {
+    permissions
+  };
 }

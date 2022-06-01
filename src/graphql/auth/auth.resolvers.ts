@@ -1,6 +1,7 @@
 import { ApolloResolversContext } from '@src/misc/context';
-import { SecurityPolicies, getUserSecurityContext } from '@src/controllers/perms.controller';
+import { getUserSecurityContext } from '@src/controllers/security';
 import { QueryResolvers, MutationResolvers } from '@src/generated/graphql-endpoint.types';
+import { SecurityPolicies } from '@src/misc/backend-security-settings';
 
 export default {
   Query: {

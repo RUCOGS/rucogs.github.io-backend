@@ -9,13 +9,13 @@ import passport from 'passport';
 import authRouter from '@src/routes/auth.routes';
 import fileUploadRouter from '@src/routes/upload.routes';
 import http from 'http';
-import { createSecureEntityManager, createUnsecureEntityManager, getOperationMetadataFromRequest } from '@src/controllers/entity-manager.controller';
+import { createSecureEntityManager, createUnsecureEntityManager, getOperationMetadataFromRequest } from '@src/controllers/entity-manager/entity-manager';
 import { authenticate, AuthScheme, configPassport } from '@src/controllers/auth.controller';
-import { getCompleteSecurityContext } from '@src/controllers/perms.controller';
+import { getCompleteSecurityContext } from '@src/controllers/security';
 import { Db } from 'mongodb';
 import ServerConfig from '@src/config/server.config.json';
 import { ApolloResolversContext, RequestWithDefaultContext } from '@src/misc/context';
-import { typeDefs, resolvers } from '@src/misc/typedefs-resolvers';
+import { typeDefs, resolvers } from '@src/controllers/entity-manager/typedefs-resolvers';
 
 
 async function startServer(debug: boolean) {
