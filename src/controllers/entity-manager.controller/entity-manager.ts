@@ -1,27 +1,28 @@
-import { Permission, RoleCode, Scalars } from "@src/generated/model.types";
+import { Permission, Scalars } from "@src/generated/model.types";
 import { EntityManager } from "@src/generated/typetta";
 import { PERMISSION, UserInputDriverDataTypeAdapterMap } from "@twinlogix/typetta";
 import { Db, ObjectId } from 'mongodb';
-import { EntityManagerMetadata, BaseSecurityDomainFields, SecurityContext, OperationSecurityDomain } from "@src/shared/security";
+import { EntityManagerMetadata, BaseSecurityDomainFieldSet, SecurityContext } from "@src/shared/security";
 import { roleValidation } from "@src/controllers/security.controller";
 import express from 'express';
 import { HttpError } from "@src/utils";
-import { validationMiddleware, mergeValidationParams } from "@src/middlewares/validation.middleware";
+import { validationMiddleware } from "@src/middlewares/validation.middleware";
 import { securityContextToTypettaSecurityContext } from "@src/controllers/security.controller";
-import { SecurityPolicies } from "@src/controllers/security.controller";
+import { SecurityPolicy } from "@src/controllers/security.controller";
+import { dateMetadataMiddleware } from "@src/middlewares/dateMetadata.middleware";
 
 export type TypettaSecurityContext = {
   permissions: TypettaSecurityContextPerms;
 }
 
 export type TypettaSecurityContextPerms = {
-  [K in Permission]?: BaseSecurityDomainFields[] | true;
+  [K in Permission]?: BaseSecurityDomainFieldSet[] | true;
 }
 
 export type AnyEntityManager = EntityManager | SecureEntityManager;
-export type SecureEntityManager = EntityManager<never, EntityManagerMetadata, Permission, BaseSecurityDomainFields>;
+export type SecureEntityManager = EntityManager<never, EntityManagerMetadata, Permission, BaseSecurityDomainFieldSet>;
 
-function getScalars(): UserInputDriverDataTypeAdapterMap<Scalars, "mongo"> {
+function getScalars() {
   return {
     ID: {
       modelToDB: (value: string) => new ObjectId(value),
@@ -56,32 +57,38 @@ export function createUnsecureEntityManager(db: Db): EntityManager {
   });
 }
 
-export function createSecureEntityManager(securityContext: SecurityContext, db: Db, operationSecurityDomain: OperationSecurityDomain = {}): SecureEntityManager {
+export function createSecureEntityManager(securityContext: SecurityContext, db: Db, overrideOperationMetadata: EntityManagerMetadata | undefined = undefined): SecureEntityManager {
   const unsecureEntityManager = createUnsecureEntityManager(db);
-  return new EntityManager<never, EntityManagerMetadata, Permission, BaseSecurityDomainFields>({
+  const context = securityContextToTypettaSecurityContext(securityContext);
+  return new EntityManager<never, EntityManagerMetadata, Permission, BaseSecurityDomainFieldSet>({
     mongodb: {
       default: db,
     },
     log: true,
     middlewares: [
+      dateMetadataMiddleware(getScalars().Date.generate),// TODO
       validationMiddleware(
-        roleValidation(unsecureEntityManager, securityContext),
+        roleValidation(
+          unsecureEntityManager, 
+          securityContext, 
+          overrideOperationMetadata?.securityDomain
+        ),
       )
     ],
     scalars: getScalars(),    
     security: {
       applySecurity: securityContext != null,
-      context: securityContextToTypettaSecurityContext(securityContext),
-      policies: <any>SecurityPolicies,
+      context,
+      policies: <any>SecurityPolicy,
       defaultPermission: PERMISSION.DENY,
       // 'metadata' is the metadata passed into a EntityManager call.
       // Here you're specify how you want to fetch the current call's domain.
       // We're planning on storing our current domain under metadata.security.
       operationDomain: (operationMetadata) => {
-        if (operationSecurityDomain) {
-          return operationSecurityDomain;
+        if (overrideOperationMetadata) {
+          return overrideOperationMetadata.securityDomain;
         }
-        return operationMetadata?.operationSecurityDomain;
+        return operationMetadata?.securityDomain;
       }
     },
   })

@@ -1,4 +1,5 @@
 import { Permission } from "@src/generated/model.types";
+import { isSecurityDomainValidForOpDomain } from "./index";
 
 export type SecurityDomainTemplate = {
   userId: string;
@@ -10,10 +11,10 @@ export type SecurityDomainTemplate = {
 /**
 Represents a set of objects
  */
-export type BaseSecurityDomainFields = Partial<SecurityDomainTemplate>
+export type BaseSecurityDomainFieldSet = Partial<SecurityDomainTemplate>
 
 export type EntityManagerMetadata = {
-  operationSecurityDomain: OperationSecurityDomain;
+  securityDomain: OperationSecurityDomain;
 }
 
 /**
@@ -39,10 +40,10 @@ for each entitiy:
 
  */
 export type OperationSecurityDomain = { 
-  [K in keyof BaseSecurityDomainFields]: SecurityDomainTemplate[K][];
+  [K in keyof BaseSecurityDomainFieldSet]: SecurityDomainTemplate[K][];
 }
 
-export type BaseSecurityDomain = BaseSecurityDomainFields[] | true;
+export type BaseSecurityDomain = BaseSecurityDomainFieldSet[] | true;
 export function isBaseSecurityDomain(object: any) {
   return object === true || (Array.isArray(object));
 }
@@ -85,6 +86,11 @@ It will then be used to verify permissions
 in other parts of the operation.
 */
 export type SecurityContext = {
+  userId?: string
+  permissions: SecurityPermissions
+}
+
+export type SecurityPermissions = {
   /**
   Each permission holds to a SecurityDomain,
   which identifies the set of entities
@@ -106,14 +112,45 @@ export type CrudOperationSecurity = {
   update: CrudOperationPermissions
 }
 
-export type SecurityPolicies = {
+export type SecurityPolicy = {
   [key: string]: {
     domain: {
-      [K in keyof BaseSecurityDomainFields]: string
+      [K in keyof BaseSecurityDomainFieldSet]: string
     },
     permissions: {
       [K in PermissionCode]?: CrudOperationSecurity
     }
     defaultPermissions: CrudOperationSecurity
   }
-} 
+}
+
+// CONFIG: Default security context
+export const DefaultSecurityContext: SecurityContext = {
+  permissions: {
+    
+  }
+}
+
+export class PermissionsCalculator {
+  constructor(public securityContext: SecurityContext = DefaultSecurityContext, public operationDomain: OperationSecurityDomain = {}) {}
+
+  withContext(securityContext: SecurityContext) {
+    this.securityContext = securityContext;
+    return this;
+  }
+
+  withDomain(operationDomain: OperationSecurityDomain) {
+    this.operationDomain = operationDomain;
+    return this;
+  }
+
+  hasPermission(permissionCode: PermissionCode) {
+    if (!this.securityContext)
+      return false;
+    return isSecurityDomainValidForOpDomain(permissionCode, this.securityContext.permissions[permissionCode], this.operationDomain);
+  }
+}
+
+export function makePermsCalc() { 
+  return new PermissionsCalculator();
+}

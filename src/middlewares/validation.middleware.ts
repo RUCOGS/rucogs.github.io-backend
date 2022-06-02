@@ -1,6 +1,6 @@
 export type ValidationParams = {
   [entity: string]: {
-    [field: string]: ((newValue: any) => Promise<Error | void>)[]
+    [field: string]: ((newValue: any, filter: any | undefined, changes: any) => Promise<Error | void>)[]
   }
 }
 
@@ -56,15 +56,18 @@ export function validationMiddleware(...allParams: ValidationParams[]) {
   return {
     async before(args: any, context: any) {
       let changes;
+      let filter;
       switch(args.operation) {
         case 'insert':
-          changes = args.params.record
+          changes = args.params.record;
           break;  
         case 'replace':
-          changes = args.params.replace
+          changes = args.params.replace;
+          filter = args.params.filter;
           break;
         case 'update':
-          changes = args.params.changes
+          changes = args.params.changes;
+          filter = args.params.filter;
           break;
         default:
           return {
@@ -86,7 +89,7 @@ export function validationMiddleware(...allParams: ValidationParams[]) {
         if (!validationFns[key])
           continue;
         for (const validationFn of validationFns[key]) {
-          const error = await validationFn(changes[key]);
+          const error = await validationFn(changes[key], filter, changes);
           if (error) {
             error.message = `Validation failed on field "${context.daoName}.${key}": ${error.message}`;
             throw error;

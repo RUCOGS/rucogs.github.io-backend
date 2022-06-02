@@ -10,7 +10,7 @@ import { EntityManager, UserInsert } from '@src/generated/typetta';
 import { RequestWithDefaultContext } from '@src/misc/context';
 import { downloadToCdn } from '@src/controllers/cdn.controller';
 import { HttpError } from '@src/utils';
-import { getUserSecurityContext } from './security.controller/security-context';
+import { getCompleteSecurityContext } from '@src/controllers/security.controller/security-context';
 
 // #region // ----- AUTHENTICATION ----- //
 export const Permissions = {
@@ -239,15 +239,13 @@ export async function authAddSecurityContext(req: RequestWithDefaultContext, res
     return;
   
   try {
-    const entityManager = req.context.entityManager;
+    const entityManager = req.context.unsecureEntityManager;
     const authenticated = await authenticate(req);
     if (authenticated) {
       const [authScheme, authPayload] = authenticated;
-      const securityContext = await getUserSecurityContext(entityManager, authPayload.userId);
+      const securityContext = await getCompleteSecurityContext(entityManager, authPayload.userId);
       req.context.securityContext = securityContext;
     } else {
-      // Fallback to no security context
-      req.context.securityContext = {};
     }
     next();
   } catch (err) {

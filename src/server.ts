@@ -9,13 +9,14 @@ import passport from 'passport';
 import authRouter from '@src/routes/auth.routes';
 import fileUploadRouter from '@src/routes/upload.routes';
 import http from 'http';
-import { createSecureEntityManager, createUnsecureEntityManager, getOperationMetadataFromRequest } from '@src/controllers/entity-manager/entity-manager';
+import { createSecureEntityManager, createUnsecureEntityManager, getOperationMetadataFromRequest } from '@src/controllers/entity-manager.controller/entity-manager';
 import { authenticate, AuthScheme, configPassport } from '@src/controllers/auth.controller';
-import { getCompleteSecurityContext } from '@src/controllers/security';
+import { getCompleteSecurityContext } from '@src/controllers/security.controller';
 import { Db } from 'mongodb';
 import ServerConfig from '@src/config/server.config.json';
 import { ApolloResolversContext, RequestWithDefaultContext } from '@src/misc/context';
-import { typeDefs, resolvers } from '@src/controllers/entity-manager/typedefs-resolvers';
+import { typeDefs, resolvers } from '@src/graphql';
+import { DefaultSecurityContext } from './shared/security';
 
 
 async function startServer(debug: boolean) {
@@ -71,18 +72,16 @@ async function startApolloServer(app: express.Application, mongoDb: Db, endpoint
               const entityManager = createSecureEntityManager(securityContext, mongoDb, metadata);
               return {
                 entityManager,
-                securityContext,
-                authUserId: authPayload.userId,
+                securityContext
               };
             }
           }
         } else {
           // Fallback to public api
-          const securityContext = {};
-          const entityManager = createSecureEntityManager(securityContext, mongoDb);
+          const entityManager = createSecureEntityManager(DefaultSecurityContext, mongoDb);
           return {
             entityManager,
-            securityContext
+            securityContext: DefaultSecurityContext
           }
         }
       } else {
@@ -133,7 +132,7 @@ function configExpress(app: Express, entityManager: EntityManager) {
   // can use it in any of our requests.
   app.use((req: RequestWithDefaultContext, res, next) => {
     req.context = {
-      entityManager
+      unsecureEntityManager: entityManager
     }
     next();
   })
@@ -152,12 +151,25 @@ function configExpress(app: Express, entityManager: EntityManager) {
 
 // Parse command line arguments
 const args = process.argv.slice(2);
-switch (args[0]) {
-  case "debug":
-    startServer(true);
-    break;
-  case "production":
-  default:
-    startServer(false);
-    break;
+
+if (args.length > 0) {
+  switch (args[0]) {
+    case "development":
+      startServer(true);
+      break;
+    case "production":
+    default:
+      startServer(false);
+      break;
+  }
+} else {
+  switch (process.env.NODE_ENV) {
+    case "development":
+      startServer(true);
+      break;
+    case "production":
+    default:
+      startServer(false);
+      break;
+  }
 }

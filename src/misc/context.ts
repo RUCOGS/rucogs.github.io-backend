@@ -1,15 +1,15 @@
-import { AnyEntityManager } from "@src/controllers/entity-manager.controller";
+import { AnyEntityManager } from "@src/controllers/entity-manager.controller/entity-manager";
+import { EntityManager } from "@src/generated/typetta";
 import { SecurityContext } from "@src/shared/security";
 import express from "express";
 
 export type ApolloResolversContext = {
   entityManager: AnyEntityManager
-  securityContext?: SecurityContext;
-  authUserId?: string;
+  securityContext?: SecurityContext
 };
 export type RequestContext = {
-  entityManager: AnyEntityManager
-  securityContext?: SecurityContext;
+  unsecureEntityManager: EntityManager
+  securityContext?: SecurityContext
 };
 
 // The type enriching the Request type with the context field

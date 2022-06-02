@@ -5,7 +5,8 @@ import { getOperationMetadataFromRequest } from '@src/controllers/entity-manager
 import { deleteSelfHostedFile, isSelfHostedFile, relativeToSelfHostedFilePath, uniqueFileName } from '@src/controllers/cdn.controller';
 import { HttpError } from '@src/utils';
 import { authAddSecurityContext } from '@src/controllers/auth.controller';
-import { isPermDomainValidForOpDomain } from '@src/shared/security';
+import { makePermsCalc } from '@src/shared/security';
+import { Permission } from '@src/generated/model.types';
 
 const router = express.Router();
 
@@ -53,18 +54,22 @@ router.post(
       const metadata: {
         userId: string[]
       } = getOperationMetadataFromRequest(req);
-      const entityManager = req.context.entityManager;
+      const unsecureEntityManager = req.context.unsecureEntityManager;
       const securityContext = req.context.securityContext;
 
       // Check permissions
-      if (!metadata || metadata.userId.length == 0 || !isPermDomainValidForOpDomain(securityContext.MANAGE_USER_ROLES, {
-        userId: [ metadata.userId[0] ]
-      })) {
+      if (!metadata || metadata.userId.length == 0 || 
+        !makePermsCalc()
+          .withContext(securityContext)
+          .withDomain({
+            userId: [ metadata.userId[0] ]
+          })
+          .hasPermission(Permission.ManageUserRoles)) {
         throw new HttpError(401, "Not authorized!");
       }
 
       // Ensure userId is valid
-      const user = await entityManager.user.findOne({
+      const user = await unsecureEntityManager.user.findOne({
         filter: {
           id: metadata.userId[0]
         },
@@ -105,7 +110,7 @@ router.post(
     try {
       const user = req.context.user;
       const files = req.files as { [fieldname: string]: Express.Multer.File[] };
-      const entityManager = req.context.entityManager;
+      const entityManager = req.context.unsecureEntityManager;
       
       const socialsUpdated = req.body.socials;
       const socials: {
@@ -169,9 +174,6 @@ router.post(
 
       const avatarUpdated = files['avatar'] && files['avatar'].length == 1;
       const avatarSelfHostedFilePath = avatarUpdated ? relativeToSelfHostedFilePath(files['avatar'][0].path) : "";
-      // TODO: Make avatar readonly, and let it only be set here. Otherwise users can 
-      //       change their avatar to another users avatar, then change their avatar again
-      //       to delete another user's avatar.
       // Purge old avatar if it's self hosted
       if (avatarUpdated && user.avatarLink 
         && isSelfHostedFile(user.avatarLink)) {

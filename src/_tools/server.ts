@@ -1,4 +1,4 @@
-import { typeDefs } from '@src/misc/typedefs-resolvers';
+import { typeDefs } from '@src/graphql';
 import { ApolloServer } from 'apollo-server';
 import { exec } from 'child_process';
 

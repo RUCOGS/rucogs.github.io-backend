@@ -8,6 +8,7 @@ import customResolvers from './scalar.resolvers';
 import authTypeDefs from './auth/auth.typedefs';
 import authResolvers from './auth/auth.resolvers';
 
+// CONFIG: Apollo GraphQL typdefs and resolvers
 export const typeDefs = mergeTypeDefs([
   inputTypeDefs,
   schemaTypeDefs,

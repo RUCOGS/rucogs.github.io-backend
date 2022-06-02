@@ -50,15 +50,22 @@ enum Permission {
   MANAGE_PROJECT_MEMBER_ROLES,
 }
 
+type SomeType @entity @mongodb {
+  id: ID! @id(from: "db") @alias(value: "_id")
+  someField: Date @schema(metadata: [{ key: "keyOne", value: [{ key: "nestedKey", value: true }] }, { key: "keyTwo", value: [ "one", 2, "three", true ]}])
+}
+
 type User @entity @mongodb {
   id: ID! @id(from: "db") @alias(value: "_id")
-  createdAt: Date! @default(from: "generator")
+  createdAt: Date @schema(metadata: [{ key: "createdAt", value: true }])
+  updatedAt: Date @schema(metadata: [{ key: "createdAt", value: true }])
+
   email: String!
   username: String
   displayName: String
   bio: String
   bannerLink: String
-  avatarLink: String  
+  avatarLink: String
   loginIdentities: [UserLoginIdentity!]! @foreignRef(refFrom: "userId")
   socials: [UserSocial!]! @foreignRef(refFrom: "userId")
   projectMembers: [ProjectMember!]! @foreignRef(refFrom: "userId")
@@ -109,8 +116,9 @@ type UserLoginIdentity @entity @mongodb {
 
 type Project @entity @mongodb {
   id: ID! @id(from: "db") @alias(value: "_id")
-  createdAt: Date! @default(from: "generator")
-  updatedAt: Date!
+  createdAt: Date @schema(metadata: [{ key: "createdAt", value: true }])
+  updatedAt: Date @schema(metadata: [{ key: "createdAt", value: true }])
+
   completedAt: Date
   name: String!
   description: String!
@@ -124,6 +132,9 @@ type Project @entity @mongodb {
 
 type ProjectMember @entity @mongodb {
   id: ID! @id(from: "db") @alias(value: "_id")
+  createdAt: Date @schema(metadata: [{ key: "createdAt", value: true }])
+  updatedAt: Date @schema(metadata: [{ key: "createdAt", value: true }])
+
   contributions: String!
   roles: [ProjectMemberRole!]! @foreignRef(refFrom: "projectMemberId")         
   project: Project! @innerRef

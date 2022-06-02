@@ -174,6 +174,7 @@ export type Mutation = {
   createProject: Project
   createProjectMember: ProjectMember
   createProjectMemberRole: ProjectMemberRole
+  createSomeType: SomeType
   createUser: User
   createUserLoginIdentity: UserLoginIdentity
   createUserRole: UserRole
@@ -183,6 +184,7 @@ export type Mutation = {
   deleteProjectMemberRoles?: Maybe<Scalars['Boolean']>
   deleteProjectMembers?: Maybe<Scalars['Boolean']>
   deleteProjects?: Maybe<Scalars['Boolean']>
+  deleteSomeTypes?: Maybe<Scalars['Boolean']>
   deleteUserLoginIdentitys?: Maybe<Scalars['Boolean']>
   deleteUserRoles?: Maybe<Scalars['Boolean']>
   deleteUserSocials?: Maybe<Scalars['Boolean']>
@@ -192,6 +194,7 @@ export type Mutation = {
   updateProjectMemberRoles?: Maybe<Scalars['Boolean']>
   updateProjectMembers?: Maybe<Scalars['Boolean']>
   updateProjects?: Maybe<Scalars['Boolean']>
+  updateSomeTypes?: Maybe<Scalars['Boolean']>
   updateUserLoginIdentitys?: Maybe<Scalars['Boolean']>
   updateUserRoles?: Maybe<Scalars['Boolean']>
   updateUserSocials?: Maybe<Scalars['Boolean']>
@@ -216,6 +219,10 @@ export type MutationCreateProjectMemberArgs = {
 
 export type MutationCreateProjectMemberRoleArgs = {
   record: ProjectMemberRoleInsertInput
+}
+
+export type MutationCreateSomeTypeArgs = {
+  record: SomeTypeInsertInput
 }
 
 export type MutationCreateUserArgs = {
@@ -252,6 +259,10 @@ export type MutationDeleteProjectMembersArgs = {
 
 export type MutationDeleteProjectsArgs = {
   filter: ProjectFilterInput
+}
+
+export type MutationDeleteSomeTypesArgs = {
+  filter: SomeTypeFilterInput
 }
 
 export type MutationDeleteUserLoginIdentitysArgs = {
@@ -293,6 +304,11 @@ export type MutationUpdateProjectMembersArgs = {
 export type MutationUpdateProjectsArgs = {
   changes: ProjectUpdateInput
   filter: ProjectFilterInput
+}
+
+export type MutationUpdateSomeTypesArgs = {
+  changes: SomeTypeUpdateInput
+  filter: SomeTypeFilterInput
 }
 
 export type MutationUpdateUserLoginIdentitysArgs = {
@@ -345,7 +361,7 @@ export type Project = {
   bannerLink?: Maybe<Scalars['String']>
   cardImageLink?: Maybe<Scalars['String']>
   completedAt?: Maybe<Scalars['Date']>
-  createdAt: Scalars['Date']
+  createdAt?: Maybe<Scalars['Date']>
   description: Scalars['String']
   downloadLinks: Array<Scalars['String']>
   galleryImageLinks: Array<Scalars['String']>
@@ -353,7 +369,7 @@ export type Project = {
   members?: Maybe<Array<ProjectMember>>
   name: Scalars['String']
   soundcloudEmbedSrc?: Maybe<Scalars['String']>
-  updatedAt: Scalars['Date']
+  updatedAt?: Maybe<Scalars['Date']>
 }
 
 export type ProjectFilterInput = {
@@ -391,16 +407,18 @@ export type ProjectInsertInput = {
   galleryImageLinks: Array<Scalars['String']>
   name: Scalars['String']
   soundcloudEmbedSrc?: InputMaybe<Scalars['String']>
-  updatedAt: Scalars['Date']
+  updatedAt?: InputMaybe<Scalars['Date']>
 }
 
 export type ProjectMember = {
   __typename?: 'ProjectMember'
   contributions: Scalars['String']
+  createdAt?: Maybe<Scalars['Date']>
   id: Scalars['ID']
   project: Project
   projectId: Scalars['ID']
   roles: Array<ProjectMemberRole>
+  updatedAt?: Maybe<Scalars['Date']>
   user: User
   userId: Scalars['ID']
 }
@@ -408,10 +426,12 @@ export type ProjectMember = {
 export type ProjectMemberFilterInput = {
   and_?: InputMaybe<Array<ProjectMemberFilterInput>>
   contributions?: InputMaybe<StringFilterInput>
+  createdAt?: InputMaybe<DateFilterInput>
   id?: InputMaybe<IdFilterInput>
   nor_?: InputMaybe<Array<ProjectMemberFilterInput>>
   or_?: InputMaybe<Array<ProjectMemberFilterInput>>
   projectId?: InputMaybe<IdFilterInput>
+  updatedAt?: InputMaybe<DateFilterInput>
   userId?: InputMaybe<IdFilterInput>
 }
 
@@ -425,7 +445,9 @@ export type ProjectMemberFindInput = {
 
 export type ProjectMemberInsertInput = {
   contributions: Scalars['String']
+  createdAt?: InputMaybe<Scalars['Date']>
   projectId: Scalars['ID']
+  updatedAt?: InputMaybe<Scalars['Date']>
   userId: Scalars['ID']
 }
 
@@ -482,14 +504,18 @@ export type ProjectMemberRoleUpdateInput = {
 
 export type ProjectMemberSortInput = {
   contributions?: InputMaybe<SortDirection>
+  createdAt?: InputMaybe<SortDirection>
   id?: InputMaybe<SortDirection>
   projectId?: InputMaybe<SortDirection>
+  updatedAt?: InputMaybe<SortDirection>
   userId?: InputMaybe<SortDirection>
 }
 
 export type ProjectMemberUpdateInput = {
   contributions?: InputMaybe<Scalars['String']>
+  createdAt?: InputMaybe<Scalars['Date']>
   projectId?: InputMaybe<Scalars['ID']>
+  updatedAt?: InputMaybe<Scalars['Date']>
   userId?: InputMaybe<Scalars['ID']>
 }
 
@@ -531,6 +557,7 @@ export type Query = {
   projectMemberRoles: Array<ProjectMemberRole>
   projectMembers: Array<ProjectMember>
   projects: Array<Project>
+  someTypes: Array<SomeType>
   userLoginIdentitys: Array<UserLoginIdentity>
   userRoles: Array<UserRole>
   userSocials: Array<UserSocial>
@@ -575,6 +602,13 @@ export type QueryProjectsArgs = {
   relations?: InputMaybe<ProjectRelationsFilterInput>
   skip?: InputMaybe<Scalars['Int']>
   sorts?: InputMaybe<Array<ProjectSortInput>>
+}
+
+export type QuerySomeTypesArgs = {
+  filter?: InputMaybe<SomeTypeFilterInput>
+  limit?: InputMaybe<Scalars['Int']>
+  skip?: InputMaybe<Scalars['Int']>
+  sorts?: InputMaybe<Array<SomeTypeSortInput>>
 }
 
 export type QueryUserLoginIdentitysArgs = {
@@ -645,6 +679,40 @@ export type RoleCodeFilterInput = {
   startsWith?: InputMaybe<Scalars['String']>
 }
 
+export type SomeType = {
+  __typename?: 'SomeType'
+  id: Scalars['ID']
+  someField?: Maybe<Scalars['Date']>
+}
+
+export type SomeTypeFilterInput = {
+  and_?: InputMaybe<Array<SomeTypeFilterInput>>
+  id?: InputMaybe<IdFilterInput>
+  nor_?: InputMaybe<Array<SomeTypeFilterInput>>
+  or_?: InputMaybe<Array<SomeTypeFilterInput>>
+  someField?: InputMaybe<DateFilterInput>
+}
+
+export type SomeTypeFindInput = {
+  filter?: InputMaybe<SomeTypeFilterInput>
+  limit?: InputMaybe<Scalars['Int']>
+  skip?: InputMaybe<Scalars['Int']>
+  sorts?: InputMaybe<Array<SomeTypeSortInput>>
+}
+
+export type SomeTypeInsertInput = {
+  someField?: InputMaybe<Scalars['Date']>
+}
+
+export type SomeTypeSortInput = {
+  id?: InputMaybe<SortDirection>
+  someField?: InputMaybe<SortDirection>
+}
+
+export type SomeTypeUpdateInput = {
+  someField?: InputMaybe<Scalars['Date']>
+}
+
 export const SortDirection = {
   Asc: 'asc',
   Desc: 'desc',
@@ -674,7 +742,7 @@ export type User = {
   avatarLink?: Maybe<Scalars['String']>
   bannerLink?: Maybe<Scalars['String']>
   bio?: Maybe<Scalars['String']>
-  createdAt: Scalars['Date']
+  createdAt?: Maybe<Scalars['Date']>
   displayName?: Maybe<Scalars['String']>
   eboard?: Maybe<EBoard>
   email: Scalars['String']
@@ -683,6 +751,7 @@ export type User = {
   projectMembers: Array<ProjectMember>
   roles: Array<UserRole>
   socials: Array<UserSocial>
+  updatedAt?: Maybe<Scalars['Date']>
   username?: Maybe<Scalars['String']>
 }
 
@@ -697,6 +766,7 @@ export type UserFilterInput = {
   id?: InputMaybe<IdFilterInput>
   nor_?: InputMaybe<Array<UserFilterInput>>
   or_?: InputMaybe<Array<UserFilterInput>>
+  updatedAt?: InputMaybe<DateFilterInput>
   username?: InputMaybe<StringFilterInput>
 }
 
@@ -715,6 +785,7 @@ export type UserInsertInput = {
   createdAt?: InputMaybe<Scalars['Date']>
   displayName?: InputMaybe<Scalars['String']>
   email: Scalars['String']
+  updatedAt?: InputMaybe<Scalars['Date']>
   username?: InputMaybe<Scalars['String']>
 }
 
@@ -889,6 +960,7 @@ export type UserSortInput = {
   displayName?: InputMaybe<SortDirection>
   email?: InputMaybe<SortDirection>
   id?: InputMaybe<SortDirection>
+  updatedAt?: InputMaybe<SortDirection>
   username?: InputMaybe<SortDirection>
 }
 
@@ -899,5 +971,6 @@ export type UserUpdateInput = {
   createdAt?: InputMaybe<Scalars['Date']>
   displayName?: InputMaybe<Scalars['String']>
   email?: InputMaybe<Scalars['String']>
+  updatedAt?: InputMaybe<Scalars['Date']>
   username?: InputMaybe<Scalars['String']>
 }

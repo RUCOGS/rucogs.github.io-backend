@@ -190,7 +190,7 @@ export default gql`
     galleryImageLinks: [String!]!
     name: String!
     soundcloudEmbedSrc: String
-    updatedAt: Date!
+    updatedAt: Date
   }
   input ProjectUpdateInput {
     bannerLink: String
@@ -248,24 +248,32 @@ export default gql`
   ########### ProjectMember ###########
   input ProjectMemberInsertInput {
     contributions: String!
+    createdAt: Date
     projectId: ID!
+    updatedAt: Date
     userId: ID!
   }
   input ProjectMemberUpdateInput {
     contributions: String
+    createdAt: Date
     projectId: ID
+    updatedAt: Date
     userId: ID
   }
   input ProjectMemberSortInput {
     contributions: SortDirection
+    createdAt: SortDirection
     id: SortDirection
     projectId: SortDirection
+    updatedAt: SortDirection
     userId: SortDirection
   }
   input ProjectMemberFilterInput {
     contributions: StringFilterInput
+    createdAt: DateFilterInput
     id: IDFilterInput
     projectId: IDFilterInput
+    updatedAt: DateFilterInput
     userId: IDFilterInput
     and_: [ProjectMemberFilterInput!]
     or_: [ProjectMemberFilterInput!]
@@ -319,6 +327,32 @@ export default gql`
   }
   ########### ProjectMemberRole ###########
 
+  ########### SomeType ###########
+  input SomeTypeInsertInput {
+    someField: Date
+  }
+  input SomeTypeUpdateInput {
+    someField: Date
+  }
+  input SomeTypeSortInput {
+    id: SortDirection
+    someField: SortDirection
+  }
+  input SomeTypeFilterInput {
+    id: IDFilterInput
+    someField: DateFilterInput
+    and_: [SomeTypeFilterInput!]
+    or_: [SomeTypeFilterInput!]
+    nor_: [SomeTypeFilterInput!]
+  }
+  input SomeTypeFindInput {
+    filter: SomeTypeFilterInput
+    sorts: [SomeTypeSortInput!]
+    skip: Int
+    limit: Int
+  }
+  ########### SomeType ###########
+
   ########### User ###########
   input UserInsertInput {
     avatarLink: String
@@ -327,6 +361,7 @@ export default gql`
     createdAt: Date
     displayName: String
     email: String!
+    updatedAt: Date
     username: String
   }
   input UserUpdateInput {
@@ -336,6 +371,7 @@ export default gql`
     createdAt: Date
     displayName: String
     email: String
+    updatedAt: Date
     username: String
   }
   input UserSortInput {
@@ -346,6 +382,7 @@ export default gql`
     displayName: SortDirection
     email: SortDirection
     id: SortDirection
+    updatedAt: SortDirection
     username: SortDirection
   }
   input UserFilterInput {
@@ -356,6 +393,7 @@ export default gql`
     displayName: StringFilterInput
     email: StringFilterInput
     id: IDFilterInput
+    updatedAt: DateFilterInput
     username: StringFilterInput
     and_: [UserFilterInput!]
     or_: [UserFilterInput!]
@@ -501,6 +539,7 @@ export default gql`
     projects(filter: ProjectFilterInput, sorts: [ProjectSortInput!], relations: ProjectRelationsFilterInput, skip: Int, limit: Int): [Project!]!
     projectMembers(filter: ProjectMemberFilterInput, sorts: [ProjectMemberSortInput!], relations: ProjectMemberRelationsFilterInput, skip: Int, limit: Int): [ProjectMember!]!
     projectMemberRoles(filter: ProjectMemberRoleFilterInput, sorts: [ProjectMemberRoleSortInput!], relations: ProjectMemberRoleRelationsFilterInput, skip: Int, limit: Int): [ProjectMemberRole!]!
+    someTypes(filter: SomeTypeFilterInput, sorts: [SomeTypeSortInput!], skip: Int, limit: Int): [SomeType!]!
     users(filter: UserFilterInput, sorts: [UserSortInput!], relations: UserRelationsFilterInput, skip: Int, limit: Int): [User!]!
     userLoginIdentitys(filter: UserLoginIdentityFilterInput, sorts: [UserLoginIdentitySortInput!], relations: UserLoginIdentityRelationsFilterInput, skip: Int, limit: Int): [UserLoginIdentity!]!
     userRoles(filter: UserRoleFilterInput, sorts: [UserRoleSortInput!], relations: UserRoleRelationsFilterInput, skip: Int, limit: Int): [UserRole!]!
@@ -523,6 +562,9 @@ export default gql`
     createProjectMemberRole(record: ProjectMemberRoleInsertInput!): ProjectMemberRole!
     updateProjectMemberRoles(filter: ProjectMemberRoleFilterInput!, changes: ProjectMemberRoleUpdateInput!): Boolean
     deleteProjectMemberRoles(filter: ProjectMemberRoleFilterInput!): Boolean
+    createSomeType(record: SomeTypeInsertInput!): SomeType!
+    updateSomeTypes(filter: SomeTypeFilterInput!, changes: SomeTypeUpdateInput!): Boolean
+    deleteSomeTypes(filter: SomeTypeFilterInput!): Boolean
     createUser(record: UserInsertInput!): User!
     updateUsers(filter: UserFilterInput!, changes: UserUpdateInput!): Boolean
     deleteUsers(filter: UserFilterInput!): Boolean

@@ -181,6 +181,7 @@ export type Mutation = {
   createProject: Project;
   createProjectMember: ProjectMember;
   createProjectMemberRole: ProjectMemberRole;
+  createSomeType: SomeType;
   createUser: User;
   createUserLoginIdentity: UserLoginIdentity;
   createUserRole: UserRole;
@@ -190,6 +191,7 @@ export type Mutation = {
   deleteProjectMemberRoles?: Maybe<Scalars['Boolean']>;
   deleteProjectMembers?: Maybe<Scalars['Boolean']>;
   deleteProjects?: Maybe<Scalars['Boolean']>;
+  deleteSomeTypes?: Maybe<Scalars['Boolean']>;
   deleteUserLoginIdentitys?: Maybe<Scalars['Boolean']>;
   deleteUserRoles?: Maybe<Scalars['Boolean']>;
   deleteUserSocials?: Maybe<Scalars['Boolean']>;
@@ -199,6 +201,7 @@ export type Mutation = {
   updateProjectMemberRoles?: Maybe<Scalars['Boolean']>;
   updateProjectMembers?: Maybe<Scalars['Boolean']>;
   updateProjects?: Maybe<Scalars['Boolean']>;
+  updateSomeTypes?: Maybe<Scalars['Boolean']>;
   updateUserLoginIdentitys?: Maybe<Scalars['Boolean']>;
   updateUserRoles?: Maybe<Scalars['Boolean']>;
   updateUserSocials?: Maybe<Scalars['Boolean']>;
@@ -228,6 +231,11 @@ export type MutationCreateProjectMemberArgs = {
 
 export type MutationCreateProjectMemberRoleArgs = {
   record: ProjectMemberRoleInsertInput;
+};
+
+
+export type MutationCreateSomeTypeArgs = {
+  record: SomeTypeInsertInput;
 };
 
 
@@ -273,6 +281,11 @@ export type MutationDeleteProjectMembersArgs = {
 
 export type MutationDeleteProjectsArgs = {
   filter: ProjectFilterInput;
+};
+
+
+export type MutationDeleteSomeTypesArgs = {
+  filter: SomeTypeFilterInput;
 };
 
 
@@ -323,6 +336,12 @@ export type MutationUpdateProjectMembersArgs = {
 export type MutationUpdateProjectsArgs = {
   changes: ProjectUpdateInput;
   filter: ProjectFilterInput;
+};
+
+
+export type MutationUpdateSomeTypesArgs = {
+  changes: SomeTypeUpdateInput;
+  filter: SomeTypeFilterInput;
 };
 
 
@@ -378,7 +397,7 @@ export type Project = {
   bannerLink?: Maybe<Scalars['String']>;
   cardImageLink?: Maybe<Scalars['String']>;
   completedAt?: Maybe<Scalars['Date']>;
-  createdAt: Scalars['Date'];
+  createdAt?: Maybe<Scalars['Date']>;
   description: Scalars['String'];
   downloadLinks: Array<Scalars['String']>;
   galleryImageLinks: Array<Scalars['String']>;
@@ -386,7 +405,7 @@ export type Project = {
   members?: Maybe<Array<ProjectMember>>;
   name: Scalars['String'];
   soundcloudEmbedSrc?: Maybe<Scalars['String']>;
-  updatedAt: Scalars['Date'];
+  updatedAt?: Maybe<Scalars['Date']>;
 };
 
 export type ProjectFilterInput = {
@@ -424,16 +443,18 @@ export type ProjectInsertInput = {
   galleryImageLinks: Array<Scalars['String']>;
   name: Scalars['String'];
   soundcloudEmbedSrc?: InputMaybe<Scalars['String']>;
-  updatedAt: Scalars['Date'];
+  updatedAt?: InputMaybe<Scalars['Date']>;
 };
 
 export type ProjectMember = {
   __typename?: 'ProjectMember';
   contributions: Scalars['String'];
+  createdAt?: Maybe<Scalars['Date']>;
   id: Scalars['ID'];
   project: Project;
   projectId: Scalars['ID'];
   roles: Array<ProjectMemberRole>;
+  updatedAt?: Maybe<Scalars['Date']>;
   user: User;
   userId: Scalars['ID'];
 };
@@ -441,10 +462,12 @@ export type ProjectMember = {
 export type ProjectMemberFilterInput = {
   and_?: InputMaybe<Array<ProjectMemberFilterInput>>;
   contributions?: InputMaybe<StringFilterInput>;
+  createdAt?: InputMaybe<DateFilterInput>;
   id?: InputMaybe<IdFilterInput>;
   nor_?: InputMaybe<Array<ProjectMemberFilterInput>>;
   or_?: InputMaybe<Array<ProjectMemberFilterInput>>;
   projectId?: InputMaybe<IdFilterInput>;
+  updatedAt?: InputMaybe<DateFilterInput>;
   userId?: InputMaybe<IdFilterInput>;
 };
 
@@ -458,7 +481,9 @@ export type ProjectMemberFindInput = {
 
 export type ProjectMemberInsertInput = {
   contributions: Scalars['String'];
+  createdAt?: InputMaybe<Scalars['Date']>;
   projectId: Scalars['ID'];
+  updatedAt?: InputMaybe<Scalars['Date']>;
   userId: Scalars['ID'];
 };
 
@@ -515,14 +540,18 @@ export type ProjectMemberRoleUpdateInput = {
 
 export type ProjectMemberSortInput = {
   contributions?: InputMaybe<SortDirection>;
+  createdAt?: InputMaybe<SortDirection>;
   id?: InputMaybe<SortDirection>;
   projectId?: InputMaybe<SortDirection>;
+  updatedAt?: InputMaybe<SortDirection>;
   userId?: InputMaybe<SortDirection>;
 };
 
 export type ProjectMemberUpdateInput = {
   contributions?: InputMaybe<Scalars['String']>;
+  createdAt?: InputMaybe<Scalars['Date']>;
   projectId?: InputMaybe<Scalars['ID']>;
+  updatedAt?: InputMaybe<Scalars['Date']>;
   userId?: InputMaybe<Scalars['ID']>;
 };
 
@@ -566,6 +595,7 @@ export type Query = {
   projects: Array<Project>;
   securityContext?: Maybe<Scalars['Json']>;
   securityPolicies?: Maybe<Scalars['Json']>;
+  someTypes: Array<SomeType>;
   userLoginIdentitys: Array<UserLoginIdentity>;
   userRoles: Array<UserRole>;
   userSocials: Array<UserSocial>;
@@ -620,6 +650,14 @@ export type QueryProjectsArgs = {
 
 export type QuerySecurityContextArgs = {
   userId?: InputMaybe<Scalars['ID']>;
+};
+
+
+export type QuerySomeTypesArgs = {
+  filter?: InputMaybe<SomeTypeFilterInput>;
+  limit?: InputMaybe<Scalars['Int']>;
+  skip?: InputMaybe<Scalars['Int']>;
+  sorts?: InputMaybe<Array<SomeTypeSortInput>>;
 };
 
 
@@ -698,6 +736,40 @@ export type RoleCodeFilterInput = {
   startsWith?: InputMaybe<Scalars['String']>;
 };
 
+export type SomeType = {
+  __typename?: 'SomeType';
+  id: Scalars['ID'];
+  someField?: Maybe<Scalars['Date']>;
+};
+
+export type SomeTypeFilterInput = {
+  and_?: InputMaybe<Array<SomeTypeFilterInput>>;
+  id?: InputMaybe<IdFilterInput>;
+  nor_?: InputMaybe<Array<SomeTypeFilterInput>>;
+  or_?: InputMaybe<Array<SomeTypeFilterInput>>;
+  someField?: InputMaybe<DateFilterInput>;
+};
+
+export type SomeTypeFindInput = {
+  filter?: InputMaybe<SomeTypeFilterInput>;
+  limit?: InputMaybe<Scalars['Int']>;
+  skip?: InputMaybe<Scalars['Int']>;
+  sorts?: InputMaybe<Array<SomeTypeSortInput>>;
+};
+
+export type SomeTypeInsertInput = {
+  someField?: InputMaybe<Scalars['Date']>;
+};
+
+export type SomeTypeSortInput = {
+  id?: InputMaybe<SortDirection>;
+  someField?: InputMaybe<SortDirection>;
+};
+
+export type SomeTypeUpdateInput = {
+  someField?: InputMaybe<Scalars['Date']>;
+};
+
 export enum SortDirection {
   Asc = 'asc',
   Desc = 'desc'
@@ -725,7 +797,7 @@ export type User = {
   avatarLink?: Maybe<Scalars['String']>;
   bannerLink?: Maybe<Scalars['String']>;
   bio?: Maybe<Scalars['String']>;
-  createdAt: Scalars['Date'];
+  createdAt?: Maybe<Scalars['Date']>;
   displayName?: Maybe<Scalars['String']>;
   eboard?: Maybe<EBoard>;
   email: Scalars['String'];
@@ -734,6 +806,7 @@ export type User = {
   projectMembers: Array<ProjectMember>;
   roles: Array<UserRole>;
   socials: Array<UserSocial>;
+  updatedAt?: Maybe<Scalars['Date']>;
   username?: Maybe<Scalars['String']>;
 };
 
@@ -748,6 +821,7 @@ export type UserFilterInput = {
   id?: InputMaybe<IdFilterInput>;
   nor_?: InputMaybe<Array<UserFilterInput>>;
   or_?: InputMaybe<Array<UserFilterInput>>;
+  updatedAt?: InputMaybe<DateFilterInput>;
   username?: InputMaybe<StringFilterInput>;
 };
 
@@ -766,6 +840,7 @@ export type UserInsertInput = {
   createdAt?: InputMaybe<Scalars['Date']>;
   displayName?: InputMaybe<Scalars['String']>;
   email: Scalars['String'];
+  updatedAt?: InputMaybe<Scalars['Date']>;
   username?: InputMaybe<Scalars['String']>;
 };
 
@@ -940,6 +1015,7 @@ export type UserSortInput = {
   displayName?: InputMaybe<SortDirection>;
   email?: InputMaybe<SortDirection>;
   id?: InputMaybe<SortDirection>;
+  updatedAt?: InputMaybe<SortDirection>;
   username?: InputMaybe<SortDirection>;
 };
 
@@ -950,6 +1026,7 @@ export type UserUpdateInput = {
   createdAt?: InputMaybe<Scalars['Date']>;
   displayName?: InputMaybe<Scalars['String']>;
   email?: InputMaybe<Scalars['String']>;
+  updatedAt?: InputMaybe<Scalars['Date']>;
   username?: InputMaybe<Scalars['String']>;
 };
 
@@ -1077,6 +1154,12 @@ export type ResolversTypes = {
   RefPointer: RefPointer;
   RoleCode: RoleCode;
   RoleCodeFilterInput: RoleCodeFilterInput;
+  SomeType: ResolverTypeWrapper<SomeType>;
+  SomeTypeFilterInput: SomeTypeFilterInput;
+  SomeTypeFindInput: SomeTypeFindInput;
+  SomeTypeInsertInput: SomeTypeInsertInput;
+  SomeTypeSortInput: SomeTypeSortInput;
+  SomeTypeUpdateInput: SomeTypeUpdateInput;
   SortDirection: SortDirection;
   String: ResolverTypeWrapper<Scalars['String']>;
   StringFilterInput: StringFilterInput;
@@ -1166,6 +1249,12 @@ export type ResolversParentTypes = {
   Query: {};
   RefPointer: RefPointer;
   RoleCodeFilterInput: RoleCodeFilterInput;
+  SomeType: SomeType;
+  SomeTypeFilterInput: SomeTypeFilterInput;
+  SomeTypeFindInput: SomeTypeFindInput;
+  SomeTypeInsertInput: SomeTypeInsertInput;
+  SomeTypeSortInput: SomeTypeSortInput;
+  SomeTypeUpdateInput: SomeTypeUpdateInput;
   String: Scalars['String'];
   StringFilterInput: StringFilterInput;
   User: User;
@@ -1314,6 +1403,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   createProject?: Resolver<ResolversTypes['Project'], ParentType, ContextType, RequireFields<MutationCreateProjectArgs, 'record'>>;
   createProjectMember?: Resolver<ResolversTypes['ProjectMember'], ParentType, ContextType, RequireFields<MutationCreateProjectMemberArgs, 'record'>>;
   createProjectMemberRole?: Resolver<ResolversTypes['ProjectMemberRole'], ParentType, ContextType, RequireFields<MutationCreateProjectMemberRoleArgs, 'record'>>;
+  createSomeType?: Resolver<ResolversTypes['SomeType'], ParentType, ContextType, RequireFields<MutationCreateSomeTypeArgs, 'record'>>;
   createUser?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationCreateUserArgs, 'record'>>;
   createUserLoginIdentity?: Resolver<ResolversTypes['UserLoginIdentity'], ParentType, ContextType, RequireFields<MutationCreateUserLoginIdentityArgs, 'record'>>;
   createUserRole?: Resolver<ResolversTypes['UserRole'], ParentType, ContextType, RequireFields<MutationCreateUserRoleArgs, 'record'>>;
@@ -1323,6 +1413,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   deleteProjectMemberRoles?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationDeleteProjectMemberRolesArgs, 'filter'>>;
   deleteProjectMembers?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationDeleteProjectMembersArgs, 'filter'>>;
   deleteProjects?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationDeleteProjectsArgs, 'filter'>>;
+  deleteSomeTypes?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationDeleteSomeTypesArgs, 'filter'>>;
   deleteUserLoginIdentitys?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationDeleteUserLoginIdentitysArgs, 'filter'>>;
   deleteUserRoles?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationDeleteUserRolesArgs, 'filter'>>;
   deleteUserSocials?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationDeleteUserSocialsArgs, 'filter'>>;
@@ -1332,6 +1423,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   updateProjectMemberRoles?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationUpdateProjectMemberRolesArgs, 'changes' | 'filter'>>;
   updateProjectMembers?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationUpdateProjectMembersArgs, 'changes' | 'filter'>>;
   updateProjects?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationUpdateProjectsArgs, 'changes' | 'filter'>>;
+  updateSomeTypes?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationUpdateSomeTypesArgs, 'changes' | 'filter'>>;
   updateUserLoginIdentitys?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationUpdateUserLoginIdentitysArgs, 'changes' | 'filter'>>;
   updateUserRoles?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationUpdateUserRolesArgs, 'changes' | 'filter'>>;
   updateUserSocials?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationUpdateUserSocialsArgs, 'changes' | 'filter'>>;
@@ -1342,7 +1434,7 @@ export type ProjectResolvers<ContextType = any, ParentType extends ResolversPare
   bannerLink?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   cardImageLink?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   completedAt?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
-  createdAt?: Resolver<ResolversTypes['Date'], ParentType, ContextType>;
+  createdAt?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
   description?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   downloadLinks?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   galleryImageLinks?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
@@ -1350,16 +1442,18 @@ export type ProjectResolvers<ContextType = any, ParentType extends ResolversPare
   members?: Resolver<Maybe<Array<ResolversTypes['ProjectMember']>>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   soundcloudEmbedSrc?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  updatedAt?: Resolver<ResolversTypes['Date'], ParentType, ContextType>;
+  updatedAt?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
 export type ProjectMemberResolvers<ContextType = any, ParentType extends ResolversParentTypes['ProjectMember'] = ResolversParentTypes['ProjectMember']> = {
   contributions?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  createdAt?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   project?: Resolver<ResolversTypes['Project'], ParentType, ContextType>;
   projectId?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   roles?: Resolver<Array<ResolversTypes['ProjectMemberRole']>, ParentType, ContextType>;
+  updatedAt?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
   user?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
   userId?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
@@ -1381,17 +1475,24 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   projects?: Resolver<Array<ResolversTypes['Project']>, ParentType, ContextType, Partial<QueryProjectsArgs>>;
   securityContext?: Resolver<Maybe<ResolversTypes['Json']>, ParentType, ContextType, Partial<QuerySecurityContextArgs>>;
   securityPolicies?: Resolver<Maybe<ResolversTypes['Json']>, ParentType, ContextType>;
+  someTypes?: Resolver<Array<ResolversTypes['SomeType']>, ParentType, ContextType, Partial<QuerySomeTypesArgs>>;
   userLoginIdentitys?: Resolver<Array<ResolversTypes['UserLoginIdentity']>, ParentType, ContextType, Partial<QueryUserLoginIdentitysArgs>>;
   userRoles?: Resolver<Array<ResolversTypes['UserRole']>, ParentType, ContextType, Partial<QueryUserRolesArgs>>;
   userSocials?: Resolver<Array<ResolversTypes['UserSocial']>, ParentType, ContextType, Partial<QueryUserSocialsArgs>>;
   users?: Resolver<Array<ResolversTypes['User']>, ParentType, ContextType, Partial<QueryUsersArgs>>;
 };
 
+export type SomeTypeResolvers<ContextType = any, ParentType extends ResolversParentTypes['SomeType'] = ResolversParentTypes['SomeType']> = {
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  someField?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
 export type UserResolvers<ContextType = any, ParentType extends ResolversParentTypes['User'] = ResolversParentTypes['User']> = {
   avatarLink?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   bannerLink?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   bio?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  createdAt?: Resolver<ResolversTypes['Date'], ParentType, ContextType>;
+  createdAt?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
   displayName?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   eboard?: Resolver<Maybe<ResolversTypes['EBoard']>, ParentType, ContextType>;
   email?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -1400,6 +1501,7 @@ export type UserResolvers<ContextType = any, ParentType extends ResolversParentT
   projectMembers?: Resolver<Array<ResolversTypes['ProjectMember']>, ParentType, ContextType>;
   roles?: Resolver<Array<ResolversTypes['UserRole']>, ParentType, ContextType>;
   socials?: Resolver<Array<ResolversTypes['UserSocial']>, ParentType, ContextType>;
+  updatedAt?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
   username?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
@@ -1442,6 +1544,7 @@ export type Resolvers<ContextType = any> = {
   ProjectMember?: ProjectMemberResolvers<ContextType>;
   ProjectMemberRole?: ProjectMemberRoleResolvers<ContextType>;
   Query?: QueryResolvers<ContextType>;
+  SomeType?: SomeTypeResolvers<ContextType>;
   User?: UserResolvers<ContextType>;
   UserLoginIdentity?: UserLoginIdentityResolvers<ContextType>;
   UserRole?: UserRoleResolvers<ContextType>;

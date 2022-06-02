@@ -1,5 +1,6 @@
 import { RoleCode } from "@src/generated/model.types";
 
+// CONFIG: Roles
 export enum RoleType {
   User,
   ProjectMember,
@@ -144,4 +145,32 @@ for (const [key, value] of Object.entries(RoleData)) {
     ...value,
     roleCode: key as RoleCode
   });
+}
+
+export function isRoleAboveOrEqual(targetRole: RoleCode, currentRole: RoleCode) {
+  if (targetRole == currentRole)
+    return true;
+  return isRoleAbove(targetRole, currentRole);
+}
+
+// Depth-first search for role
+export function isRoleBelowOrEqual(targetRole: RoleCode, currentRole: RoleCode) {
+  if (targetRole == currentRole)
+    return true;
+  const childRoles = RoleData[currentRole].childRoles;
+  if (childRoles) {
+    for (const childRole of childRoles) {
+      if (isRoleBelowOrEqual(targetRole, childRole))
+        return true;
+    }
+  }
+  return false;
+}
+
+export function isRoleAbove(targetRole: RoleCode, currentRole: RoleCode) {
+  return !isRoleBelowOrEqual(targetRole, currentRole);
+}
+
+export function isRoleBelow(targetRole: RoleCode, currentRole: RoleCode) {
+  return targetRole !== currentRole && isRoleBelowOrEqual(targetRole, currentRole);
 }

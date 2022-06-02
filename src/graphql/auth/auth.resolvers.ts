@@ -1,27 +1,28 @@
 import { ApolloResolversContext } from '@src/misc/context';
-import { getUserSecurityContext } from '@src/controllers/security';
+import { getCompleteSecurityContext } from '@src/controllers/security.controller';
 import { QueryResolvers, MutationResolvers } from '@src/generated/graphql-endpoint.types';
-import { SecurityPolicies } from '@src/misc/backend-security-settings';
+import { SecurityPolicy } from '@src/controllers/security.controller';
 
 export default {
   Query: {
     securityContext: async (parent, args, context: ApolloResolversContext, info) => {
-      if (!context.securityContext && 
+      if ( 
         args.userId && 
-        context.authUserId && 
-        args.userId !== context.authUserId
+        context.securityContext &&
+        context.securityContext.userId &&
+        args.userId !== context.securityContext.userId
       ) {
         // If we are querying for the security context of a another user,
         // then we must generate it, because we cannot reuse the security
         // context generated for ourselves.
-        return await getUserSecurityContext(context.entityManager, context.authUserId);
+        return await getCompleteSecurityContext(context.entityManager, context.securityContext.userId);
       }
       if (context.securityContext)
         return context.securityContext;
       return null;
     },
     securityPolicies: async (parent, args, context: ApolloResolversContext, info) => {
-      return SecurityPolicies;
+      return SecurityPolicy;
     }
   },
   Mutation: {

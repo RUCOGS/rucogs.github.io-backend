@@ -4,36 +4,31 @@ Contains all permissions/roles related code.
 
  */
 import { RoleCode, } from '@src/generated/model.types';
-import { AnyEntityManager } from '@src/controllers/entity-manager.controller/entity-manager';
-import { RoleData, SecurityContext, isExtendedSecurityDomain, isBaseSecurityDomain, BaseSecurityDomain, ExtendedSecurityDomain, PermissionCode } from '@src/shared/security';
+import { AnyEntityManager, TypettaSecurityContext } from '@src/controllers/entity-manager.controller';
+import { RoleData, SecurityPermissions, isExtendedSecurityDomain, isBaseSecurityDomain, BaseSecurityDomain, ExtendedSecurityDomain, PermissionCode, SecurityContext } from '@src/shared/security';
 import { HttpError } from '@src/utils';
-import { RoleBackendData } from './backend-security-settings';
-import { ValidationParams } from '@src/middlewares/validation.middleware';
-
-export function roleValidation(entityManager: AnyEntityManager, securityContext: SecurityContext) {
-  return <ValidationParams>{
-    userRole: {
-      roleCode: [
-        async (newValue: RoleCode) => {
-          console.log("I'm validating from roleCode #1!");
-        }
-      ]
-    }, 
-  }
-};
+import { RoleBackendDataDict } from './role-backend';
+import { PermissionDataDict } from './permission-data';
 
 // Centeral point to get security context.
 export async function getCompleteSecurityContext(entityManager: AnyEntityManager, userId: string) {
-  const context = mergeManySecurityContexts(
-    await getUserSecurityContext(entityManager, userId), 
-    await getCompleteProjectMembersSecurityContext(entityManager, userId), 
-    await getEBoardSecurityContext(entityManager, userId));
+  return <SecurityContext>{
+    userId,
+    permissions: await getCompleteSecurityPermissions(entityManager, userId)
+  }
+}
+
+export async function getCompleteSecurityPermissions(entityManager: AnyEntityManager, userId: string) {
+  const context = mergeManySecurityPermissionss(
+    await getUserSecurityPermission(entityManager, userId), 
+    await getCompleteProjectMembersSecurityPermissions(entityManager, userId), 
+    await getEBoardSecurityPermissions(entityManager, userId));
   return context;
 }
 
 // Each user can only have at most one eboard user, therefore we can identify it using
 // the user's id.
-export async function getEBoardSecurityContext(entityManager: AnyEntityManager, userId: string) {
+export async function getEBoardSecurityPermissions(entityManager: AnyEntityManager, userId: string) {
   const eboard = await entityManager.eBoard.findOne({
     filter: {
       userId: userId
@@ -47,11 +42,11 @@ export async function getEBoardSecurityContext(entityManager: AnyEntityManager, 
   });
   if (!eboard)
     return {};
-  return rolesToSecurityContext(entityManager, eboard.roles.map(x => x.roleCode), eboard.id);
+  return rolesToSecurityPermission(entityManager, eboard.roles.map(x => x.roleCode), eboard.id);
 }
 
 // Uses all the project members of a user to build a single security context
-export async function getCompleteProjectMembersSecurityContext(entityManager: AnyEntityManager, userId: string) {
+export async function getCompleteProjectMembersSecurityPermissions(entityManager: AnyEntityManager, userId: string) {
   const members = await entityManager.projectMember.findAll({
     filter: {
       userId: userId
@@ -60,17 +55,17 @@ export async function getCompleteProjectMembersSecurityContext(entityManager: An
       id: true
     }
   });
-  let context: SecurityContext = {};
+  let context: SecurityPermissions = {};
   for (const member of members) {
-    context = mergeSecurityContexts(
+    context = mergeSecurityPermissions(
       context,
-      await getProjectMemberSecurityContext(entityManager, member.id),
+      await getProjectMemberSecurityPermissions(entityManager, member.id),
     );
   }
   return context;
 }
 
-export async function getProjectMemberSecurityContext(entityManager: AnyEntityManager, projectMemberId: string) {
+export async function getProjectMemberSecurityPermissions(entityManager: AnyEntityManager, projectMemberId: string) {
   const roles = await entityManager.projectMemberRole.findAll({
     filter: {
       projectMemberId: { eq: projectMemberId }
@@ -81,10 +76,10 @@ export async function getProjectMemberSecurityContext(entityManager: AnyEntityMa
   });
   const roleCodes = roles.map(x => x.roleCode);
 
-  return rolesToSecurityContext(entityManager, roleCodes, projectMemberId);
+  return rolesToSecurityPermission(entityManager, roleCodes, projectMemberId);
 }
 
-export async function getUserSecurityContext(entityManager: AnyEntityManager, userId: string): Promise<SecurityContext> {
+export async function getUserSecurityPermission(entityManager: AnyEntityManager, userId: string): Promise<SecurityPermissions> {
   const roles = await entityManager.userRole.findAll({
     filter: {
       userId: { eq: userId }
@@ -95,28 +90,28 @@ export async function getUserSecurityContext(entityManager: AnyEntityManager, us
   });
   const roleCodes = roles.map(x => x.roleCode);
 
-  return rolesToSecurityContext(entityManager, roleCodes, userId);
+  return rolesToSecurityPermission(entityManager, roleCodes, userId);
 }
 
-export async function rolesToSecurityContext(entityManager: AnyEntityManager, roleCodes: RoleCode[], id: string): Promise<SecurityContext> {
+export async function rolesToSecurityPermission(entityManager: AnyEntityManager, roleCodes: RoleCode[], id: string): Promise<SecurityPermissions> {
   // TODO: We might not need to topological sort role codes
   const sortedRoles = roleCodes; // getTopologicalSortedRoleCodes(roleCodes);
   
   let securityContext = {};
   for (const role of sortedRoles) {
-    const context = await RoleBackendData[role]?.getSecurityContext(entityManager, id);
+    const context = await RoleBackendDataDict[role]?.getSecurityPermissions(entityManager, id);
     if (context)
-      securityContext = mergeSecurityContexts(securityContext, context);
+      securityContext = mergeSecurityPermissions(securityContext, context);
   }
 
   return securityContext;
 }
 
 // Overload that adds support for merging any number of security contexts
-export function mergeManySecurityContexts(... securityContexts: SecurityContext[]) {
-  let mergedContext: SecurityContext = {};
+export function mergeManySecurityPermissionss(... securityContexts: SecurityPermissions[]) {
+  let mergedContext: SecurityPermissions = {};
   for (const context of securityContexts) {
-    mergedContext = mergeSecurityContexts(mergedContext, context);
+    mergedContext = mergeSecurityPermissions(mergedContext, context);
   }
   return mergedContext;
 }
@@ -130,21 +125,21 @@ export function mergeManySecurityContexts(... securityContexts: SecurityContext[
 // in the merged array is unique.
 // 
 // tdlr: Our merging preserves the most open permissions
-export function mergeSecurityContexts(securityContext: SecurityContext, securityContextTwo: SecurityContext) {
+export function mergeSecurityPermissions(securityContext: SecurityPermissions, securityContextTwo: SecurityPermissions) {
   const checkedKeys = new Set<string>();
   // We run merge on each securityContext, beacuse there may have been
   // keys in one context that weren't in the other
   const mergedContext = {
-    ...mergeSecurityContextHalf(securityContext, securityContextTwo, checkedKeys),
-    ...mergeSecurityContextHalf(securityContextTwo, securityContext, checkedKeys)
+    ...mergeSecurityPermissionsHalf(securityContext, securityContextTwo, checkedKeys),
+    ...mergeSecurityPermissionsHalf(securityContextTwo, securityContext, checkedKeys)
   };
   return mergedContext;
 }
 
-// Helper method used by mergeSecurityContext.
-function mergeSecurityContextHalf(contextOne: SecurityContext, contextTwo: SecurityContext, checkedKeys: Set<string>) {
-  let mergedContext: SecurityContext = {};
-  let permissionCode: keyof SecurityContext;
+// Helper method used by mergeSecurityPermissions.
+function mergeSecurityPermissionsHalf(contextOne: SecurityPermissions, contextTwo: SecurityPermissions, checkedKeys: Set<string>) {
+  let mergedContext: SecurityPermissions = {};
+  let permissionCode: keyof SecurityPermissions;
   for (permissionCode in contextOne) {
     const oneValue = contextOne[permissionCode];
     const twoValue = contextTwo[permissionCode];
@@ -154,7 +149,7 @@ function mergeSecurityContextHalf(contextOne: SecurityContext, contextTwo: Secur
 
     if (twoValue) {
       // We have to merge
-      mergedContext[permissionCode] = mergeDomain(permissionCode, oneValue.baseDomain, twoValue.baseDomain);
+      mergedContext[permissionCode] = mergeDomain(permissionCode, oneValue, twoValue);
     } else {
       // No merging necessary!
       mergedContext[permissionCode] = oneValue;
@@ -198,8 +193,12 @@ function mergeExtendedDomainWithExtraData(permissionCode: PermissionCode, domain
 function mergeExtraData(permissionCode: PermissionCode, dataOne: any, dataTwo: any) {
   if (dataOne === undefined || dataTwo === undefined)
     return undefined;
-  // TODO: Write this and add another backend setting for helper methods of merging and creating data for 
-  //       roles that use that
+  
+  const permissionData = PermissionDataDict[permissionCode];
+  if (permissionData && permissionData.mergeExtraData) {
+    return permissionData.mergeExtraData(dataOne, dataTwo);
+  }
+
   return dataOne;
 }
 
@@ -289,10 +288,16 @@ function getTopologicalSortedRoleCodesRecursive(checkedRoles: Set<RoleCode>, rol
 }
 
 export function securityContextToTypettaSecurityContext(securityContext: SecurityContext) {
+  return <TypettaSecurityContext>{
+    permissions: securityPermissionsToTypettaSecurityPermissions(securityContext.permissions)
+  }
+}
+
+export function securityPermissionsToTypettaSecurityPermissions(securityPermissions: SecurityPermissions) { 
   const permissions: any = {};
-  let permCode: keyof SecurityContext;
-  for (permCode in securityContext) {
-    const securityDomain = securityContext[permCode];
+  let permCode: keyof SecurityPermissions;
+  for (permCode in securityPermissions) {
+    const securityDomain = securityPermissions[permCode];
     if (isExtendedSecurityDomain(securityDomain)) {
       const extendedSecurityDomain = securityDomain as ExtendedSecurityDomain;
       permissions[permCode] = extendedSecurityDomain.baseDomain;
@@ -303,7 +308,5 @@ export function securityContextToTypettaSecurityContext(securityContext: Securit
       throw new Error(`Unexpected security domain type! Object: ${JSON.stringify(securityDomain)}`);
     }
   }
-  return {
-    permissions
-  };
+  return permissions;
 }
