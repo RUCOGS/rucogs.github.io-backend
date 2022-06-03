@@ -1,6 +1,7 @@
 import { AnyEntityManager } from "@src/controllers/entity-manager.controller/entity-manager";
 import { EntityManager } from "@src/generated/typetta";
 import { SecurityContext } from "@src/shared/security";
+import { MongoClient } from "mongodb";
 import express from "express";
 
 export type ApolloResolversContext = {
@@ -9,6 +10,7 @@ export type ApolloResolversContext = {
 };
 export type RequestContext = {
   unsecureEntityManager: EntityManager
+  mongoClient: MongoClient
   securityContext?: SecurityContext
 };
 

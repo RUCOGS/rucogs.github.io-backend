@@ -1,5 +1,4 @@
-import { Permission } from "@src/generated/model.types";
-import { isSecurityDomainValidForOpDomain } from "./index";
+import { Permission } from "@src/generated/graphql-endpoint.types";
 
 export type SecurityDomainTemplate = {
   userId: string;
@@ -129,28 +128,4 @@ export const DefaultSecurityContext: SecurityContext = {
   permissions: {
     
   }
-}
-
-export class PermissionsCalculator {
-  constructor(public securityContext: SecurityContext = DefaultSecurityContext, public operationDomain: OperationSecurityDomain = {}) {}
-
-  withContext(securityContext: SecurityContext) {
-    this.securityContext = securityContext;
-    return this;
-  }
-
-  withDomain(operationDomain: OperationSecurityDomain) {
-    this.operationDomain = operationDomain;
-    return this;
-  }
-
-  hasPermission(permissionCode: PermissionCode) {
-    if (!this.securityContext)
-      return false;
-    return isSecurityDomainValidForOpDomain(permissionCode, this.securityContext.permissions[permissionCode], this.operationDomain);
-  }
-}
-
-export function makePermsCalc() { 
-  return new PermissionsCalculator();
 }

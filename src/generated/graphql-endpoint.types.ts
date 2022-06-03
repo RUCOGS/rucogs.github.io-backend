@@ -368,18 +368,19 @@ export type MutationUpdateUsersArgs = {
   filter: UserFilterInput;
 };
 
-export enum Permission {
-  CreateProject = 'CREATE_PROJECT',
-  DeleteProfile = 'DELETE_PROFILE',
-  DeleteProject = 'DELETE_PROJECT',
-  ManageEboard = 'MANAGE_EBOARD',
-  ManageProjectMemberRoles = 'MANAGE_PROJECT_MEMBER_ROLES',
-  ManageUserRoles = 'MANAGE_USER_ROLES',
-  ReadProfilePrivate = 'READ_PROFILE_PRIVATE',
-  UpdateProfile = 'UPDATE_PROFILE',
-  UpdateProject = 'UPDATE_PROJECT'
-}
+export const Permission = {
+  CreateProject: 'CREATE_PROJECT',
+  DeleteProfile: 'DELETE_PROFILE',
+  DeleteProject: 'DELETE_PROJECT',
+  ManageEboard: 'MANAGE_EBOARD',
+  ManageProjectMemberRoles: 'MANAGE_PROJECT_MEMBER_ROLES',
+  ManageUserRoles: 'MANAGE_USER_ROLES',
+  ReadProfilePrivate: 'READ_PROFILE_PRIVATE',
+  UpdateProfile: 'UPDATE_PROFILE',
+  UpdateProject: 'UPDATE_PROJECT'
+} as const;
 
+export type Permission = typeof Permission[keyof typeof Permission];
 export type PermissionFilterInput = {
   contains?: InputMaybe<Scalars['String']>;
   endsWith?: InputMaybe<Scalars['String']>;
@@ -594,7 +595,7 @@ export type Query = {
   projectMembers: Array<ProjectMember>;
   projects: Array<Project>;
   securityContext?: Maybe<Scalars['Json']>;
-  securityPolicies?: Maybe<Scalars['Json']>;
+  securityPolicy?: Maybe<Scalars['Json']>;
   someTypes: Array<SomeType>;
   userLoginIdentitys: Array<UserLoginIdentity>;
   userRoles: Array<UserRole>;
@@ -701,29 +702,30 @@ export type RefPointer = {
   refTo?: InputMaybe<Scalars['String']>;
 };
 
-export enum RoleCode {
-  Alumni = 'ALUMNI',
-  Artist = 'ARTIST',
-  BotDeveloper = 'BOT_DEVELOPER',
-  ClubGraphicArtist = 'CLUB_GRAPHIC_ARTIST',
-  Eboard = 'EBOARD',
-  GameDesigner = 'GAME_DESIGNER',
-  Moderator = 'MODERATOR',
-  Musician = 'MUSICIAN',
-  Outreach = 'OUTREACH',
-  President = 'PRESIDENT',
-  Programmer = 'PROGRAMMER',
-  ProjectMember = 'PROJECT_MEMBER',
-  ProjectOwner = 'PROJECT_OWNER',
-  SoundDesigner = 'SOUND_DESIGNER',
-  SuperAdmin = 'SUPER_ADMIN',
-  Treasurer = 'TREASURER',
-  User = 'USER',
-  VicePresident = 'VICE_PRESIDENT',
-  Webmaster = 'WEBMASTER',
-  Writer = 'WRITER'
-}
+export const RoleCode = {
+  Alumni: 'ALUMNI',
+  Artist: 'ARTIST',
+  BotDeveloper: 'BOT_DEVELOPER',
+  ClubGraphicArtist: 'CLUB_GRAPHIC_ARTIST',
+  Eboard: 'EBOARD',
+  GameDesigner: 'GAME_DESIGNER',
+  Moderator: 'MODERATOR',
+  Musician: 'MUSICIAN',
+  Outreach: 'OUTREACH',
+  President: 'PRESIDENT',
+  Programmer: 'PROGRAMMER',
+  ProjectMember: 'PROJECT_MEMBER',
+  ProjectOwner: 'PROJECT_OWNER',
+  SoundDesigner: 'SOUND_DESIGNER',
+  SuperAdmin: 'SUPER_ADMIN',
+  Treasurer: 'TREASURER',
+  User: 'USER',
+  VicePresident: 'VICE_PRESIDENT',
+  Webmaster: 'WEBMASTER',
+  Writer: 'WRITER'
+} as const;
 
+export type RoleCode = typeof RoleCode[keyof typeof RoleCode];
 export type RoleCodeFilterInput = {
   contains?: InputMaybe<Scalars['String']>;
   endsWith?: InputMaybe<Scalars['String']>;
@@ -770,11 +772,12 @@ export type SomeTypeUpdateInput = {
   someField?: InputMaybe<Scalars['Date']>;
 };
 
-export enum SortDirection {
-  Asc = 'asc',
-  Desc = 'desc'
-}
+export const SortDirection = {
+  Asc: 'asc',
+  Desc: 'desc'
+} as const;
 
+export type SortDirection = typeof SortDirection[keyof typeof SortDirection];
 export type StringFilterInput = {
   contains?: InputMaybe<Scalars['String']>;
   endsWith?: InputMaybe<Scalars['String']>;
@@ -787,11 +790,12 @@ export type StringFilterInput = {
   startsWith?: InputMaybe<Scalars['String']>;
 };
 
-export enum StringFilterMode {
-  Insensitive = 'INSENSITIVE',
-  Sensitive = 'SENSITIVE'
-}
+export const StringFilterMode = {
+  Insensitive: 'INSENSITIVE',
+  Sensitive: 'SENSITIVE'
+} as const;
 
+export type StringFilterMode = typeof StringFilterMode[keyof typeof StringFilterMode];
 export type User = {
   __typename?: 'User';
   avatarLink?: Maybe<Scalars['String']>;
@@ -1474,7 +1478,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   projectMembers?: Resolver<Array<ResolversTypes['ProjectMember']>, ParentType, ContextType, Partial<QueryProjectMembersArgs>>;
   projects?: Resolver<Array<ResolversTypes['Project']>, ParentType, ContextType, Partial<QueryProjectsArgs>>;
   securityContext?: Resolver<Maybe<ResolversTypes['Json']>, ParentType, ContextType, Partial<QuerySecurityContextArgs>>;
-  securityPolicies?: Resolver<Maybe<ResolversTypes['Json']>, ParentType, ContextType>;
+  securityPolicy?: Resolver<Maybe<ResolversTypes['Json']>, ParentType, ContextType>;
   someTypes?: Resolver<Array<ResolversTypes['SomeType']>, ParentType, ContextType, Partial<QuerySomeTypesArgs>>;
   userLoginIdentitys?: Resolver<Array<ResolversTypes['UserLoginIdentity']>, ParentType, ContextType, Partial<QueryUserLoginIdentitysArgs>>;
   userRoles?: Resolver<Array<ResolversTypes['UserRole']>, ParentType, ContextType, Partial<QueryUserRolesArgs>>;

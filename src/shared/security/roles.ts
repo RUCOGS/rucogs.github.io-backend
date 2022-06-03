@@ -1,4 +1,4 @@
-import { RoleCode } from "@src/generated/model.types";
+import { RoleCode } from "@src/generated/graphql-endpoint.types";
 
 // CONFIG: Roles
 export enum RoleType {
@@ -31,8 +31,10 @@ export const RoleData: {
     type: RoleType.User,
     name: "🛂 Moderator",
     childRoles: [
+      // User Roles
       RoleCode.User,
 
+      // EBoard Roles
       RoleCode.Eboard,
       RoleCode.President,
       RoleCode.VicePresident,
@@ -40,6 +42,9 @@ export const RoleData: {
       RoleCode.Outreach,
       RoleCode.BotDeveloper,
       RoleCode.Alumni,
+
+      // Project Roles
+      RoleCode.ProjectOwner,
     ]
   },
   [RoleCode.SuperAdmin]: {
@@ -165,6 +170,71 @@ export function isRoleBelowOrEqual(targetRole: RoleCode, currentRole: RoleCode) 
     }
   }
   return false;
+}
+
+export function getHighestRole(roles: RoleCode[]) {
+  const validRoles = new Set<RoleCode>(roles);
+  for (const role of roles) {
+    if (!validRoles.has(role))
+      continue;
+    
+    const rolesBelow = getRolesBelow(role);
+    for (const otherRole of roles) {
+      if (!validRoles.has(role))
+        continue;
+      if (rolesBelow.includes(otherRole)) {
+        validRoles.delete(otherRole);
+      }
+    }
+  }
+  return validRoles.values().next().value;
+}
+
+export function getRolesBelowRoles(targetRoles: RoleCode[]) {
+  let checkedRoles = new Set<RoleCode>();
+  let rolesBelow: RoleCode[] = [];
+  for (const role of targetRoles) {
+    rolesBelow = rolesBelow.concat(getRolesBelowExitEarly(role, checkedRoles));
+  }
+  return rolesBelow;
+}
+
+function getRolesBelowExitEarly(targetRole: RoleCode, checkedRoles: Set<RoleCode>) {
+  if (checkedRoles.has(targetRole))
+    return [];
+  checkedRoles.add(targetRole);
+  let rolesBelow: RoleCode[] = [];
+  const roleData = RoleData[targetRole];
+  if (roleData && roleData.childRoles) {
+    for (const child of roleData.childRoles) {
+      rolesBelow = rolesBelow.concat(getRolesBelowExitEarly(child, checkedRoles));
+    }
+  }
+  rolesBelow.push(targetRole);
+  return rolesBelow;
+}
+
+export function getRolesBelow(targetRole: RoleCode) {
+  let rolesBelow: RoleCode[] = [];
+  const roleData = RoleData[targetRole];
+  if (roleData && roleData.childRoles) {
+    for (const child of roleData.childRoles) {
+      rolesBelow = rolesBelow.concat(getRolesBelowOrEqual(child));
+    }
+  }
+  return rolesBelow;
+}
+
+export function getRolesBelowOrEqual(targetRole: RoleCode) {
+  let rolesBelowOrEqual: RoleCode[] = [];
+  const roleData = RoleData[targetRole];
+  if (roleData && roleData.childRoles) {
+    for (const child of roleData.childRoles) {
+      rolesBelowOrEqual = rolesBelowOrEqual.concat(getRolesBelowOrEqual(child));
+    }
+  }
+  rolesBelowOrEqual.push(targetRole);
+  return rolesBelowOrEqual;
 }
 
 export function isRoleAbove(targetRole: RoleCode, currentRole: RoleCode) {

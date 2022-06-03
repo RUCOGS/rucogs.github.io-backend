@@ -8,7 +8,7 @@ import { AnyEntityManager, TypettaSecurityContext } from '@src/controllers/entit
 import { RoleData, SecurityPermissions, isExtendedSecurityDomain, isBaseSecurityDomain, BaseSecurityDomain, ExtendedSecurityDomain, PermissionCode, SecurityContext } from '@src/shared/security';
 import { HttpError } from '@src/utils';
 import { RoleBackendDataDict } from './role-backend';
-import { PermissionDataDict } from './permission-data';
+import { PermissionDataDict } from '@src/shared/security/permissions';
 
 // Centeral point to get security context.
 export async function getCompleteSecurityContext(entityManager: AnyEntityManager, userId: string) {

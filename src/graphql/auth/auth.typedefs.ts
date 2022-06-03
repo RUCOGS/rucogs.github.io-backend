@@ -13,6 +13,6 @@ for (const perm in Permission) {
 export default gql`
 extend type Query {
   securityContext(userId: ID): Json
-  securityPolicies: Json
+  securityPolicy: Json
 }
 `;

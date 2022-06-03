@@ -21,7 +21,7 @@ export default {
         return context.securityContext;
       return null;
     },
-    securityPolicies: async (parent, args, context: ApolloResolversContext, info) => {
+    securityPolicy: async (parent, args, context: ApolloResolversContext, info) => {
       return SecurityPolicy;
     }
   },

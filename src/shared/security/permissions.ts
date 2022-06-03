@@ -1,4 +1,4 @@
-import { OperationSecurityDomain, PermissionCode } from "@src/shared/security";
+import { OperationSecurityDomain, PermissionCode } from "./types";
 
 type PermissionData = {
   mergeExtraData?: (dataOne: any, dataTwo: any) => any

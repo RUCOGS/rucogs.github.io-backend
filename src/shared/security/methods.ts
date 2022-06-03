@@ -1,9 +1,13 @@
 // Checks if a security permission matches the current domain.
 // This method is used to check if a user has a certain permission,
 
-import { BaseSecurityDomain, BaseSecurityDomainFieldSet, ExtendedSecurityDomain, isBaseSecurityDomain, isExtendedSecurityDomain, OperationSecurityDomain, PermissionCode, SecurityDomain } from "./index";
+import { PermissionDataDict } from "./permissions";
+import { BaseSecurityDomain, BaseSecurityDomainFieldSet, ExtendedSecurityDomain, isBaseSecurityDomain, isExtendedSecurityDomain, OperationSecurityDomain, PermissionCode, SecurityDomain } from "./types";
 
 export function isSecurityDomainValidForOpDomain(permissionCode: PermissionCode, domain: SecurityDomain, operationDomain: OperationSecurityDomain) {  
+  if (!operationDomain || !domain)
+    return false;
+  
   if (isBaseSecurityDomain(domain)) {
     const baseSecurityDomain = domain as BaseSecurityDomain;
     return isBaseDomainValidForOpDomain(baseSecurityDomain, operationDomain);
@@ -23,7 +27,13 @@ export function isExtendedDomainValidForOpDomain(permissionCode: PermissionCode,
 }
 
 export function isExtraDataValidForOpDomain(permissionCode: PermissionCode, extraData: any, operationDomain: OperationSecurityDomain) {
-
+  if (PermissionDataDict[permissionCode]) {
+    const isExtraDataValidForDomainFn =  PermissionDataDict[permissionCode]?.isExtraDataValidForOpDomain;
+    if (isExtraDataValidForDomainFn) {
+      return isExtraDataValidForDomainFn(extraData, operationDomain);
+    }
+  }
+  return false;
 }
 
 // given what we want to access.

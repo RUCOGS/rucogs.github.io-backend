@@ -48,16 +48,20 @@ export function getOperationMetadataFromRequest(req: express.Request) {
   return metadata;
 }
 
-export function createUnsecureEntityManager(db: Db): EntityManager {
+export function createUnsecureEntityManager(db: Db | "mock"): EntityManager {
   return new EntityManager({
     mongodb: {
       default: db,
     },
+    middlewares: [
+      dateMetadataMiddleware(getScalars().Date.generate),
+      validationMiddleware()
+    ],
     scalars: getScalars(),
   });
 }
 
-export function createSecureEntityManager(securityContext: SecurityContext, db: Db, overrideOperationMetadata: EntityManagerMetadata | undefined = undefined): SecureEntityManager {
+export function createSecureEntityManager(securityContext: SecurityContext, db: Db | "mock", overrideOperationMetadata: EntityManagerMetadata | undefined = undefined): SecureEntityManager {
   const unsecureEntityManager = createUnsecureEntityManager(db);
   const context = securityContextToTypettaSecurityContext(securityContext);
   return new EntityManager<never, EntityManagerMetadata, Permission, BaseSecurityDomainFieldSet>({
@@ -66,7 +70,7 @@ export function createSecureEntityManager(securityContext: SecurityContext, db: 
     },
     log: true,
     middlewares: [
-      dateMetadataMiddleware(getScalars().Date.generate),// TODO
+      dateMetadataMiddleware(getScalars().Date.generate),
       validationMiddleware(
         roleValidation(
           unsecureEntityManager, 

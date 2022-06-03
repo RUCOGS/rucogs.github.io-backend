@@ -4,3 +4,5 @@ generates:
     plugins:
       - typescript
       - typescript-resolvers
+    config:
+      enumsAsConst: true

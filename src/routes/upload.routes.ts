@@ -5,8 +5,10 @@ import { getOperationMetadataFromRequest } from '@src/controllers/entity-manager
 import { deleteSelfHostedFile, isSelfHostedFile, relativeToSelfHostedFilePath, uniqueFileName } from '@src/controllers/cdn.controller';
 import { HttpError } from '@src/utils';
 import { authAddSecurityContext } from '@src/controllers/auth.controller';
-import { makePermsCalc } from '@src/shared/security';
+import { getHighestRole, isRoleBelow, isRoleBelowOrEqual } from '@src/shared/security';
 import { Permission } from '@src/generated/model.types';
+import { RoleCode } from '@src/generated/graphql-endpoint.types';
+import { makePermsCalc } from '@src/shared/security/permissions-calculator';
 
 const router = express.Router();
 
@@ -102,116 +104,201 @@ router.post(
   ]), 
   // Return file paths
   async function(req: RequestWithContext<RequestContext & PostUserContext>, res, next) {
-    if (!req.context || !req.context.securityContext || !req.context.user) {
-      next(new HttpError(400, "Expected context, context.securityContext, and context.metadata."))
+    if (!req.context || !req.context.securityContext || !req.context.securityContext.userId || !req.context.user) {
+      next(new HttpError(400, "Expected context, context.securityContext, context.securityContext.userId, and context.metadata."))
       return;
     }
     
+    const userId = req.context.securityContext.userId;
+    const user = req.context.user;
+    const files = req.files as { [fieldname: string]: Express.Multer.File[] };
+    const entityManager = req.context.unsecureEntityManager;
+    const mongoClient = req.context.mongoClient;
+    
+    const session = mongoClient.startSession()
+    session.startTransaction({
+      readConcern: { level: 'local' },
+      writeConcern: { w: 'majority' },
+    })
+
     try {
-      const user = req.context.user;
-      const files = req.files as { [fieldname: string]: Express.Multer.File[] };
-      const entityManager = req.context.unsecureEntityManager;
-      
-      const socialsUpdated = req.body.socials;
-      const socials: {
-        platform: string,
-        username: string,
-        link: string,
-      }[] = JSON.parse(req.body.socials);
-      if (socialsUpdated) {
-        // Delete socials that aren't part of our new updated batch.
-        const deletedSocials = await entityManager.userSocial.findAll({
-          filter: {
-            $and: [
-              { 
-                userId: user.id, 
-              },
-              { 
-                $nor: socials.map(x => ({ 
-                  username: x.username, 
-                  platform: x.platform,
-                }))
-              }
-            ]
-          },
-          projection: {
-            id: true
-          }
-        });
-        await entityManager.userSocial.deleteAll({
-          filter: {
-            id: { in: deletedSocials.map(x => x.id) }
-          }
-        })
-        // Insert the new updated batch of socials
-        for (const social of socials) {
-          const foundSocial = await entityManager.userSocial.findOne({
+      await entityManager.transaction({
+        mongodb: { default: session }
+      },
+      async (transactionEntityManager) => {
+        const rolesUpdated = req.body.roles;
+        let roleCodes: RoleCode[] = [];
+        if (rolesUpdated) {
+          roleCodes = JSON.parse(req.body.roles);
+          // Ensure the roles are all below the current user's max role
+          const requesterRoleCodes = (await transactionEntityManager.userRole.findAll({
             filter: {
-              userId: user.id,
-              platform: social.platform,
-              username: social.username
+              // We filter against the userId of the user
+              // that's requesting this change.
+              userId
+            },
+            projection: {
+              roleCode: true
+            }
+          })).map(x => x.roleCode);
+          const requestHighestRoleCode = getHighestRole(requesterRoleCodes);
+          for (const roleCode of requesterRoleCodes) {
+            if (!isRoleBelowOrEqual(roleCode, requestHighestRoleCode)) {
+              throw new HttpError(403, "Cannot only add roles below your current role!");
+            }
+          }
+          // Delete roles that aren't part of our new updated batch.
+          const deletedRoles = await transactionEntityManager.userRole.findAll({
+            filter: {
+              $and: [
+                { 
+                  userId: user.id, 
+                },
+                { 
+                  $nor: roleCodes.map(x => ({ 
+                    roleCode: x
+                  }))
+                }
+              ]
+            },
+            projection: {
+              id: true
             }
           });
-          if (foundSocial) {
-            await entityManager.userSocial.updateOne({
+          await transactionEntityManager.userRole.deleteAll({
+            filter: {
+              id: { in: deletedRoles.map(x => x.id) }
+            }
+          })
+          // Insert the new updated batch of roles
+          for (const roleCode of roleCodes) {
+            const foundRole = await transactionEntityManager.userRole.findOne({
+              filter: {
+                userId: user.id,
+                roleCode
+              }
+            });
+            if (!foundRole) {
+              // Only insert new role when it doesn't exist
+              // There's no need to update roles because userRoles
+              // only contain a roleCode.
+              await transactionEntityManager.userRole.insertOne({
+                record: {
+                  roleCode,
+                  userId: user.id
+                }
+              });
+            }
+          }
+        }
+
+        const socialsUpdated = req.body.socials;
+        let socials: {
+          platform: string,
+          username: string,
+          link: string,
+        }[] = [];
+        if (socialsUpdated) {
+          socials = JSON.parse(req.body.socials);
+          // Delete socials that aren't part of our new updated batch.
+          const deletedSocials = await transactionEntityManager.userSocial.findAll({
+            filter: {
+              $and: [
+                { 
+                  userId: user.id, 
+                },
+                { 
+                  $nor: socials.map(x => ({ 
+                    username: x.username, 
+                    platform: x.platform,
+                  }))
+                }
+              ]
+            },
+            projection: {
+              id: true
+            }
+          });
+          await transactionEntityManager.userSocial.deleteAll({
+            filter: {
+              id: { in: deletedSocials.map(x => x.id) }
+            }
+          })
+          // Insert the new updated batch of socials
+          for (const social of socials) {
+            const foundSocial = await transactionEntityManager.userSocial.findOne({
               filter: {
                 userId: user.id,
                 platform: social.platform,
                 username: social.username
-              },
-              changes: foundSocial
-            });
-          } else {
-            await entityManager.userSocial.insertOne({
-              record: {
-                ...social,
-                userId: user.id
               }
             });
+            if (foundSocial) {
+              await transactionEntityManager.userSocial.updateOne({
+                filter: {
+                  userId: user.id,
+                  platform: social.platform,
+                  username: social.username
+                },
+                changes: foundSocial
+              });
+            } else {
+              await transactionEntityManager.userSocial.insertOne({
+                record: {
+                  ...social,
+                  userId: user.id
+                }
+              });
+            }
           }
         }
-      }
 
-      const avatarUpdated = files['avatar'] && files['avatar'].length == 1;
-      const avatarSelfHostedFilePath = avatarUpdated ? relativeToSelfHostedFilePath(files['avatar'][0].path) : "";
-      // Purge old avatar if it's self hosted
-      if (avatarUpdated && user.avatarLink 
-        && isSelfHostedFile(user.avatarLink)) {
-        deleteSelfHostedFile(user.avatarLink);
-      }
-
-      const bannerUpdated = files['banner'] && files['banner'].length == 1;
-      const bannerSelfHostedFilePath = bannerUpdated ? relativeToSelfHostedFilePath(files['banner'][0].path) : "";
-      // Purge old banner if it's self hosted
-      if (bannerUpdated && user.bannerLink 
-        && isSelfHostedFile(user.bannerLink)) {
-        deleteSelfHostedFile(user.bannerLink);
-      }
-
-      await entityManager.user.updateOne({
-        filter: {
-          id: user.id
-        },
-        changes: {
-          ...(req.body.displayName && { displayName: req.body.displayName }),
-          ...(req.body.bio && { bio: req.body.bio }),
-          ...(avatarUpdated && { avatarLink: avatarSelfHostedFilePath}),
-          ...(bannerUpdated && { bannerLink: bannerSelfHostedFilePath}),
+        const avatarUpdated = files['avatar'] && files['avatar'].length == 1;
+        const avatarSelfHostedFilePath = avatarUpdated ? relativeToSelfHostedFilePath(files['avatar'][0].path) : "";
+        // Purge old avatar if it's self hosted
+        if (avatarUpdated && user.avatarLink 
+          && isSelfHostedFile(user.avatarLink)) {
+          deleteSelfHostedFile(user.avatarLink);
         }
-      })
 
-      res.status(201).send({
-        message: "User upload success!",
-        data: {
-          ...(socialsUpdated && { socials }),
-          ...(req.body.displayName && { displayName: req.body.displayName }),
-          ...(req.body.bio && { bio: req.body.bio }),
-          ...(avatarUpdated && { avatarLink: avatarSelfHostedFilePath }),
-          ...(bannerUpdated && { bannerLink: bannerSelfHostedFilePath }),
+        const bannerUpdated = files['banner'] && files['banner'].length == 1;
+        const bannerSelfHostedFilePath = bannerUpdated ? relativeToSelfHostedFilePath(files['banner'][0].path) : "";
+        // Purge old banner if it's self hosted
+        if (bannerUpdated && user.bannerLink 
+          && isSelfHostedFile(user.bannerLink)) {
+          deleteSelfHostedFile(user.bannerLink);
         }
+
+        await transactionEntityManager.user.updateOne({
+          filter: {
+            id: user.id
+          },
+          changes: {
+            ...(req.body.displayName && { displayName: req.body.displayName }),
+            ...(req.body.bio && { bio: req.body.bio }),
+            ...(avatarUpdated && { avatarLink: avatarSelfHostedFilePath}),
+            ...(bannerUpdated && { bannerLink: bannerSelfHostedFilePath}),
+          }
+        })
+
+        res.status(201).send({
+          message: "User upload success!",
+          data: {
+            ...(rolesUpdated && { roleCodes }),
+            ...(socialsUpdated && { socials }),
+            ...(req.body.displayName && { displayName: req.body.displayName }),
+            ...(req.body.bio && { bio: req.body.bio }),
+            ...(avatarUpdated && { avatarLink: avatarSelfHostedFilePath }),
+            ...(bannerUpdated && { bannerLink: bannerSelfHostedFilePath }),
+          }
+        });
       });
+      await session.commitTransaction()
     } catch (err) {
+      await session.abortTransaction();
       next(err)
+    } finally {
+      await session.endSession();
     }
   }
 );
