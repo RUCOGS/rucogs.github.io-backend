@@ -1,8 +1,10 @@
 import { createUnsecureEntityManager } from "@src/controllers/entity-manager.controller";
 import { User } from "@src/generated/graphql-endpoint.types";
 import { RoleCode, UserInsertInput } from "@src/generated/model.types";
+import { EntityManager } from "@src/generated/typetta";
 import { startServer } from "@src/misc/server-constructor";
-import { mock } from "@twinlogix/typetta";
+import { RoleData, RoleDataList, RoleType } from "@src/shared/security";
+import { knexJsAdapters, mock } from "@twinlogix/typetta";
 import { ObjectId } from "mongodb";
 import { create } from 'random-seed';
 import { paragraph, sentence } from 'txtgen';
@@ -21,6 +23,105 @@ async function startMockServer() {
   
   const unsecure = createUnsecureEntityManager("mock");
   
+  const userIds = await generateUsers(unsecure, 1000);
+  const projectIds = await generateProjects(unsecure, userIds, 100);
+
+  console.log("🥸 Mock server configured!");
+}
+
+async function generateProjects(unsecure: EntityManager, userIds: string[], count: number) {
+  const banners = [
+    "https://pfps.gg/assets/banners/2592-harish.gif",
+    "https://pfps.gg/assets/banners/6531-mob-psycho-100-rage.gif",
+    "https://pfps.gg/assets/banners/1868-anime-vafe.png",
+    "https://pfps.gg/assets/banners/6711-sangonomiya-kokomi.gif",
+    "https://pfps.gg/assets/banners/4391-shirakami-fubuki-dark-background.gif",
+    "https://pfps.gg/assets/banners/3077-pixelated-sadge-anime-comp.gif",
+    "https://pfps.gg/assets/banners/5406-sobhanspisy.gif",
+    "https://pfps.gg/assets/banners/1912-roronoa-zoro.gif",
+    "https://pfps.gg/assets/banners/3073-name.gif",
+    "https://pfps.gg/assets/banners/2241-matrix-rain.gif",
+    "https://pfps.gg/assets/banners/4807-death-the-kid.gif",
+    "https://pfps.gg/assets/banners/5532-k-da-villain.gif",
+    "https://pfps.gg/assets/banners/3800-blacky.gif",
+  ]
+
+  const words = [
+    "pick",
+    "module",
+    "kneel",
+    "voucher",
+    "piano",
+    "confront",
+    "delicate",
+    "premature",
+    "father",
+    "intervention",
+    "conscious",
+    "conflict",
+    "illustrate",
+    "left",
+    "terrace",
+    "flock",
+    "color-blind",
+    "incredible",
+    "approve",
+    "conversation",
+  ]
+
+  const validMemberRoles = RoleDataList.filter(x => x.type === RoleType.ProjectMember && x.roleCode !== RoleCode.ProjectMember).map(x => x.roleCode);
+
+  for (let i = 0; i < count; i++) {
+    const createdAt = Date.now() + randDuration();
+    const updatedAt = createdAt + randDuration(0.1);
+    const completedAt = updatedAt + randDuration();
+    const projectResult = await unsecure.project.insertOne({
+      record: {
+        bannerLink: getRandElem(banners),
+        cardImageLink: getRandElem(banners),
+        name: getRandomSubarray(words, randInst.range(3) + 1).join(' '),
+        description: paragraph(randInst.range(2) + 1),
+        downloadLinks: [ `https://fake${randId(4)}.com` ],
+        galleryImageLinks: [],
+        createdAt,
+        completedAt: randInst.range(1) ? completedAt : undefined,
+        updatedAt
+      }
+    })
+
+    for (const userId of getRandomSubarray(userIds, randInst.range(4) + 1)) {
+      const memberResult = await unsecure.projectMember.insertOne({
+        record: {
+          userId,
+          contributions: sentence(),
+          projectId: projectResult.id,
+          createdAt,
+          updatedAt
+        }
+      })
+
+      const roleCodes = getRandomSubarray(validMemberRoles, validMemberRoles.length);
+      roleCodes.push(RoleCode.ProjectMember);
+
+      for (const roleCode of roleCodes) {
+        await unsecure.projectMemberRole.insertOne({
+          record: {
+            projectMemberId: memberResult.id,
+            roleCode
+          }
+        })
+      }
+    }
+  }
+
+  return (await unsecure.project.findAll({ projection: { id: true }})).map(x => x.id);
+}
+
+function randDuration(multiplier: number = 1) {
+  return randInst.range(2629800000 * 12 * 5 * multiplier);
+}
+
+async function generateUsers(unsecure: EntityManager, count: number) {
   const avatars = [
     "https://pfps.gg/assets/pfps/6721-rimuru-tempest.png",
     "https://pfps.gg/assets/pfps/5081-anime-girl-with-pink-hair.png",
@@ -92,10 +193,9 @@ async function startMockServer() {
     "Finlay Nguyen",
   ];
 
-  const userCount = 1000;
   const users: UserInsertInput[] = [];
-  for (let i = 0; i < userCount; i++) {
-    const username = getRandElem(usernames) + makeId(5);
+  for (let i = 0; i < count; i++) {
+    const username = getRandElem(usernames) + randId(5);
     const displayName = getRandElem(displayNames);
     const email = username + "@fake.com";
     const avatarLink = getRandElem(avatars);
@@ -144,14 +244,14 @@ async function startMockServer() {
     }
   }
 
-  console.log("🥸 Mock server configured!");
+  return (await unsecure.user.findAll({ projection: { id: true } })).map(x => x.id);
 }
 
 function getRandElem<T>(array: T[]) {
   return array[Math.floor(randInst.random() * array.length)];
 }
 
-function makeId(length: number) {
+function randId(length: number) {
     var result           = '';
     var characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
     var charactersLength = characters.length;

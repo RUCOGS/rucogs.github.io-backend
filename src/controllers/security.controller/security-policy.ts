@@ -60,6 +60,12 @@ export const SecurityPolicy = {
     },
     defaultPermissions: PERMISSION.READ_ONLY
   },
+  projectMember: {
+    domain: {
+      projectMemberId: "id",
+    },
+    defaultPermissions: PERMISSION.READ_ONLY,
+  },
   userLoginIdentity: {
     domain: {
       userId: "userId",
