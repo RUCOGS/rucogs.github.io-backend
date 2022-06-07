@@ -9,14 +9,14 @@ export enum RoleType {
 
 export const RoleData: {
   [key in RoleCode]: {
-    type: RoleType,
+    type: RoleType[],
     name: string,
     childRoles?: RoleCode[],
   }
 } = {
 // #region // ----- USER ROLES ----- //
   [RoleCode.User]: {
-    type: RoleType.User,
+    type: [RoleType.User],
     name: "🙂 User",
     childRoles: [
       RoleCode.Artist, 
@@ -28,7 +28,7 @@ export const RoleData: {
     ]
   },
   [RoleCode.Moderator]: {
-    type: RoleType.User,
+    type: [RoleType.User],
     name: "🛂 Moderator",
     childRoles: [
       // User Roles
@@ -48,7 +48,7 @@ export const RoleData: {
     ]
   },
   [RoleCode.SuperAdmin]: {
-    type: RoleType.User,
+    type: [RoleType.User],
     name: "😎 Super Admin",
     childRoles: [
       RoleCode.Moderator
@@ -57,27 +57,27 @@ export const RoleData: {
 
   // Cosmetics
   [RoleCode.Artist]: {
-    type: RoleType.User,
+    type: [RoleType.User, RoleType.ProjectMember],
     name: "🎨 Artist"
   },
   [RoleCode.SoundDesigner]: {
-    type: RoleType.User,
+    type: [RoleType.User, RoleType.ProjectMember],
     name: "🔊 Sound Designer"
   },
   [RoleCode.Musician]: {
-    type: RoleType.User,
+    type: [RoleType.User, RoleType.ProjectMember],
     name: "🎷 Musician"
   },
   [RoleCode.Programmer]: {
-    type: RoleType.User,
+    type: [RoleType.User, RoleType.ProjectMember],
     name: "💻 Programmer"
   },
   [RoleCode.GameDesigner]: {
-    type: RoleType.User,
+    type: [RoleType.User, RoleType.ProjectMember],
     name: "🏗️ Game Designer"
   },
   [RoleCode.Writer]: {
-    type: RoleType.User,
+    type: [RoleType.User, RoleType.ProjectMember],
     name: "📝 Writer"
   },
 // #endregion // -- USER ROLES ----- //
@@ -85,39 +85,39 @@ export const RoleData: {
 // #region // ----- EBOARD ROLES ----- //
   // EBoard Roles (Cosmetics)
   [RoleCode.Eboard]: {
-    type: RoleType.EBoard,
+    type: [RoleType.EBoard],
     name: "📘 E-Board"
   },
   [RoleCode.President]: {
     name: "👑 President",
-    type: RoleType.EBoard,
+    type: [RoleType.EBoard],
   },
   [RoleCode.VicePresident]: {
-    type: RoleType.EBoard,
+    type: [RoleType.EBoard],
     name: "🗜️ Vice President"
   },
   [RoleCode.ClubGraphicArtist]: {
-    type: RoleType.EBoard,
+    type: [RoleType.EBoard],
     name: "🎨 Club Graphic Artist"
   },
   [RoleCode.Outreach]: {
-    type: RoleType.EBoard,
+    type: [RoleType.EBoard],
     name: "📤 Outreach"
   },
   [RoleCode.BotDeveloper]: {
-    type: RoleType.EBoard,
+    type: [RoleType.EBoard],
     name: "🤖 Bot Developer"
   },
   [RoleCode.Alumni]: {
-    type: RoleType.EBoard,
+    type: [RoleType.EBoard],
     name: "💫 EBoard Alumni"
   },
   [RoleCode.Treasurer]: {
-    type: RoleType.EBoard,
+    type: [RoleType.EBoard],
     name: "🏦 Treasurer"
   },
   [RoleCode.Webmaster]: {
-    type: RoleType.EBoard,
+    type: [RoleType.EBoard],
     name: "🕸️ Webmaster"
   },
 // #endregion // -- EBOARD ROLES ----- //
@@ -125,11 +125,11 @@ export const RoleData: {
 // #region // ----- PROJECT MEMBER ROLES ----- //
   // Project Member Roles
   [RoleCode.ProjectMember]: {
-    type: RoleType.ProjectMember,
+    type: [RoleType.ProjectMember],
     name: "🙂 Project Member"
   },
   [RoleCode.ProjectOwner]: {
-    type: RoleType.ProjectMember,
+    type: [RoleType.ProjectMember],
     name: "😇 Project Owner",
     childRoles: [
       RoleCode.ProjectMember
@@ -139,7 +139,7 @@ export const RoleData: {
 }
 
 export const RoleDataList: {
-  type: RoleType,
+  type: RoleType[],
   name: string,
   roleCode: RoleCode,
   childRoles?: RoleCode[],
@@ -150,6 +150,10 @@ for (const [key, value] of Object.entries(RoleData)) {
     ...value,
     roleCode: key as RoleCode
   });
+}
+
+export function getRolesOfType(type: RoleType) {
+  return RoleDataList.filter(x => x.type.includes(type));
 }
 
 export function isRoleAboveOrEqual(targetRole: RoleCode, currentRole: RoleCode) {

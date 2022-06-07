@@ -1,3 +1,6 @@
+import { Project, RoleCode } from '@src/generated/graphql-endpoint.types';
+import { PartialDeep } from 'type-fest';
+
 export class TwoWayMap<K extends string | number | symbol, V extends string | number | symbol> {
   map: Record<K, V>;
   reverseMap: Record<V, K>;
@@ -109,4 +112,36 @@ export class OneToManyTwoWayMap<TOne extends string | number | symbol, TMany ext
   hasManyKey(key: TMany) {
     return key in this.manyToOne;
   }
+}
+
+export function assertProjectValid(project: PartialDeep<Project>) {
+  // Project has at least one owner
+  if (!projectHasOwner(project)) {
+    throw new Error("Project must have at least one owner!");
+  }
+  if (!projectHasMember(project)) {
+    throw new Error("Project must have at least one member!");
+  }
+  if (!projectHasName(project)) {
+    throw new Error("Project must have a name!");
+  }
+}
+
+export function projectHasName(project: PartialDeep<Project>) {
+  return project.name !== "";
+}
+
+export function projectHasMember(project: PartialDeep<Project>) {
+  return project.members && project.members.length > 0;
+}
+
+export function projectHasOwner(project: PartialDeep<Project>) {
+  if (!project.members)
+    return false;
+  
+  for (const member of project.members)
+    if (member?.roles?.some(x => x?.roleCode === RoleCode.ProjectOwner)) {
+      return true;
+    }
+  return false;
 }

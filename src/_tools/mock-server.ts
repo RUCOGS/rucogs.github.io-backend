@@ -3,7 +3,7 @@ import { User } from "@src/generated/graphql-endpoint.types";
 import { RoleCode, UserInsertInput } from "@src/generated/model.types";
 import { EntityManager } from "@src/generated/typetta";
 import { startServer } from "@src/misc/server-constructor";
-import { RoleData, RoleDataList, RoleType } from "@src/shared/security";
+import { getRolesOfType, RoleData, RoleDataList, RoleType } from "@src/shared/security";
 import { knexJsAdapters, mock } from "@twinlogix/typetta";
 import { ObjectId } from "mongodb";
 import { create } from 'random-seed';
@@ -72,7 +72,7 @@ async function generateProjects(unsecure: EntityManager, userIds: string[], coun
     "conversation",
   ]
 
-  const validMemberRoles = RoleDataList.filter(x => x.type === RoleType.ProjectMember && x.roleCode !== RoleCode.ProjectMember).map(x => x.roleCode);
+  const validMemberRoles = getRolesOfType(RoleType.ProjectMember).filter(x => x.roleCode !== RoleCode.ProjectMember).map(x => x.roleCode);
 
   async function addProjectMembersFor(projectId: string, createdAt: number, updatedAt: number, memberCount: number = randInst.range(20) + 1) {
     for (const userId of getRandomSubarray(userIds, memberCount)) {

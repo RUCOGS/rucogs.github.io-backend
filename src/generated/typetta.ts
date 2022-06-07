@@ -2,10 +2,282 @@ import * as T from '@twinlogix/typetta'
 import * as types from './model.types'
 import * as M from 'mongodb'
 
-export type EBoardExcludedFields = never
-export type EBoardRelationFields = 'roles' | 'user'
+export type ScalarsSpecification = {
+  ID: { type: types.Scalars['ID']; isTextual: false; isQuantitative: false }
+  String: { type: types.Scalars['String']; isTextual: true; isQuantitative: false }
+  Boolean: { type: types.Scalars['Boolean']; isTextual: false; isQuantitative: false }
+  Int: { type: types.Scalars['Int']; isTextual: false; isQuantitative: true }
+  Float: { type: types.Scalars['Float']; isTextual: false; isQuantitative: true }
+  Date: { type: types.Scalars['Date']; isTextual: false; isQuantitative: false }
+  Json: { type: types.Scalars['Json']; isTextual: false; isQuantitative: false }
+  Permission: { type: types.Permission; isTextual: false; isQuantitative: false }
+  RoleCode: { type: types.RoleCode; isTextual: false; isQuantitative: false }
+  SortDirection: { type: types.SortDirection; isTextual: false; isQuantitative: false }
+  StringFilterMode: { type: types.StringFilterMode; isTextual: false; isQuantitative: false }
+}
 
-export function eBoardSchema(): T.Schema<types.Scalars> {
+export type AST = {
+  EBoard: {
+    fields: {
+      createdAt: { type: 'scalar'; isList: false; astName: 'Date'; isRequired: true; isListElementRequired: false; isExcluded: false; isId: false; generationStrategy: 'generator' }
+      graduatedAt: { type: 'scalar'; isList: false; astName: 'Date'; isRequired: false; isListElementRequired: false; isExcluded: false; isId: false; generationStrategy: 'undefined' }
+      id: { type: 'scalar'; isList: false; astName: 'ID'; isRequired: true; isListElementRequired: false; isExcluded: false; isId: true; generationStrategy: 'db' }
+      roles: {
+        type: 'relation'
+        relation: 'foreign'
+        isList: true
+        astName: 'EBoardRole'
+        isRequired: true
+        isListElementRequired: true
+        isExcluded: false
+        isId: false
+        generationStrategy: 'undefined'
+      }
+      user: { type: 'relation'; relation: 'inner'; isList: false; astName: 'User'; isRequired: true; isListElementRequired: false; isExcluded: false; isId: false; generationStrategy: 'undefined' }
+      userId: { type: 'scalar'; isList: false; astName: 'ID'; isRequired: true; isListElementRequired: false; isExcluded: false; isId: false; generationStrategy: 'undefined' }
+    }
+    driverSpecification: {
+      rawFilter: () => M.Filter<M.Document>
+      rawUpdate: () => M.UpdateFilter<M.Document>
+      rawSorts: () => M.Sort
+    }
+  }
+  EBoardRole: {
+    fields: {
+      eboard: { type: 'relation'; relation: 'inner'; isList: false; astName: 'EBoard'; isRequired: true; isListElementRequired: false; isExcluded: false; isId: false; generationStrategy: 'undefined' }
+      eboardId: { type: 'scalar'; isList: false; astName: 'ID'; isRequired: true; isListElementRequired: false; isExcluded: false; isId: false; generationStrategy: 'undefined' }
+      id: { type: 'scalar'; isList: false; astName: 'ID'; isRequired: true; isListElementRequired: false; isExcluded: false; isId: true; generationStrategy: 'db' }
+      roleCode: { type: 'scalar'; isList: false; astName: 'RoleCode'; isRequired: true; isListElementRequired: false; isExcluded: false; isId: false; generationStrategy: 'undefined' }
+    }
+    driverSpecification: {
+      rawFilter: () => M.Filter<M.Document>
+      rawUpdate: () => M.UpdateFilter<M.Document>
+      rawSorts: () => M.Sort
+    }
+  }
+  Project: {
+    fields: {
+      bannerLink: { type: 'scalar'; isList: false; astName: 'String'; isRequired: false; isListElementRequired: false; isExcluded: false; isId: false; generationStrategy: 'undefined' }
+      cardImageLink: { type: 'scalar'; isList: false; astName: 'String'; isRequired: false; isListElementRequired: false; isExcluded: false; isId: false; generationStrategy: 'undefined' }
+      completedAt: { type: 'scalar'; isList: false; astName: 'Date'; isRequired: false; isListElementRequired: false; isExcluded: false; isId: false; generationStrategy: 'undefined' }
+      createdAt: { type: 'scalar'; isList: false; astName: 'Date'; isRequired: false; isListElementRequired: false; isExcluded: false; isId: false; generationStrategy: 'undefined' }
+      description: { type: 'scalar'; isList: false; astName: 'String'; isRequired: true; isListElementRequired: false; isExcluded: false; isId: false; generationStrategy: 'undefined' }
+      downloadLinks: { type: 'scalar'; isList: true; astName: 'String'; isRequired: true; isListElementRequired: true; isExcluded: false; isId: false; generationStrategy: 'undefined' }
+      galleryImageLinks: { type: 'scalar'; isList: true; astName: 'String'; isRequired: true; isListElementRequired: true; isExcluded: false; isId: false; generationStrategy: 'undefined' }
+      id: { type: 'scalar'; isList: false; astName: 'ID'; isRequired: true; isListElementRequired: false; isExcluded: false; isId: true; generationStrategy: 'db' }
+      members: {
+        type: 'relation'
+        relation: 'foreign'
+        isList: true
+        astName: 'ProjectMember'
+        isRequired: false
+        isListElementRequired: true
+        isExcluded: false
+        isId: false
+        generationStrategy: 'undefined'
+      }
+      name: { type: 'scalar'; isList: false; astName: 'String'; isRequired: true; isListElementRequired: false; isExcluded: false; isId: false; generationStrategy: 'undefined' }
+      pitch: { type: 'scalar'; isList: false; astName: 'String'; isRequired: true; isListElementRequired: false; isExcluded: false; isId: false; generationStrategy: 'undefined' }
+      soundcloudEmbedSrc: { type: 'scalar'; isList: false; astName: 'String'; isRequired: false; isListElementRequired: false; isExcluded: false; isId: false; generationStrategy: 'undefined' }
+      updatedAt: { type: 'scalar'; isList: false; astName: 'Date'; isRequired: false; isListElementRequired: false; isExcluded: false; isId: false; generationStrategy: 'undefined' }
+    }
+    driverSpecification: {
+      rawFilter: () => M.Filter<M.Document>
+      rawUpdate: () => M.UpdateFilter<M.Document>
+      rawSorts: () => M.Sort
+    }
+  }
+  ProjectMember: {
+    fields: {
+      contributions: { type: 'scalar'; isList: false; astName: 'String'; isRequired: true; isListElementRequired: false; isExcluded: false; isId: false; generationStrategy: 'undefined' }
+      createdAt: { type: 'scalar'; isList: false; astName: 'Date'; isRequired: false; isListElementRequired: false; isExcluded: false; isId: false; generationStrategy: 'undefined' }
+      id: { type: 'scalar'; isList: false; astName: 'ID'; isRequired: true; isListElementRequired: false; isExcluded: false; isId: true; generationStrategy: 'db' }
+      project: {
+        type: 'relation'
+        relation: 'inner'
+        isList: false
+        astName: 'Project'
+        isRequired: true
+        isListElementRequired: false
+        isExcluded: false
+        isId: false
+        generationStrategy: 'undefined'
+      }
+      projectId: { type: 'scalar'; isList: false; astName: 'ID'; isRequired: true; isListElementRequired: false; isExcluded: false; isId: false; generationStrategy: 'undefined' }
+      roles: {
+        type: 'relation'
+        relation: 'foreign'
+        isList: true
+        astName: 'ProjectMemberRole'
+        isRequired: true
+        isListElementRequired: true
+        isExcluded: false
+        isId: false
+        generationStrategy: 'undefined'
+      }
+      updatedAt: { type: 'scalar'; isList: false; astName: 'Date'; isRequired: false; isListElementRequired: false; isExcluded: false; isId: false; generationStrategy: 'undefined' }
+      user: { type: 'relation'; relation: 'inner'; isList: false; astName: 'User'; isRequired: true; isListElementRequired: false; isExcluded: false; isId: false; generationStrategy: 'undefined' }
+      userId: { type: 'scalar'; isList: false; astName: 'ID'; isRequired: true; isListElementRequired: false; isExcluded: false; isId: false; generationStrategy: 'undefined' }
+    }
+    driverSpecification: {
+      rawFilter: () => M.Filter<M.Document>
+      rawUpdate: () => M.UpdateFilter<M.Document>
+      rawSorts: () => M.Sort
+    }
+  }
+  ProjectMemberRole: {
+    fields: {
+      id: { type: 'scalar'; isList: false; astName: 'ID'; isRequired: true; isListElementRequired: false; isExcluded: false; isId: true; generationStrategy: 'db' }
+      projectMember: {
+        type: 'relation'
+        relation: 'inner'
+        isList: false
+        astName: 'ProjectMember'
+        isRequired: true
+        isListElementRequired: false
+        isExcluded: false
+        isId: false
+        generationStrategy: 'undefined'
+      }
+      projectMemberId: { type: 'scalar'; isList: false; astName: 'ID'; isRequired: true; isListElementRequired: false; isExcluded: false; isId: false; generationStrategy: 'undefined' }
+      roleCode: { type: 'scalar'; isList: false; astName: 'RoleCode'; isRequired: true; isListElementRequired: false; isExcluded: false; isId: false; generationStrategy: 'undefined' }
+    }
+    driverSpecification: {
+      rawFilter: () => M.Filter<M.Document>
+      rawUpdate: () => M.UpdateFilter<M.Document>
+      rawSorts: () => M.Sort
+    }
+  }
+  SomeType: {
+    fields: {
+      id: { type: 'scalar'; isList: false; astName: 'ID'; isRequired: true; isListElementRequired: false; isExcluded: false; isId: true; generationStrategy: 'db' }
+      someField: { type: 'scalar'; isList: false; astName: 'Date'; isRequired: false; isListElementRequired: false; isExcluded: false; isId: false; generationStrategy: 'undefined' }
+    }
+    driverSpecification: {
+      rawFilter: () => M.Filter<M.Document>
+      rawUpdate: () => M.UpdateFilter<M.Document>
+      rawSorts: () => M.Sort
+    }
+  }
+  User: {
+    fields: {
+      avatarLink: { type: 'scalar'; isList: false; astName: 'String'; isRequired: false; isListElementRequired: false; isExcluded: false; isId: false; generationStrategy: 'undefined' }
+      bannerLink: { type: 'scalar'; isList: false; astName: 'String'; isRequired: false; isListElementRequired: false; isExcluded: false; isId: false; generationStrategy: 'undefined' }
+      bio: { type: 'scalar'; isList: false; astName: 'String'; isRequired: false; isListElementRequired: false; isExcluded: false; isId: false; generationStrategy: 'undefined' }
+      createdAt: { type: 'scalar'; isList: false; astName: 'Date'; isRequired: false; isListElementRequired: false; isExcluded: false; isId: false; generationStrategy: 'undefined' }
+      displayName: { type: 'scalar'; isList: false; astName: 'String'; isRequired: false; isListElementRequired: false; isExcluded: false; isId: false; generationStrategy: 'undefined' }
+      eboard: {
+        type: 'relation'
+        relation: 'foreign'
+        isList: false
+        astName: 'EBoard'
+        isRequired: false
+        isListElementRequired: false
+        isExcluded: false
+        isId: false
+        generationStrategy: 'undefined'
+      }
+      email: { type: 'scalar'; isList: false; astName: 'String'; isRequired: true; isListElementRequired: false; isExcluded: false; isId: false; generationStrategy: 'undefined' }
+      id: { type: 'scalar'; isList: false; astName: 'ID'; isRequired: true; isListElementRequired: false; isExcluded: false; isId: true; generationStrategy: 'db' }
+      loginIdentities: {
+        type: 'relation'
+        relation: 'foreign'
+        isList: true
+        astName: 'UserLoginIdentity'
+        isRequired: true
+        isListElementRequired: true
+        isExcluded: false
+        isId: false
+        generationStrategy: 'undefined'
+      }
+      projectMembers: {
+        type: 'relation'
+        relation: 'foreign'
+        isList: true
+        astName: 'ProjectMember'
+        isRequired: true
+        isListElementRequired: true
+        isExcluded: false
+        isId: false
+        generationStrategy: 'undefined'
+      }
+      roles: {
+        type: 'relation'
+        relation: 'foreign'
+        isList: true
+        astName: 'UserRole'
+        isRequired: true
+        isListElementRequired: true
+        isExcluded: false
+        isId: false
+        generationStrategy: 'undefined'
+      }
+      socials: {
+        type: 'relation'
+        relation: 'foreign'
+        isList: true
+        astName: 'UserSocial'
+        isRequired: true
+        isListElementRequired: true
+        isExcluded: false
+        isId: false
+        generationStrategy: 'undefined'
+      }
+      updatedAt: { type: 'scalar'; isList: false; astName: 'Date'; isRequired: false; isListElementRequired: false; isExcluded: false; isId: false; generationStrategy: 'undefined' }
+      username: { type: 'scalar'; isList: false; astName: 'String'; isRequired: false; isListElementRequired: false; isExcluded: false; isId: false; generationStrategy: 'undefined' }
+    }
+    driverSpecification: {
+      rawFilter: () => M.Filter<M.Document>
+      rawUpdate: () => M.UpdateFilter<M.Document>
+      rawSorts: () => M.Sort
+    }
+  }
+  UserLoginIdentity: {
+    fields: {
+      data: { type: 'scalar'; isList: false; astName: 'Json'; isRequired: false; isListElementRequired: false; isExcluded: false; isId: false; generationStrategy: 'undefined' }
+      id: { type: 'scalar'; isList: false; astName: 'ID'; isRequired: true; isListElementRequired: false; isExcluded: false; isId: true; generationStrategy: 'db' }
+      identityId: { type: 'scalar'; isList: false; astName: 'String'; isRequired: true; isListElementRequired: false; isExcluded: false; isId: false; generationStrategy: 'undefined' }
+      name: { type: 'scalar'; isList: false; astName: 'String'; isRequired: true; isListElementRequired: false; isExcluded: false; isId: false; generationStrategy: 'undefined' }
+      user: { type: 'relation'; relation: 'inner'; isList: false; astName: 'User'; isRequired: true; isListElementRequired: false; isExcluded: false; isId: false; generationStrategy: 'undefined' }
+      userId: { type: 'scalar'; isList: false; astName: 'ID'; isRequired: true; isListElementRequired: false; isExcluded: false; isId: false; generationStrategy: 'undefined' }
+    }
+    driverSpecification: {
+      rawFilter: () => M.Filter<M.Document>
+      rawUpdate: () => M.UpdateFilter<M.Document>
+      rawSorts: () => M.Sort
+    }
+  }
+  UserRole: {
+    fields: {
+      id: { type: 'scalar'; isList: false; astName: 'ID'; isRequired: true; isListElementRequired: false; isExcluded: false; isId: true; generationStrategy: 'db' }
+      roleCode: { type: 'scalar'; isList: false; astName: 'RoleCode'; isRequired: true; isListElementRequired: false; isExcluded: false; isId: false; generationStrategy: 'undefined' }
+      user: { type: 'relation'; relation: 'inner'; isList: false; astName: 'User'; isRequired: true; isListElementRequired: false; isExcluded: false; isId: false; generationStrategy: 'undefined' }
+      userId: { type: 'scalar'; isList: false; astName: 'ID'; isRequired: true; isListElementRequired: false; isExcluded: false; isId: false; generationStrategy: 'undefined' }
+    }
+    driverSpecification: {
+      rawFilter: () => M.Filter<M.Document>
+      rawUpdate: () => M.UpdateFilter<M.Document>
+      rawSorts: () => M.Sort
+    }
+  }
+  UserSocial: {
+    fields: {
+      id: { type: 'scalar'; isList: false; astName: 'ID'; isRequired: true; isListElementRequired: false; isExcluded: false; isId: true; generationStrategy: 'db' }
+      link: { type: 'scalar'; isList: false; astName: 'String'; isRequired: true; isListElementRequired: false; isExcluded: false; isId: false; generationStrategy: 'undefined' }
+      platform: { type: 'scalar'; isList: false; astName: 'String'; isRequired: true; isListElementRequired: false; isExcluded: false; isId: false; generationStrategy: 'undefined' }
+      user: { type: 'relation'; relation: 'inner'; isList: false; astName: 'User'; isRequired: true; isListElementRequired: false; isExcluded: false; isId: false; generationStrategy: 'undefined' }
+      userId: { type: 'scalar'; isList: false; astName: 'ID'; isRequired: true; isListElementRequired: false; isExcluded: false; isId: false; generationStrategy: 'undefined' }
+      username: { type: 'scalar'; isList: false; astName: 'String'; isRequired: true; isListElementRequired: false; isExcluded: false; isId: false; generationStrategy: 'undefined' }
+    }
+    driverSpecification: {
+      rawFilter: () => M.Filter<M.Document>
+      rawUpdate: () => M.UpdateFilter<M.Document>
+      rawSorts: () => M.Sort
+    }
+  }
+}
+
+export function eBoardSchema(): T.Schema<ScalarsSpecification> {
   return {
     createdAt: {
       type: 'scalar',
@@ -53,72 +325,13 @@ export function eBoardSchema(): T.Schema<types.Scalars> {
   }
 }
 
-type EBoardFilterFields = {
-  createdAt?: types.Scalars['Date'] | null | T.EqualityOperators<types.Scalars['Date']> | T.ElementOperators
-  graduatedAt?: types.Scalars['Date'] | null | T.EqualityOperators<types.Scalars['Date']> | T.ElementOperators
-  id?: types.Scalars['ID'] | null | T.EqualityOperators<types.Scalars['ID']> | T.ElementOperators
-  userId?: types.Scalars['ID'] | null | T.EqualityOperators<types.Scalars['ID']> | T.ElementOperators
-}
-export type EBoardFilter = EBoardFilterFields & T.LogicalOperators<EBoardFilterFields | EBoardRawFilter>
-export type EBoardRawFilter = () => M.Filter<M.Document>
-
-export type EBoardRelations = {
-  roles?: {
-    filter?: EBoardRoleFilter
-    sorts?: EBoardRoleSort[] | EBoardRoleRawSort
-    skip?: number
-    limit?: number
-    relations?: EBoardRoleRelations
-  }
-}
-
-export type EBoardProjection = {
-  createdAt?: boolean
-  graduatedAt?: boolean
-  id?: boolean
-  roles?: EBoardRoleProjection | boolean
-  user?: UserProjection | boolean
-  userId?: boolean
-}
-export type EBoardParam<P extends EBoardProjection> = T.ParamProjection<types.EBoard, EBoardProjection, P>
-
-export type EBoardSortKeys = 'createdAt' | 'graduatedAt' | 'id' | 'userId'
-export type EBoardSort = Partial<Record<EBoardSortKeys, T.SortDirection>>
-export type EBoardRawSort = () => M.Sort
-
-export type EBoardUpdate = {
-  createdAt?: types.Scalars['Date'] | null
-  graduatedAt?: types.Scalars['Date'] | null
-  id?: types.Scalars['ID'] | null
-  userId?: types.Scalars['ID'] | null
-}
-export type EBoardRawUpdate = () => M.UpdateFilter<M.Document>
-
-export type EBoardInsert = {
-  createdAt?: null | types.Scalars['Date']
-  graduatedAt?: null | types.Scalars['Date']
-  userId: types.Scalars['ID']
-}
-
 type EBoardDAOGenerics<MetadataType, OperationMetadataType> = T.MongoDBDAOGenerics<
-  types.EBoard,
-  'id',
-  'ID',
-  EBoardFilter,
-  EBoardRawFilter,
-  EBoardRelations,
-  EBoardProjection,
-  EBoardSort,
-  EBoardRawSort,
-  EBoardInsert,
-  EBoardUpdate,
-  EBoardRawUpdate,
-  EBoardExcludedFields,
-  EBoardRelationFields,
+  'EBoard',
+  AST,
+  ScalarsSpecification,
+  EBoardCachedTypes,
   MetadataType,
   OperationMetadataType,
-  types.Scalars,
-  'eBoard',
   EntityManager<MetadataType, OperationMetadataType>
 >
 export type EBoardDAOParams<MetadataType, OperationMetadataType> = Omit<
@@ -130,14 +343,25 @@ export type InMemoryEBoardDAOParams<MetadataType, OperationMetadataType> = Omit<
   'idGenerator' | 'idField' | 'schema' | 'idScalar' | 'idGeneration'
 >
 
+export type EBoardIdFields = T.IdFields<'EBoard', AST>
+export interface EBoardModel extends types.EBoard {}
+export interface EBoardInsert extends T.Insert<'EBoard', AST, ScalarsSpecification> {}
+export interface EBoardPlainModel extends T.GenerateModel<'EBoard', AST, ScalarsSpecification, 'relation'> {}
+export interface EBoardProjection extends T.Projection<'EBoard', AST> {}
+export interface EBoardUpdate extends T.Update<'EBoard', AST, ScalarsSpecification> {}
+export interface EBoardFilter extends T.Filter<'EBoard', AST, ScalarsSpecification> {}
+export interface EBoardSortElement extends T.SortElement<'EBoard', AST> {}
+export interface EBoardRelationsFindParams extends T.RelationsFindParams<'EBoard', AST, ScalarsSpecification> {}
+export type EBoardParams<P extends EBoardProjection> = T.Params<'EBoard', AST, ScalarsSpecification, P>
+export type EBoardCachedTypes = T.CachedTypes<EBoardIdFields, EBoardModel, EBoardInsert, EBoardPlainModel, EBoardProjection, EBoardUpdate, EBoardFilter, EBoardSortElement, EBoardRelationsFindParams>
+
 export class EBoardDAO<MetadataType, OperationMetadataType> extends T.AbstractMongoDBDAO<EBoardDAOGenerics<MetadataType, OperationMetadataType>> {
-  public static projection<P extends EBoardProjection>(p: P) {
+  public static projection<P extends T.Projection<'EBoard', AST>>(p: P) {
     return p
   }
-  public static mergeProjection<P1 extends EBoardProjection, P2 extends EBoardProjection>(p1: P1, p2: P2): T.SelectProjection<EBoardProjection, P1, P2> {
-    return T.mergeProjections(p1, p2) as T.SelectProjection<EBoardProjection, P1, P2>
+  public static mergeProjection<P1 extends T.Projection<'EBoard', AST>, P2 extends T.Projection<'EBoard', AST>>(p1: P1, p2: P2): T.SelectProjection<T.Projection<'EBoard', AST>, P1, P2> {
+    return T.mergeProjections(p1, p2) as T.SelectProjection<T.Projection<'EBoard', AST>, P1, P2>
   }
-
   public constructor(params: EBoardDAOParams<MetadataType, OperationMetadataType>) {
     super({
       ...params,
@@ -147,13 +371,12 @@ export class EBoardDAO<MetadataType, OperationMetadataType> extends T.AbstractMo
 }
 
 export class InMemoryEBoardDAO<MetadataType, OperationMetadataType> extends T.AbstractInMemoryDAO<EBoardDAOGenerics<MetadataType, OperationMetadataType>> {
-  public static projection<P extends EBoardProjection>(p: P) {
+  public static projection<P extends T.Projection<'EBoard', AST>>(p: P) {
     return p
   }
-  public static mergeProjection<P1 extends EBoardProjection, P2 extends EBoardProjection>(p1: P1, p2: P2): T.SelectProjection<EBoardProjection, P1, P2> {
-    return T.mergeProjections(p1, p2) as T.SelectProjection<EBoardProjection, P1, P2>
+  public static mergeProjection<P1 extends T.Projection<'EBoard', AST>, P2 extends T.Projection<'EBoard', AST>>(p1: P1, p2: P2): T.SelectProjection<T.Projection<'EBoard', AST>, P1, P2> {
+    return T.mergeProjections(p1, p2) as T.SelectProjection<T.Projection<'EBoard', AST>, P1, P2>
   }
-
   public constructor(params: InMemoryEBoardDAOParams<MetadataType, OperationMetadataType>) {
     super({
       ...params,
@@ -161,11 +384,7 @@ export class InMemoryEBoardDAO<MetadataType, OperationMetadataType> extends T.Ab
     })
   }
 }
-
-export type EBoardRoleExcludedFields = never
-export type EBoardRoleRelationFields = 'eboard'
-
-export function eBoardRoleSchema(): T.Schema<types.Scalars> {
+export function eBoardRoleSchema(): T.Schema<ScalarsSpecification> {
   return {
     eboard: {
       type: 'relation',
@@ -198,59 +417,13 @@ export function eBoardRoleSchema(): T.Schema<types.Scalars> {
   }
 }
 
-type EBoardRoleFilterFields = {
-  eboardId?: types.Scalars['ID'] | null | T.EqualityOperators<types.Scalars['ID']> | T.ElementOperators
-  id?: types.Scalars['ID'] | null | T.EqualityOperators<types.Scalars['ID']> | T.ElementOperators
-  roleCode?: types.RoleCode | null | T.EqualityOperators<types.RoleCode> | T.ElementOperators | T.StringOperators
-}
-export type EBoardRoleFilter = EBoardRoleFilterFields & T.LogicalOperators<EBoardRoleFilterFields | EBoardRoleRawFilter>
-export type EBoardRoleRawFilter = () => M.Filter<M.Document>
-
-export type EBoardRoleRelations = Record<never, string>
-
-export type EBoardRoleProjection = {
-  eboard?: EBoardProjection | boolean
-  eboardId?: boolean
-  id?: boolean
-  roleCode?: boolean
-}
-export type EBoardRoleParam<P extends EBoardRoleProjection> = T.ParamProjection<types.EBoardRole, EBoardRoleProjection, P>
-
-export type EBoardRoleSortKeys = 'eboardId' | 'id' | 'roleCode'
-export type EBoardRoleSort = Partial<Record<EBoardRoleSortKeys, T.SortDirection>>
-export type EBoardRoleRawSort = () => M.Sort
-
-export type EBoardRoleUpdate = {
-  eboardId?: types.Scalars['ID'] | null
-  id?: types.Scalars['ID'] | null
-  roleCode?: types.RoleCode | null
-}
-export type EBoardRoleRawUpdate = () => M.UpdateFilter<M.Document>
-
-export type EBoardRoleInsert = {
-  eboardId: types.Scalars['ID']
-  roleCode: types.RoleCode
-}
-
 type EBoardRoleDAOGenerics<MetadataType, OperationMetadataType> = T.MongoDBDAOGenerics<
-  types.EBoardRole,
-  'id',
-  'ID',
-  EBoardRoleFilter,
-  EBoardRoleRawFilter,
-  EBoardRoleRelations,
-  EBoardRoleProjection,
-  EBoardRoleSort,
-  EBoardRoleRawSort,
-  EBoardRoleInsert,
-  EBoardRoleUpdate,
-  EBoardRoleRawUpdate,
-  EBoardRoleExcludedFields,
-  EBoardRoleRelationFields,
+  'EBoardRole',
+  AST,
+  ScalarsSpecification,
+  EBoardRoleCachedTypes,
   MetadataType,
   OperationMetadataType,
-  types.Scalars,
-  'eBoardRole',
   EntityManager<MetadataType, OperationMetadataType>
 >
 export type EBoardRoleDAOParams<MetadataType, OperationMetadataType> = Omit<
@@ -262,14 +435,35 @@ export type InMemoryEBoardRoleDAOParams<MetadataType, OperationMetadataType> = O
   'idGenerator' | 'idField' | 'schema' | 'idScalar' | 'idGeneration'
 >
 
+export type EBoardRoleIdFields = T.IdFields<'EBoardRole', AST>
+export interface EBoardRoleModel extends types.EBoardRole {}
+export interface EBoardRoleInsert extends T.Insert<'EBoardRole', AST, ScalarsSpecification> {}
+export interface EBoardRolePlainModel extends T.GenerateModel<'EBoardRole', AST, ScalarsSpecification, 'relation'> {}
+export interface EBoardRoleProjection extends T.Projection<'EBoardRole', AST> {}
+export interface EBoardRoleUpdate extends T.Update<'EBoardRole', AST, ScalarsSpecification> {}
+export interface EBoardRoleFilter extends T.Filter<'EBoardRole', AST, ScalarsSpecification> {}
+export interface EBoardRoleSortElement extends T.SortElement<'EBoardRole', AST> {}
+export interface EBoardRoleRelationsFindParams extends T.RelationsFindParams<'EBoardRole', AST, ScalarsSpecification> {}
+export type EBoardRoleParams<P extends EBoardRoleProjection> = T.Params<'EBoardRole', AST, ScalarsSpecification, P>
+export type EBoardRoleCachedTypes = T.CachedTypes<
+  EBoardRoleIdFields,
+  EBoardRoleModel,
+  EBoardRoleInsert,
+  EBoardRolePlainModel,
+  EBoardRoleProjection,
+  EBoardRoleUpdate,
+  EBoardRoleFilter,
+  EBoardRoleSortElement,
+  EBoardRoleRelationsFindParams
+>
+
 export class EBoardRoleDAO<MetadataType, OperationMetadataType> extends T.AbstractMongoDBDAO<EBoardRoleDAOGenerics<MetadataType, OperationMetadataType>> {
-  public static projection<P extends EBoardRoleProjection>(p: P) {
+  public static projection<P extends T.Projection<'EBoardRole', AST>>(p: P) {
     return p
   }
-  public static mergeProjection<P1 extends EBoardRoleProjection, P2 extends EBoardRoleProjection>(p1: P1, p2: P2): T.SelectProjection<EBoardRoleProjection, P1, P2> {
-    return T.mergeProjections(p1, p2) as T.SelectProjection<EBoardRoleProjection, P1, P2>
+  public static mergeProjection<P1 extends T.Projection<'EBoardRole', AST>, P2 extends T.Projection<'EBoardRole', AST>>(p1: P1, p2: P2): T.SelectProjection<T.Projection<'EBoardRole', AST>, P1, P2> {
+    return T.mergeProjections(p1, p2) as T.SelectProjection<T.Projection<'EBoardRole', AST>, P1, P2>
   }
-
   public constructor(params: EBoardRoleDAOParams<MetadataType, OperationMetadataType>) {
     super({
       ...params,
@@ -279,13 +473,12 @@ export class EBoardRoleDAO<MetadataType, OperationMetadataType> extends T.Abstra
 }
 
 export class InMemoryEBoardRoleDAO<MetadataType, OperationMetadataType> extends T.AbstractInMemoryDAO<EBoardRoleDAOGenerics<MetadataType, OperationMetadataType>> {
-  public static projection<P extends EBoardRoleProjection>(p: P) {
+  public static projection<P extends T.Projection<'EBoardRole', AST>>(p: P) {
     return p
   }
-  public static mergeProjection<P1 extends EBoardRoleProjection, P2 extends EBoardRoleProjection>(p1: P1, p2: P2): T.SelectProjection<EBoardRoleProjection, P1, P2> {
-    return T.mergeProjections(p1, p2) as T.SelectProjection<EBoardRoleProjection, P1, P2>
+  public static mergeProjection<P1 extends T.Projection<'EBoardRole', AST>, P2 extends T.Projection<'EBoardRole', AST>>(p1: P1, p2: P2): T.SelectProjection<T.Projection<'EBoardRole', AST>, P1, P2> {
+    return T.mergeProjections(p1, p2) as T.SelectProjection<T.Projection<'EBoardRole', AST>, P1, P2>
   }
-
   public constructor(params: InMemoryEBoardRoleDAOParams<MetadataType, OperationMetadataType>) {
     super({
       ...params,
@@ -293,11 +486,7 @@ export class InMemoryEBoardRoleDAO<MetadataType, OperationMetadataType> extends 
     })
   }
 }
-
-export type ProjectExcludedFields = never
-export type ProjectRelationFields = 'members'
-
-export function projectSchema(): T.Schema<types.Scalars> {
+export function projectSchema(): T.Schema<ScalarsSpecification> {
   return {
     bannerLink: {
       type: 'scalar',
@@ -375,115 +564,13 @@ export function projectSchema(): T.Schema<types.Scalars> {
   }
 }
 
-type ProjectFilterFields = {
-  bannerLink?: types.Scalars['String'] | null | T.EqualityOperators<types.Scalars['String']> | T.ElementOperators | T.StringOperators
-  cardImageLink?: types.Scalars['String'] | null | T.EqualityOperators<types.Scalars['String']> | T.ElementOperators | T.StringOperators
-  completedAt?: types.Scalars['Date'] | null | T.EqualityOperators<types.Scalars['Date']> | T.ElementOperators
-  createdAt?: types.Scalars['Date'] | null | T.EqualityOperators<types.Scalars['Date']> | T.ElementOperators
-  description?: types.Scalars['String'] | null | T.EqualityOperators<types.Scalars['String']> | T.ElementOperators | T.StringOperators
-  downloadLinks?: types.Scalars['String'][] | null | T.EqualityOperators<types.Scalars['String'][]> | T.ElementOperators | T.StringOperators
-  galleryImageLinks?: types.Scalars['String'][] | null | T.EqualityOperators<types.Scalars['String'][]> | T.ElementOperators | T.StringOperators
-  id?: types.Scalars['ID'] | null | T.EqualityOperators<types.Scalars['ID']> | T.ElementOperators
-  name?: types.Scalars['String'] | null | T.EqualityOperators<types.Scalars['String']> | T.ElementOperators | T.StringOperators
-  pitch?: types.Scalars['String'] | null | T.EqualityOperators<types.Scalars['String']> | T.ElementOperators | T.StringOperators
-  soundcloudEmbedSrc?: types.Scalars['String'] | null | T.EqualityOperators<types.Scalars['String']> | T.ElementOperators | T.StringOperators
-  updatedAt?: types.Scalars['Date'] | null | T.EqualityOperators<types.Scalars['Date']> | T.ElementOperators
-}
-export type ProjectFilter = ProjectFilterFields & T.LogicalOperators<ProjectFilterFields | ProjectRawFilter>
-export type ProjectRawFilter = () => M.Filter<M.Document>
-
-export type ProjectRelations = {
-  members?: {
-    filter?: ProjectMemberFilter
-    sorts?: ProjectMemberSort[] | ProjectMemberRawSort
-    skip?: number
-    limit?: number
-    relations?: ProjectMemberRelations
-  }
-}
-
-export type ProjectProjection = {
-  bannerLink?: boolean
-  cardImageLink?: boolean
-  completedAt?: boolean
-  createdAt?: boolean
-  description?: boolean
-  downloadLinks?: boolean
-  galleryImageLinks?: boolean
-  id?: boolean
-  members?: ProjectMemberProjection | boolean
-  name?: boolean
-  pitch?: boolean
-  soundcloudEmbedSrc?: boolean
-  updatedAt?: boolean
-}
-export type ProjectParam<P extends ProjectProjection> = T.ParamProjection<types.Project, ProjectProjection, P>
-
-export type ProjectSortKeys =
-  | 'bannerLink'
-  | 'cardImageLink'
-  | 'completedAt'
-  | 'createdAt'
-  | 'description'
-  | 'downloadLinks'
-  | 'galleryImageLinks'
-  | 'id'
-  | 'name'
-  | 'pitch'
-  | 'soundcloudEmbedSrc'
-  | 'updatedAt'
-export type ProjectSort = Partial<Record<ProjectSortKeys, T.SortDirection>>
-export type ProjectRawSort = () => M.Sort
-
-export type ProjectUpdate = {
-  bannerLink?: types.Scalars['String'] | null
-  cardImageLink?: types.Scalars['String'] | null
-  completedAt?: types.Scalars['Date'] | null
-  createdAt?: types.Scalars['Date'] | null
-  description?: types.Scalars['String'] | null
-  downloadLinks?: types.Scalars['String'][] | null
-  galleryImageLinks?: types.Scalars['String'][] | null
-  id?: types.Scalars['ID'] | null
-  name?: types.Scalars['String'] | null
-  pitch?: types.Scalars['String'] | null
-  soundcloudEmbedSrc?: types.Scalars['String'] | null
-  updatedAt?: types.Scalars['Date'] | null
-}
-export type ProjectRawUpdate = () => M.UpdateFilter<M.Document>
-
-export type ProjectInsert = {
-  bannerLink?: null | types.Scalars['String']
-  cardImageLink?: null | types.Scalars['String']
-  completedAt?: null | types.Scalars['Date']
-  createdAt?: null | types.Scalars['Date']
-  description: types.Scalars['String']
-  downloadLinks: types.Scalars['String'][]
-  galleryImageLinks: types.Scalars['String'][]
-  name: types.Scalars['String']
-  pitch: types.Scalars['String']
-  soundcloudEmbedSrc?: null | types.Scalars['String']
-  updatedAt?: null | types.Scalars['Date']
-}
-
 type ProjectDAOGenerics<MetadataType, OperationMetadataType> = T.MongoDBDAOGenerics<
-  types.Project,
-  'id',
-  'ID',
-  ProjectFilter,
-  ProjectRawFilter,
-  ProjectRelations,
-  ProjectProjection,
-  ProjectSort,
-  ProjectRawSort,
-  ProjectInsert,
-  ProjectUpdate,
-  ProjectRawUpdate,
-  ProjectExcludedFields,
-  ProjectRelationFields,
+  'Project',
+  AST,
+  ScalarsSpecification,
+  ProjectCachedTypes,
   MetadataType,
   OperationMetadataType,
-  types.Scalars,
-  'project',
   EntityManager<MetadataType, OperationMetadataType>
 >
 export type ProjectDAOParams<MetadataType, OperationMetadataType> = Omit<
@@ -495,14 +582,35 @@ export type InMemoryProjectDAOParams<MetadataType, OperationMetadataType> = Omit
   'idGenerator' | 'idField' | 'schema' | 'idScalar' | 'idGeneration'
 >
 
+export type ProjectIdFields = T.IdFields<'Project', AST>
+export interface ProjectModel extends types.Project {}
+export interface ProjectInsert extends T.Insert<'Project', AST, ScalarsSpecification> {}
+export interface ProjectPlainModel extends T.GenerateModel<'Project', AST, ScalarsSpecification, 'relation'> {}
+export interface ProjectProjection extends T.Projection<'Project', AST> {}
+export interface ProjectUpdate extends T.Update<'Project', AST, ScalarsSpecification> {}
+export interface ProjectFilter extends T.Filter<'Project', AST, ScalarsSpecification> {}
+export interface ProjectSortElement extends T.SortElement<'Project', AST> {}
+export interface ProjectRelationsFindParams extends T.RelationsFindParams<'Project', AST, ScalarsSpecification> {}
+export type ProjectParams<P extends ProjectProjection> = T.Params<'Project', AST, ScalarsSpecification, P>
+export type ProjectCachedTypes = T.CachedTypes<
+  ProjectIdFields,
+  ProjectModel,
+  ProjectInsert,
+  ProjectPlainModel,
+  ProjectProjection,
+  ProjectUpdate,
+  ProjectFilter,
+  ProjectSortElement,
+  ProjectRelationsFindParams
+>
+
 export class ProjectDAO<MetadataType, OperationMetadataType> extends T.AbstractMongoDBDAO<ProjectDAOGenerics<MetadataType, OperationMetadataType>> {
-  public static projection<P extends ProjectProjection>(p: P) {
+  public static projection<P extends T.Projection<'Project', AST>>(p: P) {
     return p
   }
-  public static mergeProjection<P1 extends ProjectProjection, P2 extends ProjectProjection>(p1: P1, p2: P2): T.SelectProjection<ProjectProjection, P1, P2> {
-    return T.mergeProjections(p1, p2) as T.SelectProjection<ProjectProjection, P1, P2>
+  public static mergeProjection<P1 extends T.Projection<'Project', AST>, P2 extends T.Projection<'Project', AST>>(p1: P1, p2: P2): T.SelectProjection<T.Projection<'Project', AST>, P1, P2> {
+    return T.mergeProjections(p1, p2) as T.SelectProjection<T.Projection<'Project', AST>, P1, P2>
   }
-
   public constructor(params: ProjectDAOParams<MetadataType, OperationMetadataType>) {
     super({
       ...params,
@@ -512,13 +620,12 @@ export class ProjectDAO<MetadataType, OperationMetadataType> extends T.AbstractM
 }
 
 export class InMemoryProjectDAO<MetadataType, OperationMetadataType> extends T.AbstractInMemoryDAO<ProjectDAOGenerics<MetadataType, OperationMetadataType>> {
-  public static projection<P extends ProjectProjection>(p: P) {
+  public static projection<P extends T.Projection<'Project', AST>>(p: P) {
     return p
   }
-  public static mergeProjection<P1 extends ProjectProjection, P2 extends ProjectProjection>(p1: P1, p2: P2): T.SelectProjection<ProjectProjection, P1, P2> {
-    return T.mergeProjections(p1, p2) as T.SelectProjection<ProjectProjection, P1, P2>
+  public static mergeProjection<P1 extends T.Projection<'Project', AST>, P2 extends T.Projection<'Project', AST>>(p1: P1, p2: P2): T.SelectProjection<T.Projection<'Project', AST>, P1, P2> {
+    return T.mergeProjections(p1, p2) as T.SelectProjection<T.Projection<'Project', AST>, P1, P2>
   }
-
   public constructor(params: InMemoryProjectDAOParams<MetadataType, OperationMetadataType>) {
     super({
       ...params,
@@ -526,11 +633,7 @@ export class InMemoryProjectDAO<MetadataType, OperationMetadataType> extends T.A
     })
   }
 }
-
-export type ProjectMemberExcludedFields = never
-export type ProjectMemberRelationFields = 'project' | 'roles' | 'user'
-
-export function projectMemberSchema(): T.Schema<types.Scalars> {
+export function projectMemberSchema(): T.Schema<ScalarsSpecification> {
   return {
     contributions: {
       type: 'scalar',
@@ -598,81 +701,13 @@ export function projectMemberSchema(): T.Schema<types.Scalars> {
   }
 }
 
-type ProjectMemberFilterFields = {
-  contributions?: types.Scalars['String'] | null | T.EqualityOperators<types.Scalars['String']> | T.ElementOperators | T.StringOperators
-  createdAt?: types.Scalars['Date'] | null | T.EqualityOperators<types.Scalars['Date']> | T.ElementOperators
-  id?: types.Scalars['ID'] | null | T.EqualityOperators<types.Scalars['ID']> | T.ElementOperators
-  projectId?: types.Scalars['ID'] | null | T.EqualityOperators<types.Scalars['ID']> | T.ElementOperators
-  updatedAt?: types.Scalars['Date'] | null | T.EqualityOperators<types.Scalars['Date']> | T.ElementOperators
-  userId?: types.Scalars['ID'] | null | T.EqualityOperators<types.Scalars['ID']> | T.ElementOperators
-}
-export type ProjectMemberFilter = ProjectMemberFilterFields & T.LogicalOperators<ProjectMemberFilterFields | ProjectMemberRawFilter>
-export type ProjectMemberRawFilter = () => M.Filter<M.Document>
-
-export type ProjectMemberRelations = {
-  roles?: {
-    filter?: ProjectMemberRoleFilter
-    sorts?: ProjectMemberRoleSort[] | ProjectMemberRoleRawSort
-    skip?: number
-    limit?: number
-    relations?: ProjectMemberRoleRelations
-  }
-}
-
-export type ProjectMemberProjection = {
-  contributions?: boolean
-  createdAt?: boolean
-  id?: boolean
-  project?: ProjectProjection | boolean
-  projectId?: boolean
-  roles?: ProjectMemberRoleProjection | boolean
-  updatedAt?: boolean
-  user?: UserProjection | boolean
-  userId?: boolean
-}
-export type ProjectMemberParam<P extends ProjectMemberProjection> = T.ParamProjection<types.ProjectMember, ProjectMemberProjection, P>
-
-export type ProjectMemberSortKeys = 'contributions' | 'createdAt' | 'id' | 'projectId' | 'updatedAt' | 'userId'
-export type ProjectMemberSort = Partial<Record<ProjectMemberSortKeys, T.SortDirection>>
-export type ProjectMemberRawSort = () => M.Sort
-
-export type ProjectMemberUpdate = {
-  contributions?: types.Scalars['String'] | null
-  createdAt?: types.Scalars['Date'] | null
-  id?: types.Scalars['ID'] | null
-  projectId?: types.Scalars['ID'] | null
-  updatedAt?: types.Scalars['Date'] | null
-  userId?: types.Scalars['ID'] | null
-}
-export type ProjectMemberRawUpdate = () => M.UpdateFilter<M.Document>
-
-export type ProjectMemberInsert = {
-  contributions: types.Scalars['String']
-  createdAt?: null | types.Scalars['Date']
-  projectId: types.Scalars['ID']
-  updatedAt?: null | types.Scalars['Date']
-  userId: types.Scalars['ID']
-}
-
 type ProjectMemberDAOGenerics<MetadataType, OperationMetadataType> = T.MongoDBDAOGenerics<
-  types.ProjectMember,
-  'id',
-  'ID',
-  ProjectMemberFilter,
-  ProjectMemberRawFilter,
-  ProjectMemberRelations,
-  ProjectMemberProjection,
-  ProjectMemberSort,
-  ProjectMemberRawSort,
-  ProjectMemberInsert,
-  ProjectMemberUpdate,
-  ProjectMemberRawUpdate,
-  ProjectMemberExcludedFields,
-  ProjectMemberRelationFields,
+  'ProjectMember',
+  AST,
+  ScalarsSpecification,
+  ProjectMemberCachedTypes,
   MetadataType,
   OperationMetadataType,
-  types.Scalars,
-  'projectMember',
   EntityManager<MetadataType, OperationMetadataType>
 >
 export type ProjectMemberDAOParams<MetadataType, OperationMetadataType> = Omit<
@@ -684,14 +719,38 @@ export type InMemoryProjectMemberDAOParams<MetadataType, OperationMetadataType> 
   'idGenerator' | 'idField' | 'schema' | 'idScalar' | 'idGeneration'
 >
 
+export type ProjectMemberIdFields = T.IdFields<'ProjectMember', AST>
+export interface ProjectMemberModel extends types.ProjectMember {}
+export interface ProjectMemberInsert extends T.Insert<'ProjectMember', AST, ScalarsSpecification> {}
+export interface ProjectMemberPlainModel extends T.GenerateModel<'ProjectMember', AST, ScalarsSpecification, 'relation'> {}
+export interface ProjectMemberProjection extends T.Projection<'ProjectMember', AST> {}
+export interface ProjectMemberUpdate extends T.Update<'ProjectMember', AST, ScalarsSpecification> {}
+export interface ProjectMemberFilter extends T.Filter<'ProjectMember', AST, ScalarsSpecification> {}
+export interface ProjectMemberSortElement extends T.SortElement<'ProjectMember', AST> {}
+export interface ProjectMemberRelationsFindParams extends T.RelationsFindParams<'ProjectMember', AST, ScalarsSpecification> {}
+export type ProjectMemberParams<P extends ProjectMemberProjection> = T.Params<'ProjectMember', AST, ScalarsSpecification, P>
+export type ProjectMemberCachedTypes = T.CachedTypes<
+  ProjectMemberIdFields,
+  ProjectMemberModel,
+  ProjectMemberInsert,
+  ProjectMemberPlainModel,
+  ProjectMemberProjection,
+  ProjectMemberUpdate,
+  ProjectMemberFilter,
+  ProjectMemberSortElement,
+  ProjectMemberRelationsFindParams
+>
+
 export class ProjectMemberDAO<MetadataType, OperationMetadataType> extends T.AbstractMongoDBDAO<ProjectMemberDAOGenerics<MetadataType, OperationMetadataType>> {
-  public static projection<P extends ProjectMemberProjection>(p: P) {
+  public static projection<P extends T.Projection<'ProjectMember', AST>>(p: P) {
     return p
   }
-  public static mergeProjection<P1 extends ProjectMemberProjection, P2 extends ProjectMemberProjection>(p1: P1, p2: P2): T.SelectProjection<ProjectMemberProjection, P1, P2> {
-    return T.mergeProjections(p1, p2) as T.SelectProjection<ProjectMemberProjection, P1, P2>
+  public static mergeProjection<P1 extends T.Projection<'ProjectMember', AST>, P2 extends T.Projection<'ProjectMember', AST>>(
+    p1: P1,
+    p2: P2,
+  ): T.SelectProjection<T.Projection<'ProjectMember', AST>, P1, P2> {
+    return T.mergeProjections(p1, p2) as T.SelectProjection<T.Projection<'ProjectMember', AST>, P1, P2>
   }
-
   public constructor(params: ProjectMemberDAOParams<MetadataType, OperationMetadataType>) {
     super({
       ...params,
@@ -701,13 +760,15 @@ export class ProjectMemberDAO<MetadataType, OperationMetadataType> extends T.Abs
 }
 
 export class InMemoryProjectMemberDAO<MetadataType, OperationMetadataType> extends T.AbstractInMemoryDAO<ProjectMemberDAOGenerics<MetadataType, OperationMetadataType>> {
-  public static projection<P extends ProjectMemberProjection>(p: P) {
+  public static projection<P extends T.Projection<'ProjectMember', AST>>(p: P) {
     return p
   }
-  public static mergeProjection<P1 extends ProjectMemberProjection, P2 extends ProjectMemberProjection>(p1: P1, p2: P2): T.SelectProjection<ProjectMemberProjection, P1, P2> {
-    return T.mergeProjections(p1, p2) as T.SelectProjection<ProjectMemberProjection, P1, P2>
+  public static mergeProjection<P1 extends T.Projection<'ProjectMember', AST>, P2 extends T.Projection<'ProjectMember', AST>>(
+    p1: P1,
+    p2: P2,
+  ): T.SelectProjection<T.Projection<'ProjectMember', AST>, P1, P2> {
+    return T.mergeProjections(p1, p2) as T.SelectProjection<T.Projection<'ProjectMember', AST>, P1, P2>
   }
-
   public constructor(params: InMemoryProjectMemberDAOParams<MetadataType, OperationMetadataType>) {
     super({
       ...params,
@@ -715,11 +776,7 @@ export class InMemoryProjectMemberDAO<MetadataType, OperationMetadataType> exten
     })
   }
 }
-
-export type ProjectMemberRoleExcludedFields = never
-export type ProjectMemberRoleRelationFields = 'projectMember'
-
-export function projectMemberRoleSchema(): T.Schema<types.Scalars> {
+export function projectMemberRoleSchema(): T.Schema<ScalarsSpecification> {
   return {
     id: {
       type: 'scalar',
@@ -753,59 +810,13 @@ export function projectMemberRoleSchema(): T.Schema<types.Scalars> {
   }
 }
 
-type ProjectMemberRoleFilterFields = {
-  id?: types.Scalars['ID'] | null | T.EqualityOperators<types.Scalars['ID']> | T.ElementOperators
-  projectMemberId?: types.Scalars['ID'] | null | T.EqualityOperators<types.Scalars['ID']> | T.ElementOperators
-  roleCode?: types.RoleCode | null | T.EqualityOperators<types.RoleCode> | T.ElementOperators | T.StringOperators
-}
-export type ProjectMemberRoleFilter = ProjectMemberRoleFilterFields & T.LogicalOperators<ProjectMemberRoleFilterFields | ProjectMemberRoleRawFilter>
-export type ProjectMemberRoleRawFilter = () => M.Filter<M.Document>
-
-export type ProjectMemberRoleRelations = Record<never, string>
-
-export type ProjectMemberRoleProjection = {
-  id?: boolean
-  projectMember?: ProjectMemberProjection | boolean
-  projectMemberId?: boolean
-  roleCode?: boolean
-}
-export type ProjectMemberRoleParam<P extends ProjectMemberRoleProjection> = T.ParamProjection<types.ProjectMemberRole, ProjectMemberRoleProjection, P>
-
-export type ProjectMemberRoleSortKeys = 'id' | 'projectMemberId' | 'roleCode'
-export type ProjectMemberRoleSort = Partial<Record<ProjectMemberRoleSortKeys, T.SortDirection>>
-export type ProjectMemberRoleRawSort = () => M.Sort
-
-export type ProjectMemberRoleUpdate = {
-  id?: types.Scalars['ID'] | null
-  projectMemberId?: types.Scalars['ID'] | null
-  roleCode?: types.RoleCode | null
-}
-export type ProjectMemberRoleRawUpdate = () => M.UpdateFilter<M.Document>
-
-export type ProjectMemberRoleInsert = {
-  projectMemberId: types.Scalars['ID']
-  roleCode: types.RoleCode
-}
-
 type ProjectMemberRoleDAOGenerics<MetadataType, OperationMetadataType> = T.MongoDBDAOGenerics<
-  types.ProjectMemberRole,
-  'id',
-  'ID',
-  ProjectMemberRoleFilter,
-  ProjectMemberRoleRawFilter,
-  ProjectMemberRoleRelations,
-  ProjectMemberRoleProjection,
-  ProjectMemberRoleSort,
-  ProjectMemberRoleRawSort,
-  ProjectMemberRoleInsert,
-  ProjectMemberRoleUpdate,
-  ProjectMemberRoleRawUpdate,
-  ProjectMemberRoleExcludedFields,
-  ProjectMemberRoleRelationFields,
+  'ProjectMemberRole',
+  AST,
+  ScalarsSpecification,
+  ProjectMemberRoleCachedTypes,
   MetadataType,
   OperationMetadataType,
-  types.Scalars,
-  'projectMemberRole',
   EntityManager<MetadataType, OperationMetadataType>
 >
 export type ProjectMemberRoleDAOParams<MetadataType, OperationMetadataType> = Omit<
@@ -817,14 +828,38 @@ export type InMemoryProjectMemberRoleDAOParams<MetadataType, OperationMetadataTy
   'idGenerator' | 'idField' | 'schema' | 'idScalar' | 'idGeneration'
 >
 
+export type ProjectMemberRoleIdFields = T.IdFields<'ProjectMemberRole', AST>
+export interface ProjectMemberRoleModel extends types.ProjectMemberRole {}
+export interface ProjectMemberRoleInsert extends T.Insert<'ProjectMemberRole', AST, ScalarsSpecification> {}
+export interface ProjectMemberRolePlainModel extends T.GenerateModel<'ProjectMemberRole', AST, ScalarsSpecification, 'relation'> {}
+export interface ProjectMemberRoleProjection extends T.Projection<'ProjectMemberRole', AST> {}
+export interface ProjectMemberRoleUpdate extends T.Update<'ProjectMemberRole', AST, ScalarsSpecification> {}
+export interface ProjectMemberRoleFilter extends T.Filter<'ProjectMemberRole', AST, ScalarsSpecification> {}
+export interface ProjectMemberRoleSortElement extends T.SortElement<'ProjectMemberRole', AST> {}
+export interface ProjectMemberRoleRelationsFindParams extends T.RelationsFindParams<'ProjectMemberRole', AST, ScalarsSpecification> {}
+export type ProjectMemberRoleParams<P extends ProjectMemberRoleProjection> = T.Params<'ProjectMemberRole', AST, ScalarsSpecification, P>
+export type ProjectMemberRoleCachedTypes = T.CachedTypes<
+  ProjectMemberRoleIdFields,
+  ProjectMemberRoleModel,
+  ProjectMemberRoleInsert,
+  ProjectMemberRolePlainModel,
+  ProjectMemberRoleProjection,
+  ProjectMemberRoleUpdate,
+  ProjectMemberRoleFilter,
+  ProjectMemberRoleSortElement,
+  ProjectMemberRoleRelationsFindParams
+>
+
 export class ProjectMemberRoleDAO<MetadataType, OperationMetadataType> extends T.AbstractMongoDBDAO<ProjectMemberRoleDAOGenerics<MetadataType, OperationMetadataType>> {
-  public static projection<P extends ProjectMemberRoleProjection>(p: P) {
+  public static projection<P extends T.Projection<'ProjectMemberRole', AST>>(p: P) {
     return p
   }
-  public static mergeProjection<P1 extends ProjectMemberRoleProjection, P2 extends ProjectMemberRoleProjection>(p1: P1, p2: P2): T.SelectProjection<ProjectMemberRoleProjection, P1, P2> {
-    return T.mergeProjections(p1, p2) as T.SelectProjection<ProjectMemberRoleProjection, P1, P2>
+  public static mergeProjection<P1 extends T.Projection<'ProjectMemberRole', AST>, P2 extends T.Projection<'ProjectMemberRole', AST>>(
+    p1: P1,
+    p2: P2,
+  ): T.SelectProjection<T.Projection<'ProjectMemberRole', AST>, P1, P2> {
+    return T.mergeProjections(p1, p2) as T.SelectProjection<T.Projection<'ProjectMemberRole', AST>, P1, P2>
   }
-
   public constructor(params: ProjectMemberRoleDAOParams<MetadataType, OperationMetadataType>) {
     super({
       ...params,
@@ -834,13 +869,15 @@ export class ProjectMemberRoleDAO<MetadataType, OperationMetadataType> extends T
 }
 
 export class InMemoryProjectMemberRoleDAO<MetadataType, OperationMetadataType> extends T.AbstractInMemoryDAO<ProjectMemberRoleDAOGenerics<MetadataType, OperationMetadataType>> {
-  public static projection<P extends ProjectMemberRoleProjection>(p: P) {
+  public static projection<P extends T.Projection<'ProjectMemberRole', AST>>(p: P) {
     return p
   }
-  public static mergeProjection<P1 extends ProjectMemberRoleProjection, P2 extends ProjectMemberRoleProjection>(p1: P1, p2: P2): T.SelectProjection<ProjectMemberRoleProjection, P1, P2> {
-    return T.mergeProjections(p1, p2) as T.SelectProjection<ProjectMemberRoleProjection, P1, P2>
+  public static mergeProjection<P1 extends T.Projection<'ProjectMemberRole', AST>, P2 extends T.Projection<'ProjectMemberRole', AST>>(
+    p1: P1,
+    p2: P2,
+  ): T.SelectProjection<T.Projection<'ProjectMemberRole', AST>, P1, P2> {
+    return T.mergeProjections(p1, p2) as T.SelectProjection<T.Projection<'ProjectMemberRole', AST>, P1, P2>
   }
-
   public constructor(params: InMemoryProjectMemberRoleDAOParams<MetadataType, OperationMetadataType>) {
     super({
       ...params,
@@ -848,11 +885,7 @@ export class InMemoryProjectMemberRoleDAO<MetadataType, OperationMetadataType> e
     })
   }
 }
-
-export type SomeTypeExcludedFields = never
-export type SomeTypeRelationFields = never
-
-export function someTypeSchema(): T.Schema<types.Scalars> {
+export function someTypeSchema(): T.Schema<ScalarsSpecification> {
   return {
     id: {
       type: 'scalar',
@@ -873,54 +906,13 @@ export function someTypeSchema(): T.Schema<types.Scalars> {
   }
 }
 
-type SomeTypeFilterFields = {
-  id?: types.Scalars['ID'] | null | T.EqualityOperators<types.Scalars['ID']> | T.ElementOperators
-  someField?: types.Scalars['Date'] | null | T.EqualityOperators<types.Scalars['Date']> | T.ElementOperators
-}
-export type SomeTypeFilter = SomeTypeFilterFields & T.LogicalOperators<SomeTypeFilterFields | SomeTypeRawFilter>
-export type SomeTypeRawFilter = () => M.Filter<M.Document>
-
-export type SomeTypeRelations = Record<never, string>
-
-export type SomeTypeProjection = {
-  id?: boolean
-  someField?: boolean
-}
-export type SomeTypeParam<P extends SomeTypeProjection> = T.ParamProjection<types.SomeType, SomeTypeProjection, P>
-
-export type SomeTypeSortKeys = 'id' | 'someField'
-export type SomeTypeSort = Partial<Record<SomeTypeSortKeys, T.SortDirection>>
-export type SomeTypeRawSort = () => M.Sort
-
-export type SomeTypeUpdate = {
-  id?: types.Scalars['ID'] | null
-  someField?: types.Scalars['Date'] | null
-}
-export type SomeTypeRawUpdate = () => M.UpdateFilter<M.Document>
-
-export type SomeTypeInsert = {
-  someField?: null | types.Scalars['Date']
-}
-
 type SomeTypeDAOGenerics<MetadataType, OperationMetadataType> = T.MongoDBDAOGenerics<
-  types.SomeType,
-  'id',
-  'ID',
-  SomeTypeFilter,
-  SomeTypeRawFilter,
-  SomeTypeRelations,
-  SomeTypeProjection,
-  SomeTypeSort,
-  SomeTypeRawSort,
-  SomeTypeInsert,
-  SomeTypeUpdate,
-  SomeTypeRawUpdate,
-  SomeTypeExcludedFields,
-  SomeTypeRelationFields,
+  'SomeType',
+  AST,
+  ScalarsSpecification,
+  SomeTypeCachedTypes,
   MetadataType,
   OperationMetadataType,
-  types.Scalars,
-  'someType',
   EntityManager<MetadataType, OperationMetadataType>
 >
 export type SomeTypeDAOParams<MetadataType, OperationMetadataType> = Omit<
@@ -932,14 +924,35 @@ export type InMemorySomeTypeDAOParams<MetadataType, OperationMetadataType> = Omi
   'idGenerator' | 'idField' | 'schema' | 'idScalar' | 'idGeneration'
 >
 
+export type SomeTypeIdFields = T.IdFields<'SomeType', AST>
+export interface SomeTypeModel extends types.SomeType {}
+export interface SomeTypeInsert extends T.Insert<'SomeType', AST, ScalarsSpecification> {}
+export interface SomeTypePlainModel extends T.GenerateModel<'SomeType', AST, ScalarsSpecification, 'relation'> {}
+export interface SomeTypeProjection extends T.Projection<'SomeType', AST> {}
+export interface SomeTypeUpdate extends T.Update<'SomeType', AST, ScalarsSpecification> {}
+export interface SomeTypeFilter extends T.Filter<'SomeType', AST, ScalarsSpecification> {}
+export interface SomeTypeSortElement extends T.SortElement<'SomeType', AST> {}
+export interface SomeTypeRelationsFindParams extends T.RelationsFindParams<'SomeType', AST, ScalarsSpecification> {}
+export type SomeTypeParams<P extends SomeTypeProjection> = T.Params<'SomeType', AST, ScalarsSpecification, P>
+export type SomeTypeCachedTypes = T.CachedTypes<
+  SomeTypeIdFields,
+  SomeTypeModel,
+  SomeTypeInsert,
+  SomeTypePlainModel,
+  SomeTypeProjection,
+  SomeTypeUpdate,
+  SomeTypeFilter,
+  SomeTypeSortElement,
+  SomeTypeRelationsFindParams
+>
+
 export class SomeTypeDAO<MetadataType, OperationMetadataType> extends T.AbstractMongoDBDAO<SomeTypeDAOGenerics<MetadataType, OperationMetadataType>> {
-  public static projection<P extends SomeTypeProjection>(p: P) {
+  public static projection<P extends T.Projection<'SomeType', AST>>(p: P) {
     return p
   }
-  public static mergeProjection<P1 extends SomeTypeProjection, P2 extends SomeTypeProjection>(p1: P1, p2: P2): T.SelectProjection<SomeTypeProjection, P1, P2> {
-    return T.mergeProjections(p1, p2) as T.SelectProjection<SomeTypeProjection, P1, P2>
+  public static mergeProjection<P1 extends T.Projection<'SomeType', AST>, P2 extends T.Projection<'SomeType', AST>>(p1: P1, p2: P2): T.SelectProjection<T.Projection<'SomeType', AST>, P1, P2> {
+    return T.mergeProjections(p1, p2) as T.SelectProjection<T.Projection<'SomeType', AST>, P1, P2>
   }
-
   public constructor(params: SomeTypeDAOParams<MetadataType, OperationMetadataType>) {
     super({
       ...params,
@@ -949,13 +962,12 @@ export class SomeTypeDAO<MetadataType, OperationMetadataType> extends T.Abstract
 }
 
 export class InMemorySomeTypeDAO<MetadataType, OperationMetadataType> extends T.AbstractInMemoryDAO<SomeTypeDAOGenerics<MetadataType, OperationMetadataType>> {
-  public static projection<P extends SomeTypeProjection>(p: P) {
+  public static projection<P extends T.Projection<'SomeType', AST>>(p: P) {
     return p
   }
-  public static mergeProjection<P1 extends SomeTypeProjection, P2 extends SomeTypeProjection>(p1: P1, p2: P2): T.SelectProjection<SomeTypeProjection, P1, P2> {
-    return T.mergeProjections(p1, p2) as T.SelectProjection<SomeTypeProjection, P1, P2>
+  public static mergeProjection<P1 extends T.Projection<'SomeType', AST>, P2 extends T.Projection<'SomeType', AST>>(p1: P1, p2: P2): T.SelectProjection<T.Projection<'SomeType', AST>, P1, P2> {
+    return T.mergeProjections(p1, p2) as T.SelectProjection<T.Projection<'SomeType', AST>, P1, P2>
   }
-
   public constructor(params: InMemorySomeTypeDAOParams<MetadataType, OperationMetadataType>) {
     super({
       ...params,
@@ -963,11 +975,7 @@ export class InMemorySomeTypeDAO<MetadataType, OperationMetadataType> extends T.
     })
   }
 }
-
-export type UserExcludedFields = never
-export type UserRelationFields = 'eboard' | 'loginIdentities' | 'projectMembers' | 'roles' | 'socials'
-
-export function userSchema(): T.Schema<types.Scalars> {
+export function userSchema(): T.Schema<ScalarsSpecification> {
   return {
     avatarLink: {
       type: 'scalar',
@@ -1067,116 +1075,13 @@ export function userSchema(): T.Schema<types.Scalars> {
   }
 }
 
-type UserFilterFields = {
-  avatarLink?: types.Scalars['String'] | null | T.EqualityOperators<types.Scalars['String']> | T.ElementOperators | T.StringOperators
-  bannerLink?: types.Scalars['String'] | null | T.EqualityOperators<types.Scalars['String']> | T.ElementOperators | T.StringOperators
-  bio?: types.Scalars['String'] | null | T.EqualityOperators<types.Scalars['String']> | T.ElementOperators | T.StringOperators
-  createdAt?: types.Scalars['Date'] | null | T.EqualityOperators<types.Scalars['Date']> | T.ElementOperators
-  displayName?: types.Scalars['String'] | null | T.EqualityOperators<types.Scalars['String']> | T.ElementOperators | T.StringOperators
-  email?: types.Scalars['String'] | null | T.EqualityOperators<types.Scalars['String']> | T.ElementOperators | T.StringOperators
-  id?: types.Scalars['ID'] | null | T.EqualityOperators<types.Scalars['ID']> | T.ElementOperators
-  updatedAt?: types.Scalars['Date'] | null | T.EqualityOperators<types.Scalars['Date']> | T.ElementOperators
-  username?: types.Scalars['String'] | null | T.EqualityOperators<types.Scalars['String']> | T.ElementOperators | T.StringOperators
-}
-export type UserFilter = UserFilterFields & T.LogicalOperators<UserFilterFields | UserRawFilter>
-export type UserRawFilter = () => M.Filter<M.Document>
-
-export type UserRelations = {
-  loginIdentities?: {
-    filter?: UserLoginIdentityFilter
-    sorts?: UserLoginIdentitySort[] | UserLoginIdentityRawSort
-    skip?: number
-    limit?: number
-    relations?: UserLoginIdentityRelations
-  }
-  projectMembers?: {
-    filter?: ProjectMemberFilter
-    sorts?: ProjectMemberSort[] | ProjectMemberRawSort
-    skip?: number
-    limit?: number
-    relations?: ProjectMemberRelations
-  }
-  roles?: {
-    filter?: UserRoleFilter
-    sorts?: UserRoleSort[] | UserRoleRawSort
-    skip?: number
-    limit?: number
-    relations?: UserRoleRelations
-  }
-  socials?: {
-    filter?: UserSocialFilter
-    sorts?: UserSocialSort[] | UserSocialRawSort
-    skip?: number
-    limit?: number
-    relations?: UserSocialRelations
-  }
-}
-
-export type UserProjection = {
-  avatarLink?: boolean
-  bannerLink?: boolean
-  bio?: boolean
-  createdAt?: boolean
-  displayName?: boolean
-  eboard?: EBoardProjection | boolean
-  email?: boolean
-  id?: boolean
-  loginIdentities?: UserLoginIdentityProjection | boolean
-  projectMembers?: ProjectMemberProjection | boolean
-  roles?: UserRoleProjection | boolean
-  socials?: UserSocialProjection | boolean
-  updatedAt?: boolean
-  username?: boolean
-}
-export type UserParam<P extends UserProjection> = T.ParamProjection<types.User, UserProjection, P>
-
-export type UserSortKeys = 'avatarLink' | 'bannerLink' | 'bio' | 'createdAt' | 'displayName' | 'email' | 'id' | 'updatedAt' | 'username'
-export type UserSort = Partial<Record<UserSortKeys, T.SortDirection>>
-export type UserRawSort = () => M.Sort
-
-export type UserUpdate = {
-  avatarLink?: types.Scalars['String'] | null
-  bannerLink?: types.Scalars['String'] | null
-  bio?: types.Scalars['String'] | null
-  createdAt?: types.Scalars['Date'] | null
-  displayName?: types.Scalars['String'] | null
-  email?: types.Scalars['String'] | null
-  id?: types.Scalars['ID'] | null
-  updatedAt?: types.Scalars['Date'] | null
-  username?: types.Scalars['String'] | null
-}
-export type UserRawUpdate = () => M.UpdateFilter<M.Document>
-
-export type UserInsert = {
-  avatarLink?: null | types.Scalars['String']
-  bannerLink?: null | types.Scalars['String']
-  bio?: null | types.Scalars['String']
-  createdAt?: null | types.Scalars['Date']
-  displayName?: null | types.Scalars['String']
-  email: types.Scalars['String']
-  updatedAt?: null | types.Scalars['Date']
-  username?: null | types.Scalars['String']
-}
-
 type UserDAOGenerics<MetadataType, OperationMetadataType> = T.MongoDBDAOGenerics<
-  types.User,
-  'id',
-  'ID',
-  UserFilter,
-  UserRawFilter,
-  UserRelations,
-  UserProjection,
-  UserSort,
-  UserRawSort,
-  UserInsert,
-  UserUpdate,
-  UserRawUpdate,
-  UserExcludedFields,
-  UserRelationFields,
+  'User',
+  AST,
+  ScalarsSpecification,
+  UserCachedTypes,
   MetadataType,
   OperationMetadataType,
-  types.Scalars,
-  'user',
   EntityManager<MetadataType, OperationMetadataType>
 >
 export type UserDAOParams<MetadataType, OperationMetadataType> = Omit<
@@ -1188,14 +1093,25 @@ export type InMemoryUserDAOParams<MetadataType, OperationMetadataType> = Omit<
   'idGenerator' | 'idField' | 'schema' | 'idScalar' | 'idGeneration'
 >
 
+export type UserIdFields = T.IdFields<'User', AST>
+export interface UserModel extends types.User {}
+export interface UserInsert extends T.Insert<'User', AST, ScalarsSpecification> {}
+export interface UserPlainModel extends T.GenerateModel<'User', AST, ScalarsSpecification, 'relation'> {}
+export interface UserProjection extends T.Projection<'User', AST> {}
+export interface UserUpdate extends T.Update<'User', AST, ScalarsSpecification> {}
+export interface UserFilter extends T.Filter<'User', AST, ScalarsSpecification> {}
+export interface UserSortElement extends T.SortElement<'User', AST> {}
+export interface UserRelationsFindParams extends T.RelationsFindParams<'User', AST, ScalarsSpecification> {}
+export type UserParams<P extends UserProjection> = T.Params<'User', AST, ScalarsSpecification, P>
+export type UserCachedTypes = T.CachedTypes<UserIdFields, UserModel, UserInsert, UserPlainModel, UserProjection, UserUpdate, UserFilter, UserSortElement, UserRelationsFindParams>
+
 export class UserDAO<MetadataType, OperationMetadataType> extends T.AbstractMongoDBDAO<UserDAOGenerics<MetadataType, OperationMetadataType>> {
-  public static projection<P extends UserProjection>(p: P) {
+  public static projection<P extends T.Projection<'User', AST>>(p: P) {
     return p
   }
-  public static mergeProjection<P1 extends UserProjection, P2 extends UserProjection>(p1: P1, p2: P2): T.SelectProjection<UserProjection, P1, P2> {
-    return T.mergeProjections(p1, p2) as T.SelectProjection<UserProjection, P1, P2>
+  public static mergeProjection<P1 extends T.Projection<'User', AST>, P2 extends T.Projection<'User', AST>>(p1: P1, p2: P2): T.SelectProjection<T.Projection<'User', AST>, P1, P2> {
+    return T.mergeProjections(p1, p2) as T.SelectProjection<T.Projection<'User', AST>, P1, P2>
   }
-
   public constructor(params: UserDAOParams<MetadataType, OperationMetadataType>) {
     super({
       ...params,
@@ -1205,13 +1121,12 @@ export class UserDAO<MetadataType, OperationMetadataType> extends T.AbstractMong
 }
 
 export class InMemoryUserDAO<MetadataType, OperationMetadataType> extends T.AbstractInMemoryDAO<UserDAOGenerics<MetadataType, OperationMetadataType>> {
-  public static projection<P extends UserProjection>(p: P) {
+  public static projection<P extends T.Projection<'User', AST>>(p: P) {
     return p
   }
-  public static mergeProjection<P1 extends UserProjection, P2 extends UserProjection>(p1: P1, p2: P2): T.SelectProjection<UserProjection, P1, P2> {
-    return T.mergeProjections(p1, p2) as T.SelectProjection<UserProjection, P1, P2>
+  public static mergeProjection<P1 extends T.Projection<'User', AST>, P2 extends T.Projection<'User', AST>>(p1: P1, p2: P2): T.SelectProjection<T.Projection<'User', AST>, P1, P2> {
+    return T.mergeProjections(p1, p2) as T.SelectProjection<T.Projection<'User', AST>, P1, P2>
   }
-
   public constructor(params: InMemoryUserDAOParams<MetadataType, OperationMetadataType>) {
     super({
       ...params,
@@ -1219,11 +1134,7 @@ export class InMemoryUserDAO<MetadataType, OperationMetadataType> extends T.Abst
     })
   }
 }
-
-export type UserLoginIdentityExcludedFields = never
-export type UserLoginIdentityRelationFields = 'user'
-
-export function userLoginIdentitySchema(): T.Schema<types.Scalars> {
+export function userLoginIdentitySchema(): T.Schema<ScalarsSpecification> {
   return {
     data: {
       type: 'scalar',
@@ -1265,67 +1176,13 @@ export function userLoginIdentitySchema(): T.Schema<types.Scalars> {
   }
 }
 
-type UserLoginIdentityFilterFields = {
-  data?: types.Scalars['Json'] | null | T.EqualityOperators<types.Scalars['Json']> | T.ElementOperators
-  id?: types.Scalars['ID'] | null | T.EqualityOperators<types.Scalars['ID']> | T.ElementOperators
-  identityId?: types.Scalars['String'] | null | T.EqualityOperators<types.Scalars['String']> | T.ElementOperators | T.StringOperators
-  name?: types.Scalars['String'] | null | T.EqualityOperators<types.Scalars['String']> | T.ElementOperators | T.StringOperators
-  userId?: types.Scalars['ID'] | null | T.EqualityOperators<types.Scalars['ID']> | T.ElementOperators
-}
-export type UserLoginIdentityFilter = UserLoginIdentityFilterFields & T.LogicalOperators<UserLoginIdentityFilterFields | UserLoginIdentityRawFilter>
-export type UserLoginIdentityRawFilter = () => M.Filter<M.Document>
-
-export type UserLoginIdentityRelations = Record<never, string>
-
-export type UserLoginIdentityProjection = {
-  data?: boolean
-  id?: boolean
-  identityId?: boolean
-  name?: boolean
-  user?: UserProjection | boolean
-  userId?: boolean
-}
-export type UserLoginIdentityParam<P extends UserLoginIdentityProjection> = T.ParamProjection<types.UserLoginIdentity, UserLoginIdentityProjection, P>
-
-export type UserLoginIdentitySortKeys = 'data' | 'id' | 'identityId' | 'name' | 'userId'
-export type UserLoginIdentitySort = Partial<Record<UserLoginIdentitySortKeys, T.SortDirection>>
-export type UserLoginIdentityRawSort = () => M.Sort
-
-export type UserLoginIdentityUpdate = {
-  data?: types.Scalars['Json'] | null
-  id?: types.Scalars['ID'] | null
-  identityId?: types.Scalars['String'] | null
-  name?: types.Scalars['String'] | null
-  userId?: types.Scalars['ID'] | null
-}
-export type UserLoginIdentityRawUpdate = () => M.UpdateFilter<M.Document>
-
-export type UserLoginIdentityInsert = {
-  data?: null | types.Scalars['Json']
-  identityId: types.Scalars['String']
-  name: types.Scalars['String']
-  userId: types.Scalars['ID']
-}
-
 type UserLoginIdentityDAOGenerics<MetadataType, OperationMetadataType> = T.MongoDBDAOGenerics<
-  types.UserLoginIdentity,
-  'id',
-  'ID',
-  UserLoginIdentityFilter,
-  UserLoginIdentityRawFilter,
-  UserLoginIdentityRelations,
-  UserLoginIdentityProjection,
-  UserLoginIdentitySort,
-  UserLoginIdentityRawSort,
-  UserLoginIdentityInsert,
-  UserLoginIdentityUpdate,
-  UserLoginIdentityRawUpdate,
-  UserLoginIdentityExcludedFields,
-  UserLoginIdentityRelationFields,
+  'UserLoginIdentity',
+  AST,
+  ScalarsSpecification,
+  UserLoginIdentityCachedTypes,
   MetadataType,
   OperationMetadataType,
-  types.Scalars,
-  'userLoginIdentity',
   EntityManager<MetadataType, OperationMetadataType>
 >
 export type UserLoginIdentityDAOParams<MetadataType, OperationMetadataType> = Omit<
@@ -1337,14 +1194,38 @@ export type InMemoryUserLoginIdentityDAOParams<MetadataType, OperationMetadataTy
   'idGenerator' | 'idField' | 'schema' | 'idScalar' | 'idGeneration'
 >
 
+export type UserLoginIdentityIdFields = T.IdFields<'UserLoginIdentity', AST>
+export interface UserLoginIdentityModel extends types.UserLoginIdentity {}
+export interface UserLoginIdentityInsert extends T.Insert<'UserLoginIdentity', AST, ScalarsSpecification> {}
+export interface UserLoginIdentityPlainModel extends T.GenerateModel<'UserLoginIdentity', AST, ScalarsSpecification, 'relation'> {}
+export interface UserLoginIdentityProjection extends T.Projection<'UserLoginIdentity', AST> {}
+export interface UserLoginIdentityUpdate extends T.Update<'UserLoginIdentity', AST, ScalarsSpecification> {}
+export interface UserLoginIdentityFilter extends T.Filter<'UserLoginIdentity', AST, ScalarsSpecification> {}
+export interface UserLoginIdentitySortElement extends T.SortElement<'UserLoginIdentity', AST> {}
+export interface UserLoginIdentityRelationsFindParams extends T.RelationsFindParams<'UserLoginIdentity', AST, ScalarsSpecification> {}
+export type UserLoginIdentityParams<P extends UserLoginIdentityProjection> = T.Params<'UserLoginIdentity', AST, ScalarsSpecification, P>
+export type UserLoginIdentityCachedTypes = T.CachedTypes<
+  UserLoginIdentityIdFields,
+  UserLoginIdentityModel,
+  UserLoginIdentityInsert,
+  UserLoginIdentityPlainModel,
+  UserLoginIdentityProjection,
+  UserLoginIdentityUpdate,
+  UserLoginIdentityFilter,
+  UserLoginIdentitySortElement,
+  UserLoginIdentityRelationsFindParams
+>
+
 export class UserLoginIdentityDAO<MetadataType, OperationMetadataType> extends T.AbstractMongoDBDAO<UserLoginIdentityDAOGenerics<MetadataType, OperationMetadataType>> {
-  public static projection<P extends UserLoginIdentityProjection>(p: P) {
+  public static projection<P extends T.Projection<'UserLoginIdentity', AST>>(p: P) {
     return p
   }
-  public static mergeProjection<P1 extends UserLoginIdentityProjection, P2 extends UserLoginIdentityProjection>(p1: P1, p2: P2): T.SelectProjection<UserLoginIdentityProjection, P1, P2> {
-    return T.mergeProjections(p1, p2) as T.SelectProjection<UserLoginIdentityProjection, P1, P2>
+  public static mergeProjection<P1 extends T.Projection<'UserLoginIdentity', AST>, P2 extends T.Projection<'UserLoginIdentity', AST>>(
+    p1: P1,
+    p2: P2,
+  ): T.SelectProjection<T.Projection<'UserLoginIdentity', AST>, P1, P2> {
+    return T.mergeProjections(p1, p2) as T.SelectProjection<T.Projection<'UserLoginIdentity', AST>, P1, P2>
   }
-
   public constructor(params: UserLoginIdentityDAOParams<MetadataType, OperationMetadataType>) {
     super({
       ...params,
@@ -1354,13 +1235,15 @@ export class UserLoginIdentityDAO<MetadataType, OperationMetadataType> extends T
 }
 
 export class InMemoryUserLoginIdentityDAO<MetadataType, OperationMetadataType> extends T.AbstractInMemoryDAO<UserLoginIdentityDAOGenerics<MetadataType, OperationMetadataType>> {
-  public static projection<P extends UserLoginIdentityProjection>(p: P) {
+  public static projection<P extends T.Projection<'UserLoginIdentity', AST>>(p: P) {
     return p
   }
-  public static mergeProjection<P1 extends UserLoginIdentityProjection, P2 extends UserLoginIdentityProjection>(p1: P1, p2: P2): T.SelectProjection<UserLoginIdentityProjection, P1, P2> {
-    return T.mergeProjections(p1, p2) as T.SelectProjection<UserLoginIdentityProjection, P1, P2>
+  public static mergeProjection<P1 extends T.Projection<'UserLoginIdentity', AST>, P2 extends T.Projection<'UserLoginIdentity', AST>>(
+    p1: P1,
+    p2: P2,
+  ): T.SelectProjection<T.Projection<'UserLoginIdentity', AST>, P1, P2> {
+    return T.mergeProjections(p1, p2) as T.SelectProjection<T.Projection<'UserLoginIdentity', AST>, P1, P2>
   }
-
   public constructor(params: InMemoryUserLoginIdentityDAOParams<MetadataType, OperationMetadataType>) {
     super({
       ...params,
@@ -1368,11 +1251,7 @@ export class InMemoryUserLoginIdentityDAO<MetadataType, OperationMetadataType> e
     })
   }
 }
-
-export type UserRoleExcludedFields = never
-export type UserRoleRelationFields = 'user'
-
-export function userRoleSchema(): T.Schema<types.Scalars> {
+export function userRoleSchema(): T.Schema<ScalarsSpecification> {
   return {
     id: {
       type: 'scalar',
@@ -1407,59 +1286,13 @@ export function userRoleSchema(): T.Schema<types.Scalars> {
   }
 }
 
-type UserRoleFilterFields = {
-  id?: types.Scalars['ID'] | null | T.EqualityOperators<types.Scalars['ID']> | T.ElementOperators
-  roleCode?: types.RoleCode | null | T.EqualityOperators<types.RoleCode> | T.ElementOperators | T.StringOperators
-  userId?: types.Scalars['ID'] | null | T.EqualityOperators<types.Scalars['ID']> | T.ElementOperators
-}
-export type UserRoleFilter = UserRoleFilterFields & T.LogicalOperators<UserRoleFilterFields | UserRoleRawFilter>
-export type UserRoleRawFilter = () => M.Filter<M.Document>
-
-export type UserRoleRelations = Record<never, string>
-
-export type UserRoleProjection = {
-  id?: boolean
-  roleCode?: boolean
-  user?: UserProjection | boolean
-  userId?: boolean
-}
-export type UserRoleParam<P extends UserRoleProjection> = T.ParamProjection<types.UserRole, UserRoleProjection, P>
-
-export type UserRoleSortKeys = 'id' | 'roleCode' | 'userId'
-export type UserRoleSort = Partial<Record<UserRoleSortKeys, T.SortDirection>>
-export type UserRoleRawSort = () => M.Sort
-
-export type UserRoleUpdate = {
-  id?: types.Scalars['ID'] | null
-  roleCode?: types.RoleCode | null
-  userId?: types.Scalars['ID'] | null
-}
-export type UserRoleRawUpdate = () => M.UpdateFilter<M.Document>
-
-export type UserRoleInsert = {
-  roleCode: types.RoleCode
-  userId: types.Scalars['ID']
-}
-
 type UserRoleDAOGenerics<MetadataType, OperationMetadataType> = T.MongoDBDAOGenerics<
-  types.UserRole,
-  'id',
-  'ID',
-  UserRoleFilter,
-  UserRoleRawFilter,
-  UserRoleRelations,
-  UserRoleProjection,
-  UserRoleSort,
-  UserRoleRawSort,
-  UserRoleInsert,
-  UserRoleUpdate,
-  UserRoleRawUpdate,
-  UserRoleExcludedFields,
-  UserRoleRelationFields,
+  'UserRole',
+  AST,
+  ScalarsSpecification,
+  UserRoleCachedTypes,
   MetadataType,
   OperationMetadataType,
-  types.Scalars,
-  'userRole',
   EntityManager<MetadataType, OperationMetadataType>
 >
 export type UserRoleDAOParams<MetadataType, OperationMetadataType> = Omit<
@@ -1471,14 +1304,35 @@ export type InMemoryUserRoleDAOParams<MetadataType, OperationMetadataType> = Omi
   'idGenerator' | 'idField' | 'schema' | 'idScalar' | 'idGeneration'
 >
 
+export type UserRoleIdFields = T.IdFields<'UserRole', AST>
+export interface UserRoleModel extends types.UserRole {}
+export interface UserRoleInsert extends T.Insert<'UserRole', AST, ScalarsSpecification> {}
+export interface UserRolePlainModel extends T.GenerateModel<'UserRole', AST, ScalarsSpecification, 'relation'> {}
+export interface UserRoleProjection extends T.Projection<'UserRole', AST> {}
+export interface UserRoleUpdate extends T.Update<'UserRole', AST, ScalarsSpecification> {}
+export interface UserRoleFilter extends T.Filter<'UserRole', AST, ScalarsSpecification> {}
+export interface UserRoleSortElement extends T.SortElement<'UserRole', AST> {}
+export interface UserRoleRelationsFindParams extends T.RelationsFindParams<'UserRole', AST, ScalarsSpecification> {}
+export type UserRoleParams<P extends UserRoleProjection> = T.Params<'UserRole', AST, ScalarsSpecification, P>
+export type UserRoleCachedTypes = T.CachedTypes<
+  UserRoleIdFields,
+  UserRoleModel,
+  UserRoleInsert,
+  UserRolePlainModel,
+  UserRoleProjection,
+  UserRoleUpdate,
+  UserRoleFilter,
+  UserRoleSortElement,
+  UserRoleRelationsFindParams
+>
+
 export class UserRoleDAO<MetadataType, OperationMetadataType> extends T.AbstractMongoDBDAO<UserRoleDAOGenerics<MetadataType, OperationMetadataType>> {
-  public static projection<P extends UserRoleProjection>(p: P) {
+  public static projection<P extends T.Projection<'UserRole', AST>>(p: P) {
     return p
   }
-  public static mergeProjection<P1 extends UserRoleProjection, P2 extends UserRoleProjection>(p1: P1, p2: P2): T.SelectProjection<UserRoleProjection, P1, P2> {
-    return T.mergeProjections(p1, p2) as T.SelectProjection<UserRoleProjection, P1, P2>
+  public static mergeProjection<P1 extends T.Projection<'UserRole', AST>, P2 extends T.Projection<'UserRole', AST>>(p1: P1, p2: P2): T.SelectProjection<T.Projection<'UserRole', AST>, P1, P2> {
+    return T.mergeProjections(p1, p2) as T.SelectProjection<T.Projection<'UserRole', AST>, P1, P2>
   }
-
   public constructor(params: UserRoleDAOParams<MetadataType, OperationMetadataType>) {
     super({
       ...params,
@@ -1488,13 +1342,12 @@ export class UserRoleDAO<MetadataType, OperationMetadataType> extends T.Abstract
 }
 
 export class InMemoryUserRoleDAO<MetadataType, OperationMetadataType> extends T.AbstractInMemoryDAO<UserRoleDAOGenerics<MetadataType, OperationMetadataType>> {
-  public static projection<P extends UserRoleProjection>(p: P) {
+  public static projection<P extends T.Projection<'UserRole', AST>>(p: P) {
     return p
   }
-  public static mergeProjection<P1 extends UserRoleProjection, P2 extends UserRoleProjection>(p1: P1, p2: P2): T.SelectProjection<UserRoleProjection, P1, P2> {
-    return T.mergeProjections(p1, p2) as T.SelectProjection<UserRoleProjection, P1, P2>
+  public static mergeProjection<P1 extends T.Projection<'UserRole', AST>, P2 extends T.Projection<'UserRole', AST>>(p1: P1, p2: P2): T.SelectProjection<T.Projection<'UserRole', AST>, P1, P2> {
+    return T.mergeProjections(p1, p2) as T.SelectProjection<T.Projection<'UserRole', AST>, P1, P2>
   }
-
   public constructor(params: InMemoryUserRoleDAOParams<MetadataType, OperationMetadataType>) {
     super({
       ...params,
@@ -1502,11 +1355,7 @@ export class InMemoryUserRoleDAO<MetadataType, OperationMetadataType> extends T.
     })
   }
 }
-
-export type UserSocialExcludedFields = never
-export type UserSocialRelationFields = 'user'
-
-export function userSocialSchema(): T.Schema<types.Scalars> {
+export function userSocialSchema(): T.Schema<ScalarsSpecification> {
   return {
     id: {
       type: 'scalar',
@@ -1548,67 +1397,13 @@ export function userSocialSchema(): T.Schema<types.Scalars> {
   }
 }
 
-type UserSocialFilterFields = {
-  id?: types.Scalars['ID'] | null | T.EqualityOperators<types.Scalars['ID']> | T.ElementOperators
-  link?: types.Scalars['String'] | null | T.EqualityOperators<types.Scalars['String']> | T.ElementOperators | T.StringOperators
-  platform?: types.Scalars['String'] | null | T.EqualityOperators<types.Scalars['String']> | T.ElementOperators | T.StringOperators
-  userId?: types.Scalars['ID'] | null | T.EqualityOperators<types.Scalars['ID']> | T.ElementOperators
-  username?: types.Scalars['String'] | null | T.EqualityOperators<types.Scalars['String']> | T.ElementOperators | T.StringOperators
-}
-export type UserSocialFilter = UserSocialFilterFields & T.LogicalOperators<UserSocialFilterFields | UserSocialRawFilter>
-export type UserSocialRawFilter = () => M.Filter<M.Document>
-
-export type UserSocialRelations = Record<never, string>
-
-export type UserSocialProjection = {
-  id?: boolean
-  link?: boolean
-  platform?: boolean
-  user?: UserProjection | boolean
-  userId?: boolean
-  username?: boolean
-}
-export type UserSocialParam<P extends UserSocialProjection> = T.ParamProjection<types.UserSocial, UserSocialProjection, P>
-
-export type UserSocialSortKeys = 'id' | 'link' | 'platform' | 'userId' | 'username'
-export type UserSocialSort = Partial<Record<UserSocialSortKeys, T.SortDirection>>
-export type UserSocialRawSort = () => M.Sort
-
-export type UserSocialUpdate = {
-  id?: types.Scalars['ID'] | null
-  link?: types.Scalars['String'] | null
-  platform?: types.Scalars['String'] | null
-  userId?: types.Scalars['ID'] | null
-  username?: types.Scalars['String'] | null
-}
-export type UserSocialRawUpdate = () => M.UpdateFilter<M.Document>
-
-export type UserSocialInsert = {
-  link: types.Scalars['String']
-  platform: types.Scalars['String']
-  userId: types.Scalars['ID']
-  username: types.Scalars['String']
-}
-
 type UserSocialDAOGenerics<MetadataType, OperationMetadataType> = T.MongoDBDAOGenerics<
-  types.UserSocial,
-  'id',
-  'ID',
-  UserSocialFilter,
-  UserSocialRawFilter,
-  UserSocialRelations,
-  UserSocialProjection,
-  UserSocialSort,
-  UserSocialRawSort,
-  UserSocialInsert,
-  UserSocialUpdate,
-  UserSocialRawUpdate,
-  UserSocialExcludedFields,
-  UserSocialRelationFields,
+  'UserSocial',
+  AST,
+  ScalarsSpecification,
+  UserSocialCachedTypes,
   MetadataType,
   OperationMetadataType,
-  types.Scalars,
-  'userSocial',
   EntityManager<MetadataType, OperationMetadataType>
 >
 export type UserSocialDAOParams<MetadataType, OperationMetadataType> = Omit<
@@ -1620,14 +1415,35 @@ export type InMemoryUserSocialDAOParams<MetadataType, OperationMetadataType> = O
   'idGenerator' | 'idField' | 'schema' | 'idScalar' | 'idGeneration'
 >
 
+export type UserSocialIdFields = T.IdFields<'UserSocial', AST>
+export interface UserSocialModel extends types.UserSocial {}
+export interface UserSocialInsert extends T.Insert<'UserSocial', AST, ScalarsSpecification> {}
+export interface UserSocialPlainModel extends T.GenerateModel<'UserSocial', AST, ScalarsSpecification, 'relation'> {}
+export interface UserSocialProjection extends T.Projection<'UserSocial', AST> {}
+export interface UserSocialUpdate extends T.Update<'UserSocial', AST, ScalarsSpecification> {}
+export interface UserSocialFilter extends T.Filter<'UserSocial', AST, ScalarsSpecification> {}
+export interface UserSocialSortElement extends T.SortElement<'UserSocial', AST> {}
+export interface UserSocialRelationsFindParams extends T.RelationsFindParams<'UserSocial', AST, ScalarsSpecification> {}
+export type UserSocialParams<P extends UserSocialProjection> = T.Params<'UserSocial', AST, ScalarsSpecification, P>
+export type UserSocialCachedTypes = T.CachedTypes<
+  UserSocialIdFields,
+  UserSocialModel,
+  UserSocialInsert,
+  UserSocialPlainModel,
+  UserSocialProjection,
+  UserSocialUpdate,
+  UserSocialFilter,
+  UserSocialSortElement,
+  UserSocialRelationsFindParams
+>
+
 export class UserSocialDAO<MetadataType, OperationMetadataType> extends T.AbstractMongoDBDAO<UserSocialDAOGenerics<MetadataType, OperationMetadataType>> {
-  public static projection<P extends UserSocialProjection>(p: P) {
+  public static projection<P extends T.Projection<'UserSocial', AST>>(p: P) {
     return p
   }
-  public static mergeProjection<P1 extends UserSocialProjection, P2 extends UserSocialProjection>(p1: P1, p2: P2): T.SelectProjection<UserSocialProjection, P1, P2> {
-    return T.mergeProjections(p1, p2) as T.SelectProjection<UserSocialProjection, P1, P2>
+  public static mergeProjection<P1 extends T.Projection<'UserSocial', AST>, P2 extends T.Projection<'UserSocial', AST>>(p1: P1, p2: P2): T.SelectProjection<T.Projection<'UserSocial', AST>, P1, P2> {
+    return T.mergeProjections(p1, p2) as T.SelectProjection<T.Projection<'UserSocial', AST>, P1, P2>
   }
-
   public constructor(params: UserSocialDAOParams<MetadataType, OperationMetadataType>) {
     super({
       ...params,
@@ -1637,13 +1453,12 @@ export class UserSocialDAO<MetadataType, OperationMetadataType> extends T.Abstra
 }
 
 export class InMemoryUserSocialDAO<MetadataType, OperationMetadataType> extends T.AbstractInMemoryDAO<UserSocialDAOGenerics<MetadataType, OperationMetadataType>> {
-  public static projection<P extends UserSocialProjection>(p: P) {
+  public static projection<P extends T.Projection<'UserSocial', AST>>(p: P) {
     return p
   }
-  public static mergeProjection<P1 extends UserSocialProjection, P2 extends UserSocialProjection>(p1: P1, p2: P2): T.SelectProjection<UserSocialProjection, P1, P2> {
-    return T.mergeProjections(p1, p2) as T.SelectProjection<UserSocialProjection, P1, P2>
+  public static mergeProjection<P1 extends T.Projection<'UserSocial', AST>, P2 extends T.Projection<'UserSocial', AST>>(p1: P1, p2: P2): T.SelectProjection<T.Projection<'UserSocial', AST>, P1, P2> {
+    return T.mergeProjections(p1, p2) as T.SelectProjection<T.Projection<'UserSocial', AST>, P1, P2>
   }
-
   public constructor(params: InMemoryUserSocialDAOParams<MetadataType, OperationMetadataType>) {
     super({
       ...params,
@@ -1668,19 +1483,17 @@ export type EntityManagerParams<MetadataType, OperationMetadataType, Permissions
     userSocial?: Pick<Partial<UserSocialDAOParams<MetadataType, OperationMetadataType>>, 'middlewares' | 'metadata'>
   }
   mongodb: Record<'default', M.Db | 'mock'>
-  scalars?: T.UserInputDriverDataTypeAdapterMap<types.Scalars, 'mongo'>
-  log?: T.LogInput<'eBoard' | 'eBoardRole' | 'project' | 'projectMember' | 'projectMemberRole' | 'someType' | 'user' | 'userLoginIdentity' | 'userRole' | 'userSocial'>
+  scalars?: T.UserInputDriverDataTypeAdapterMap<ScalarsSpecification, 'mongo'>
+  log?: T.LogInput<'EBoard' | 'EBoardRole' | 'Project' | 'ProjectMember' | 'ProjectMemberRole' | 'SomeType' | 'User' | 'UserLoginIdentity' | 'UserRole' | 'UserSocial'>
   security?: T.EntityManagerSecurtyPolicy<DAOGenericsMap<MetadataType, OperationMetadataType>, OperationMetadataType, Permissions, SecurityDomain>
 }
-
 type EntityManagerMiddleware<MetadataType = never, OperationMetadataType = never> = T.DAOMiddleware<DAOGenericsUnion<MetadataType, OperationMetadataType>>
-
 export class EntityManager<
   MetadataType = never,
   OperationMetadataType = never,
   Permissions extends string = never,
   SecurityDomain extends Record<string, unknown> = never,
-> extends T.AbstractEntityManager<'default', never, types.Scalars, MetadataType> {
+> extends T.AbstractEntityManager<'default', never, ScalarsSpecification, MetadataType> {
   private _eBoard: EBoardDAO<MetadataType, OperationMetadataType> | undefined
   private _eBoardRole: EBoardRoleDAO<MetadataType, OperationMetadataType> | undefined
   private _project: ProjectDAO<MetadataType, OperationMetadataType> | undefined
@@ -1699,7 +1512,7 @@ export class EntityManager<
 
   private middlewares: (EntityManagerMiddleware<MetadataType, OperationMetadataType> | GroupMiddleware<any, MetadataType, OperationMetadataType>)[]
 
-  private logger?: T.LogFunction<'eBoard' | 'eBoardRole' | 'project' | 'projectMember' | 'projectMemberRole' | 'someType' | 'user' | 'userLoginIdentity' | 'userRole' | 'userSocial'>
+  private logger?: T.LogFunction<'EBoard' | 'EBoardRole' | 'Project' | 'ProjectMember' | 'ProjectMemberRole' | 'SomeType' | 'User' | 'UserLoginIdentity' | 'UserRole' | 'UserSocial'>
 
   get eBoard(): EBoardDAO<MetadataType, OperationMetadataType> {
     if (!this._eBoard) {
@@ -1715,7 +1528,7 @@ export class EntityManager<
                 ...(this.overrides?.eBoard?.middlewares || []),
                 ...(selectMiddleware('eBoard', this.middlewares) as T.DAOMiddleware<EBoardDAOGenerics<MetadataType, OperationMetadataType>>[]),
               ],
-              name: 'eBoard',
+              name: 'EBoard',
               logger: this.logger,
             }) as unknown as EBoardDAO<MetadataType, OperationMetadataType>)
           : new EBoardDAO({
@@ -1728,7 +1541,7 @@ export class EntityManager<
                 ...(this.overrides?.eBoard?.middlewares || []),
                 ...(selectMiddleware('eBoard', this.middlewares) as T.DAOMiddleware<EBoardDAOGenerics<MetadataType, OperationMetadataType>>[]),
               ],
-              name: 'eBoard',
+              name: 'EBoard',
               logger: this.logger,
             })
     }
@@ -1748,7 +1561,7 @@ export class EntityManager<
                 ...(this.overrides?.eBoardRole?.middlewares || []),
                 ...(selectMiddleware('eBoardRole', this.middlewares) as T.DAOMiddleware<EBoardRoleDAOGenerics<MetadataType, OperationMetadataType>>[]),
               ],
-              name: 'eBoardRole',
+              name: 'EBoardRole',
               logger: this.logger,
             }) as unknown as EBoardRoleDAO<MetadataType, OperationMetadataType>)
           : new EBoardRoleDAO({
@@ -1761,7 +1574,7 @@ export class EntityManager<
                 ...(this.overrides?.eBoardRole?.middlewares || []),
                 ...(selectMiddleware('eBoardRole', this.middlewares) as T.DAOMiddleware<EBoardRoleDAOGenerics<MetadataType, OperationMetadataType>>[]),
               ],
-              name: 'eBoardRole',
+              name: 'EBoardRole',
               logger: this.logger,
             })
     }
@@ -1781,7 +1594,7 @@ export class EntityManager<
                 ...(this.overrides?.project?.middlewares || []),
                 ...(selectMiddleware('project', this.middlewares) as T.DAOMiddleware<ProjectDAOGenerics<MetadataType, OperationMetadataType>>[]),
               ],
-              name: 'project',
+              name: 'Project',
               logger: this.logger,
             }) as unknown as ProjectDAO<MetadataType, OperationMetadataType>)
           : new ProjectDAO({
@@ -1794,7 +1607,7 @@ export class EntityManager<
                 ...(this.overrides?.project?.middlewares || []),
                 ...(selectMiddleware('project', this.middlewares) as T.DAOMiddleware<ProjectDAOGenerics<MetadataType, OperationMetadataType>>[]),
               ],
-              name: 'project',
+              name: 'Project',
               logger: this.logger,
             })
     }
@@ -1814,7 +1627,7 @@ export class EntityManager<
                 ...(this.overrides?.projectMember?.middlewares || []),
                 ...(selectMiddleware('projectMember', this.middlewares) as T.DAOMiddleware<ProjectMemberDAOGenerics<MetadataType, OperationMetadataType>>[]),
               ],
-              name: 'projectMember',
+              name: 'ProjectMember',
               logger: this.logger,
             }) as unknown as ProjectMemberDAO<MetadataType, OperationMetadataType>)
           : new ProjectMemberDAO({
@@ -1827,7 +1640,7 @@ export class EntityManager<
                 ...(this.overrides?.projectMember?.middlewares || []),
                 ...(selectMiddleware('projectMember', this.middlewares) as T.DAOMiddleware<ProjectMemberDAOGenerics<MetadataType, OperationMetadataType>>[]),
               ],
-              name: 'projectMember',
+              name: 'ProjectMember',
               logger: this.logger,
             })
     }
@@ -1847,7 +1660,7 @@ export class EntityManager<
                 ...(this.overrides?.projectMemberRole?.middlewares || []),
                 ...(selectMiddleware('projectMemberRole', this.middlewares) as T.DAOMiddleware<ProjectMemberRoleDAOGenerics<MetadataType, OperationMetadataType>>[]),
               ],
-              name: 'projectMemberRole',
+              name: 'ProjectMemberRole',
               logger: this.logger,
             }) as unknown as ProjectMemberRoleDAO<MetadataType, OperationMetadataType>)
           : new ProjectMemberRoleDAO({
@@ -1860,7 +1673,7 @@ export class EntityManager<
                 ...(this.overrides?.projectMemberRole?.middlewares || []),
                 ...(selectMiddleware('projectMemberRole', this.middlewares) as T.DAOMiddleware<ProjectMemberRoleDAOGenerics<MetadataType, OperationMetadataType>>[]),
               ],
-              name: 'projectMemberRole',
+              name: 'ProjectMemberRole',
               logger: this.logger,
             })
     }
@@ -1880,7 +1693,7 @@ export class EntityManager<
                 ...(this.overrides?.someType?.middlewares || []),
                 ...(selectMiddleware('someType', this.middlewares) as T.DAOMiddleware<SomeTypeDAOGenerics<MetadataType, OperationMetadataType>>[]),
               ],
-              name: 'someType',
+              name: 'SomeType',
               logger: this.logger,
             }) as unknown as SomeTypeDAO<MetadataType, OperationMetadataType>)
           : new SomeTypeDAO({
@@ -1893,7 +1706,7 @@ export class EntityManager<
                 ...(this.overrides?.someType?.middlewares || []),
                 ...(selectMiddleware('someType', this.middlewares) as T.DAOMiddleware<SomeTypeDAOGenerics<MetadataType, OperationMetadataType>>[]),
               ],
-              name: 'someType',
+              name: 'SomeType',
               logger: this.logger,
             })
     }
@@ -1910,7 +1723,7 @@ export class EntityManager<
               metadata: this.metadata,
               ...this.overrides?.user,
               middlewares: [...(this.overrides?.user?.middlewares || []), ...(selectMiddleware('user', this.middlewares) as T.DAOMiddleware<UserDAOGenerics<MetadataType, OperationMetadataType>>[])],
-              name: 'user',
+              name: 'User',
               logger: this.logger,
             }) as unknown as UserDAO<MetadataType, OperationMetadataType>)
           : new UserDAO({
@@ -1920,7 +1733,7 @@ export class EntityManager<
               ...this.overrides?.user,
               collection: db.collection('users'),
               middlewares: [...(this.overrides?.user?.middlewares || []), ...(selectMiddleware('user', this.middlewares) as T.DAOMiddleware<UserDAOGenerics<MetadataType, OperationMetadataType>>[])],
-              name: 'user',
+              name: 'User',
               logger: this.logger,
             })
     }
@@ -1940,7 +1753,7 @@ export class EntityManager<
                 ...(this.overrides?.userLoginIdentity?.middlewares || []),
                 ...(selectMiddleware('userLoginIdentity', this.middlewares) as T.DAOMiddleware<UserLoginIdentityDAOGenerics<MetadataType, OperationMetadataType>>[]),
               ],
-              name: 'userLoginIdentity',
+              name: 'UserLoginIdentity',
               logger: this.logger,
             }) as unknown as UserLoginIdentityDAO<MetadataType, OperationMetadataType>)
           : new UserLoginIdentityDAO({
@@ -1953,7 +1766,7 @@ export class EntityManager<
                 ...(this.overrides?.userLoginIdentity?.middlewares || []),
                 ...(selectMiddleware('userLoginIdentity', this.middlewares) as T.DAOMiddleware<UserLoginIdentityDAOGenerics<MetadataType, OperationMetadataType>>[]),
               ],
-              name: 'userLoginIdentity',
+              name: 'UserLoginIdentity',
               logger: this.logger,
             })
     }
@@ -1973,7 +1786,7 @@ export class EntityManager<
                 ...(this.overrides?.userRole?.middlewares || []),
                 ...(selectMiddleware('userRole', this.middlewares) as T.DAOMiddleware<UserRoleDAOGenerics<MetadataType, OperationMetadataType>>[]),
               ],
-              name: 'userRole',
+              name: 'UserRole',
               logger: this.logger,
             }) as unknown as UserRoleDAO<MetadataType, OperationMetadataType>)
           : new UserRoleDAO({
@@ -1986,7 +1799,7 @@ export class EntityManager<
                 ...(this.overrides?.userRole?.middlewares || []),
                 ...(selectMiddleware('userRole', this.middlewares) as T.DAOMiddleware<UserRoleDAOGenerics<MetadataType, OperationMetadataType>>[]),
               ],
-              name: 'userRole',
+              name: 'UserRole',
               logger: this.logger,
             })
     }
@@ -2006,7 +1819,7 @@ export class EntityManager<
                 ...(this.overrides?.userSocial?.middlewares || []),
                 ...(selectMiddleware('userSocial', this.middlewares) as T.DAOMiddleware<UserSocialDAOGenerics<MetadataType, OperationMetadataType>>[]),
               ],
-              name: 'userSocial',
+              name: 'UserSocial',
               logger: this.logger,
             }) as unknown as UserSocialDAO<MetadataType, OperationMetadataType>)
           : new UserSocialDAO({
@@ -2019,7 +1832,7 @@ export class EntityManager<
                 ...(this.overrides?.userSocial?.middlewares || []),
                 ...(selectMiddleware('userSocial', this.middlewares) as T.DAOMiddleware<UserSocialDAOGenerics<MetadataType, OperationMetadataType>>[]),
               ],
-              name: 'userSocial',
+              name: 'UserSocial',
               logger: this.logger,
             })
     }
@@ -2029,7 +1842,9 @@ export class EntityManager<
   constructor(params: EntityManagerParams<MetadataType, OperationMetadataType, Permissions, SecurityDomain>) {
     super({
       ...params,
-      scalars: params.scalars ? T.userInputDataTypeAdapterToDataTypeAdapter(params.scalars, ['Date', 'Json', 'ID', 'String', 'Boolean', 'Int', 'Float']) : undefined,
+      scalars: params.scalars
+        ? T.userInputDataTypeAdapterToDataTypeAdapter(params.scalars, ['Date', 'Json', 'Permission', 'RoleCode', 'SortDirection', 'StringFilterMode', 'ID', 'String', 'Boolean', 'Int', 'Float'])
+        : undefined,
     })
     this.overrides = params.overrides
     this.mongodb = params.mongodb
