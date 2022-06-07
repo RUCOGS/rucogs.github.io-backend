@@ -189,6 +189,7 @@ export default gql`
     downloadLinks: [String!]!
     galleryImageLinks: [String!]!
     name: String!
+    pitch: String!
     soundcloudEmbedSrc: String
     updatedAt: Date
   }
@@ -201,6 +202,7 @@ export default gql`
     downloadLinks: [String!]
     galleryImageLinks: [String!]
     name: String
+    pitch: String
     soundcloudEmbedSrc: String
     updatedAt: Date
   }
@@ -214,6 +216,7 @@ export default gql`
     galleryImageLinks: SortDirection
     id: SortDirection
     name: SortDirection
+    pitch: SortDirection
     soundcloudEmbedSrc: SortDirection
     updatedAt: SortDirection
   }
@@ -227,6 +230,7 @@ export default gql`
     galleryImageLinks: StringFilterInput
     id: IDFilterInput
     name: StringFilterInput
+    pitch: StringFilterInput
     soundcloudEmbedSrc: StringFilterInput
     updatedAt: DateFilterInput
     and_: [ProjectFilterInput!]

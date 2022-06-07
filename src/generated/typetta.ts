@@ -87,10 +87,10 @@ export type EBoardSort = Partial<Record<EBoardSortKeys, T.SortDirection>>
 export type EBoardRawSort = () => M.Sort
 
 export type EBoardUpdate = {
-  createdAt?: types.Scalars['Date']
+  createdAt?: types.Scalars['Date'] | null
   graduatedAt?: types.Scalars['Date'] | null
-  id?: types.Scalars['ID']
-  userId?: types.Scalars['ID']
+  id?: types.Scalars['ID'] | null
+  userId?: types.Scalars['ID'] | null
 }
 export type EBoardRawUpdate = () => M.UpdateFilter<M.Document>
 
@@ -221,9 +221,9 @@ export type EBoardRoleSort = Partial<Record<EBoardRoleSortKeys, T.SortDirection>
 export type EBoardRoleRawSort = () => M.Sort
 
 export type EBoardRoleUpdate = {
-  eboardId?: types.Scalars['ID']
-  id?: types.Scalars['ID']
-  roleCode?: types.RoleCode
+  eboardId?: types.Scalars['ID'] | null
+  id?: types.Scalars['ID'] | null
+  roleCode?: types.RoleCode | null
 }
 export type EBoardRoleRawUpdate = () => M.UpdateFilter<M.Document>
 
@@ -358,6 +358,11 @@ export function projectSchema(): T.Schema<types.Scalars> {
       scalar: 'String',
       required: true,
     },
+    pitch: {
+      type: 'scalar',
+      scalar: 'String',
+      required: true,
+    },
     soundcloudEmbedSrc: {
       type: 'scalar',
       scalar: 'String',
@@ -380,6 +385,7 @@ type ProjectFilterFields = {
   galleryImageLinks?: types.Scalars['String'][] | null | T.EqualityOperators<types.Scalars['String'][]> | T.ElementOperators | T.StringOperators
   id?: types.Scalars['ID'] | null | T.EqualityOperators<types.Scalars['ID']> | T.ElementOperators
   name?: types.Scalars['String'] | null | T.EqualityOperators<types.Scalars['String']> | T.ElementOperators | T.StringOperators
+  pitch?: types.Scalars['String'] | null | T.EqualityOperators<types.Scalars['String']> | T.ElementOperators | T.StringOperators
   soundcloudEmbedSrc?: types.Scalars['String'] | null | T.EqualityOperators<types.Scalars['String']> | T.ElementOperators | T.StringOperators
   updatedAt?: types.Scalars['Date'] | null | T.EqualityOperators<types.Scalars['Date']> | T.ElementOperators
 }
@@ -407,12 +413,25 @@ export type ProjectProjection = {
   id?: boolean
   members?: ProjectMemberProjection | boolean
   name?: boolean
+  pitch?: boolean
   soundcloudEmbedSrc?: boolean
   updatedAt?: boolean
 }
 export type ProjectParam<P extends ProjectProjection> = T.ParamProjection<types.Project, ProjectProjection, P>
 
-export type ProjectSortKeys = 'bannerLink' | 'cardImageLink' | 'completedAt' | 'createdAt' | 'description' | 'downloadLinks' | 'galleryImageLinks' | 'id' | 'name' | 'soundcloudEmbedSrc' | 'updatedAt'
+export type ProjectSortKeys =
+  | 'bannerLink'
+  | 'cardImageLink'
+  | 'completedAt'
+  | 'createdAt'
+  | 'description'
+  | 'downloadLinks'
+  | 'galleryImageLinks'
+  | 'id'
+  | 'name'
+  | 'pitch'
+  | 'soundcloudEmbedSrc'
+  | 'updatedAt'
 export type ProjectSort = Partial<Record<ProjectSortKeys, T.SortDirection>>
 export type ProjectRawSort = () => M.Sort
 
@@ -421,11 +440,12 @@ export type ProjectUpdate = {
   cardImageLink?: types.Scalars['String'] | null
   completedAt?: types.Scalars['Date'] | null
   createdAt?: types.Scalars['Date'] | null
-  description?: types.Scalars['String']
-  downloadLinks?: types.Scalars['String'][]
-  galleryImageLinks?: types.Scalars['String'][]
-  id?: types.Scalars['ID']
-  name?: types.Scalars['String']
+  description?: types.Scalars['String'] | null
+  downloadLinks?: types.Scalars['String'][] | null
+  galleryImageLinks?: types.Scalars['String'][] | null
+  id?: types.Scalars['ID'] | null
+  name?: types.Scalars['String'] | null
+  pitch?: types.Scalars['String'] | null
   soundcloudEmbedSrc?: types.Scalars['String'] | null
   updatedAt?: types.Scalars['Date'] | null
 }
@@ -440,6 +460,7 @@ export type ProjectInsert = {
   downloadLinks: types.Scalars['String'][]
   galleryImageLinks: types.Scalars['String'][]
   name: types.Scalars['String']
+  pitch: types.Scalars['String']
   soundcloudEmbedSrc?: null | types.Scalars['String']
   updatedAt?: null | types.Scalars['Date']
 }
@@ -616,12 +637,12 @@ export type ProjectMemberSort = Partial<Record<ProjectMemberSortKeys, T.SortDire
 export type ProjectMemberRawSort = () => M.Sort
 
 export type ProjectMemberUpdate = {
-  contributions?: types.Scalars['String']
+  contributions?: types.Scalars['String'] | null
   createdAt?: types.Scalars['Date'] | null
-  id?: types.Scalars['ID']
-  projectId?: types.Scalars['ID']
+  id?: types.Scalars['ID'] | null
+  projectId?: types.Scalars['ID'] | null
   updatedAt?: types.Scalars['Date'] | null
-  userId?: types.Scalars['ID']
+  userId?: types.Scalars['ID'] | null
 }
 export type ProjectMemberRawUpdate = () => M.UpdateFilter<M.Document>
 
@@ -755,9 +776,9 @@ export type ProjectMemberRoleSort = Partial<Record<ProjectMemberRoleSortKeys, T.
 export type ProjectMemberRoleRawSort = () => M.Sort
 
 export type ProjectMemberRoleUpdate = {
-  id?: types.Scalars['ID']
-  projectMemberId?: types.Scalars['ID']
-  roleCode?: types.RoleCode
+  id?: types.Scalars['ID'] | null
+  projectMemberId?: types.Scalars['ID'] | null
+  roleCode?: types.RoleCode | null
 }
 export type ProjectMemberRoleRawUpdate = () => M.UpdateFilter<M.Document>
 
@@ -872,7 +893,7 @@ export type SomeTypeSort = Partial<Record<SomeTypeSortKeys, T.SortDirection>>
 export type SomeTypeRawSort = () => M.Sort
 
 export type SomeTypeUpdate = {
-  id?: types.Scalars['ID']
+  id?: types.Scalars['ID'] | null
   someField?: types.Scalars['Date'] | null
 }
 export type SomeTypeRawUpdate = () => M.UpdateFilter<M.Document>
@@ -1119,8 +1140,8 @@ export type UserUpdate = {
   bio?: types.Scalars['String'] | null
   createdAt?: types.Scalars['Date'] | null
   displayName?: types.Scalars['String'] | null
-  email?: types.Scalars['String']
-  id?: types.Scalars['ID']
+  email?: types.Scalars['String'] | null
+  id?: types.Scalars['ID'] | null
   updatedAt?: types.Scalars['Date'] | null
   username?: types.Scalars['String'] | null
 }
@@ -1272,10 +1293,10 @@ export type UserLoginIdentityRawSort = () => M.Sort
 
 export type UserLoginIdentityUpdate = {
   data?: types.Scalars['Json'] | null
-  id?: types.Scalars['ID']
-  identityId?: types.Scalars['String']
-  name?: types.Scalars['String']
-  userId?: types.Scalars['ID']
+  id?: types.Scalars['ID'] | null
+  identityId?: types.Scalars['String'] | null
+  name?: types.Scalars['String'] | null
+  userId?: types.Scalars['ID'] | null
 }
 export type UserLoginIdentityRawUpdate = () => M.UpdateFilter<M.Document>
 
@@ -1409,9 +1430,9 @@ export type UserRoleSort = Partial<Record<UserRoleSortKeys, T.SortDirection>>
 export type UserRoleRawSort = () => M.Sort
 
 export type UserRoleUpdate = {
-  id?: types.Scalars['ID']
-  roleCode?: types.RoleCode
-  userId?: types.Scalars['ID']
+  id?: types.Scalars['ID'] | null
+  roleCode?: types.RoleCode | null
+  userId?: types.Scalars['ID'] | null
 }
 export type UserRoleRawUpdate = () => M.UpdateFilter<M.Document>
 
@@ -1554,11 +1575,11 @@ export type UserSocialSort = Partial<Record<UserSocialSortKeys, T.SortDirection>
 export type UserSocialRawSort = () => M.Sort
 
 export type UserSocialUpdate = {
-  id?: types.Scalars['ID']
-  link?: types.Scalars['String']
-  platform?: types.Scalars['String']
-  userId?: types.Scalars['ID']
-  username?: types.Scalars['String']
+  id?: types.Scalars['ID'] | null
+  link?: types.Scalars['String'] | null
+  platform?: types.Scalars['String'] | null
+  userId?: types.Scalars['ID'] | null
+  username?: types.Scalars['String'] | null
 }
 export type UserSocialRawUpdate = () => M.UpdateFilter<M.Document>
 
@@ -1631,7 +1652,7 @@ export class InMemoryUserSocialDAO<MetadataType, OperationMetadataType> extends 
   }
 }
 
-export type EntityManagerParams<MetadataType, OperationMetadataType, Permissions extends string, SecurityDomain extends object> = {
+export type EntityManagerParams<MetadataType, OperationMetadataType, Permissions extends string, SecurityDomain extends Record<string, unknown>> = {
   metadata?: MetadataType
   middlewares?: (EntityManagerMiddleware<MetadataType, OperationMetadataType> | GroupMiddleware<any, MetadataType, OperationMetadataType>)[]
   overrides?: {
@@ -1654,12 +1675,12 @@ export type EntityManagerParams<MetadataType, OperationMetadataType, Permissions
 
 type EntityManagerMiddleware<MetadataType = never, OperationMetadataType = never> = T.DAOMiddleware<DAOGenericsUnion<MetadataType, OperationMetadataType>>
 
-export class EntityManager<MetadataType = never, OperationMetadataType = never, Permissions extends string = never, SecurityDomain extends object = never> extends T.AbstractEntityManager<
-  'default',
-  never,
-  types.Scalars,
-  MetadataType
-> {
+export class EntityManager<
+  MetadataType = never,
+  OperationMetadataType = never,
+  Permissions extends string = never,
+  SecurityDomain extends Record<string, unknown> = never,
+> extends T.AbstractEntityManager<'default', never, types.Scalars, MetadataType> {
   private _eBoard: EBoardDAO<MetadataType, OperationMetadataType> | undefined
   private _eBoardRole: EBoardRoleDAO<MetadataType, OperationMetadataType> | undefined
   private _project: ProjectDAO<MetadataType, OperationMetadataType> | undefined

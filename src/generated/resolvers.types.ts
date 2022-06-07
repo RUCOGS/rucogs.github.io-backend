@@ -309,6 +309,7 @@ export type ProjectResolvers<ContextType = any, ParentType extends ResolversPare
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>
   members?: Resolver<types.Maybe<Array<ResolversTypes['ProjectMember']>>, ParentType, ContextType>
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>
+  pitch?: Resolver<ResolversTypes['String'], ParentType, ContextType>
   soundcloudEmbedSrc?: Resolver<types.Maybe<ResolversTypes['String']>, ParentType, ContextType>
   updatedAt?: Resolver<types.Maybe<ResolversTypes['Date']>, ParentType, ContextType>
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>

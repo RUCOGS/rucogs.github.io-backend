@@ -405,6 +405,7 @@ export type Project = {
   id: Scalars['ID'];
   members?: Maybe<Array<ProjectMember>>;
   name: Scalars['String'];
+  pitch: Scalars['String'];
   soundcloudEmbedSrc?: Maybe<Scalars['String']>;
   updatedAt?: Maybe<Scalars['Date']>;
 };
@@ -422,6 +423,7 @@ export type ProjectFilterInput = {
   name?: InputMaybe<StringFilterInput>;
   nor_?: InputMaybe<Array<ProjectFilterInput>>;
   or_?: InputMaybe<Array<ProjectFilterInput>>;
+  pitch?: InputMaybe<StringFilterInput>;
   soundcloudEmbedSrc?: InputMaybe<StringFilterInput>;
   updatedAt?: InputMaybe<DateFilterInput>;
 };
@@ -443,6 +445,7 @@ export type ProjectInsertInput = {
   downloadLinks: Array<Scalars['String']>;
   galleryImageLinks: Array<Scalars['String']>;
   name: Scalars['String'];
+  pitch: Scalars['String'];
   soundcloudEmbedSrc?: InputMaybe<Scalars['String']>;
   updatedAt?: InputMaybe<Scalars['Date']>;
 };
@@ -570,6 +573,7 @@ export type ProjectSortInput = {
   galleryImageLinks?: InputMaybe<SortDirection>;
   id?: InputMaybe<SortDirection>;
   name?: InputMaybe<SortDirection>;
+  pitch?: InputMaybe<SortDirection>;
   soundcloudEmbedSrc?: InputMaybe<SortDirection>;
   updatedAt?: InputMaybe<SortDirection>;
 };
@@ -583,6 +587,7 @@ export type ProjectUpdateInput = {
   downloadLinks?: InputMaybe<Array<Scalars['String']>>;
   galleryImageLinks?: InputMaybe<Array<Scalars['String']>>;
   name?: InputMaybe<Scalars['String']>;
+  pitch?: InputMaybe<Scalars['String']>;
   soundcloudEmbedSrc?: InputMaybe<Scalars['String']>;
   updatedAt?: InputMaybe<Scalars['Date']>;
 };
@@ -1445,6 +1450,7 @@ export type ProjectResolvers<ContextType = any, ParentType extends ResolversPare
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   members?: Resolver<Maybe<Array<ResolversTypes['ProjectMember']>>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  pitch?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   soundcloudEmbedSrc?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   updatedAt?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;

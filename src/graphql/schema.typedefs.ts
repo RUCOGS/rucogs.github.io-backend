@@ -121,6 +121,7 @@ type Project @entity @mongodb {
 
   completedAt: Date
   name: String!
+  pitch: String!
   description: String!
   cardImageLink: String
   bannerLink: String

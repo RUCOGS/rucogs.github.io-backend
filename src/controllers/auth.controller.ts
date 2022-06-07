@@ -39,7 +39,7 @@ export function configPassport(passport: PassportStatic, entityManager: EntityMa
         async (profile) => profile.id, 
         async (profile) => ({
           email: profile.email ?? "",
-          username: profile.username,
+          username: profile.username.toLowerCase(),
           avatarLink: profile.avatar ? await downloadToCdn(`https://cdn.discordapp.com/avatars/${profile.id}/${profile.avatar}?size=256`, "avatar") : "",
           bannerLink: profile.banner ? await downloadToCdn(`https://cdn.discordapp.com/banners/${profile.id}/${profile.banner}?size=512`, "banner") : "",
           displayName: profile.username,
@@ -52,7 +52,7 @@ export function configPassport(passport: PassportStatic, entityManager: EntityMa
         async (profile) => profile.id, 
         async (profile) => ({
           email: profile._json.email ?? "",
-          username: profile.displayName.replace(" ", ""),
+          username: profile.displayName.replace(" ", "_").toLowerCase(),
           displayName: profile.displayName,
           avatarLink: profile._json.picture ? await downloadToCdn(profile._json.picture) : "",
           bannerLink: ""
