@@ -44,7 +44,7 @@ type PostUserContext = {
     avatarLink?: string | null,
     bannerLink?: string | null,
   }
-}
+};
 router.post('/user', 
   // Authenticate and add security context
   authAddSecurityContext,
@@ -168,21 +168,9 @@ router.post('/user',
         });
       }
 
-      const avatarUpdated = files['avatar'] && files['avatar'].length == 1;
-      const avatarSelfHostedFilePath = avatarUpdated ? relativeToSelfHostedFilePath(files['avatar'][0].path) : "";
-      // Purge old avatar if it's self hosted
-      if (avatarUpdated && user.avatarLink 
-        && isSelfHostedFile(user.avatarLink)) {
-        deleteSelfHostedFile(user.avatarLink);
-      }
+      const [avatarUpdated, avatarSelfHostedFilePath] = tryDeleteOldFileLinkFromEntity(req, "avatar", user);
 
-      const bannerUpdated = files['banner'] && files['banner'].length == 1;
-      const bannerSelfHostedFilePath = bannerUpdated ? relativeToSelfHostedFilePath(files['banner'][0].path) : "";
-      // Purge old banner if it's self hosted
-      if (bannerUpdated && user.bannerLink 
-        && isSelfHostedFile(user.bannerLink)) {
-        deleteSelfHostedFile(user.bannerLink);
-      }
+      const [bannerUpdated, bannerSelfHostedFilePath] = tryDeleteOldFileLinkFromEntity(req, "banner", user);
 
       await transEntityManager.user.updateOne({
         filter: {
@@ -219,7 +207,7 @@ type PostProjectContext = {
     cardImageLink?: string | null,
     bannerLink?: string | null,
   }
-}
+};
 router.post('/project', 
   // Authenticate and add security context
   authAddSecurityContext,
@@ -352,21 +340,9 @@ router.post('/project',
         });
       }
 
-      const cardImageUpdated = files['cardImage'] && files['cardImage'].length == 1;
-      const cardImageSelfHostedFilePath = cardImageUpdated ? relativeToSelfHostedFilePath(files['cardImage'][0].path) : "";
-      // Purge old card image if it's self hosted
-      if (cardImageUpdated && project.cardImageLink 
-        && isSelfHostedFile(project.cardImageLink)) {
-        deleteSelfHostedFile(project.cardImageLink);
-      }
+      const [cardImageUpdated, cardImageSelfHostedFilePath] = tryDeleteOldFileLinkFromEntity(req, "cardImage", project);
 
-      const bannerUpdated = files['banner'] && files['banner'].length == 1;
-      const bannerSelfHostedFilePath = bannerUpdated ? relativeToSelfHostedFilePath(files['banner'][0].path) : "";
-      // Purge old banner if it's self hosted
-      if (bannerUpdated && project.bannerLink 
-        && isSelfHostedFile(project.bannerLink)) {
-        deleteSelfHostedFile(project.bannerLink);
-      }
+      const [bannerUpdated, bannerSelfHostedFilePath] = tryDeleteOldFileLinkFromEntity(req, "banner", project);
 
       await transEntityManager.project.updateOne({
         filter: {
@@ -398,6 +374,25 @@ router.post('/project',
 //#endregion // -- PROJECT ROUTE ----- //
 
 //#region // ----- UPLOAD HELPERS ----- //
+
+export function tryDeleteOldFileLinkFromEntity(req: RequestWithContext<RequestContext>, fileName: string, object: any) {
+  const files = req.files as { [fieldname: string]: Express.Multer.File[] };
+  let fileUpdated = files[fileName] && files[fileName].length == 1;
+  const selfHostedFilePath = fileUpdated ? relativeToSelfHostedFilePath(files[fileName][0].path) : "";
+  const oldFilePath = object[fileName + 'Link'];
+  // Purge old card image if it's self hosted
+  if (oldFilePath) {
+    if (req.body.deletedFiles?.includes(fileName)) {
+      // Reset entity's link property for the file to empty
+      object[fileName + 'Link'] = "";
+      deleteSelfHostedFile(oldFilePath);
+      fileUpdated = true;
+    } else if (fileUpdated && isSelfHostedFile(oldFilePath)) {
+      deleteSelfHostedFile(oldFilePath);
+    }
+  }
+  return [fileUpdated, selfHostedFilePath];
+}
 
 export async function getRoleCodes(roleDao: AbstractDAO<any>, idKey: string, id: string): Promise<RoleCode[]> {
   return (await roleDao.findAll({
