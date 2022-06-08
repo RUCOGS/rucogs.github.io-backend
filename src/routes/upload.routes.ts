@@ -68,7 +68,7 @@ router.post('/user',
           .withDomain({
             userId: [ metadata.userId[0] ]
           })
-          .hasPermission(Permission.ManageUserRoles)) {
+          .hasPermission(Permission.UpdateProfile)) {
         throw new HttpError(401, "Not authorized!");
       }
 
@@ -231,7 +231,7 @@ router.post('/project',
           .withDomain({
             projectId: [ metadata.projectId[0] ]
           })
-          .hasPermission(Permission.ManageProjectMemberRoles)) {
+          .hasPermission(Permission.UpdateProject)) {
         throw new HttpError(401, "Not authorized!");
       }
 
