@@ -12,6 +12,7 @@ export type Scalars = {
   Float: number
   Date: any
   Json: any
+  Upload: any
 }
 
 export const Access = {
@@ -176,6 +177,24 @@ export type IntFilterInput = {
   lte?: InputMaybe<Scalars['Int']>
   ne?: InputMaybe<Scalars['Int']>
   nin?: InputMaybe<Array<Scalars['Int']>>
+}
+
+export const InviteType = {
+  Incoming: 'INCOMING',
+  Outgoing: 'OUTGOING',
+} as const
+
+export type InviteType = typeof InviteType[keyof typeof InviteType]
+export type InviteTypeFilterInput = {
+  contains?: InputMaybe<Scalars['String']>
+  endsWith?: InputMaybe<Scalars['String']>
+  eq?: InputMaybe<InviteType>
+  exists?: InputMaybe<Scalars['Boolean']>
+  in?: InputMaybe<Array<InviteType>>
+  mode?: InputMaybe<StringFilterMode>
+  ne?: InputMaybe<InviteType>
+  nin?: InputMaybe<Array<InviteType>>
+  startsWith?: InputMaybe<Scalars['String']>
 }
 
 export type JsonFilterInput = {
@@ -442,6 +461,7 @@ export type ProjectInvite = {
   id: Scalars['ID']
   project: Project
   projectId: Scalars['ID']
+  type: InviteType
   user: User
   userId: Scalars['ID']
 }
@@ -453,6 +473,7 @@ export type ProjectInviteFilterInput = {
   nor_?: InputMaybe<Array<ProjectInviteFilterInput>>
   or_?: InputMaybe<Array<ProjectInviteFilterInput>>
   projectId?: InputMaybe<IdFilterInput>
+  type?: InputMaybe<InviteTypeFilterInput>
   userId?: InputMaybe<IdFilterInput>
 }
 
@@ -467,6 +488,7 @@ export type ProjectInviteFindInput = {
 export type ProjectInviteInsertInput = {
   createdAt?: InputMaybe<Scalars['Date']>
   projectId: Scalars['ID']
+  type: InviteType
   userId: Scalars['ID']
 }
 
@@ -479,12 +501,14 @@ export type ProjectInviteSortInput = {
   createdAt?: InputMaybe<SortDirection>
   id?: InputMaybe<SortDirection>
   projectId?: InputMaybe<SortDirection>
+  type?: InputMaybe<SortDirection>
   userId?: InputMaybe<SortDirection>
 }
 
 export type ProjectInviteUpdateInput = {
   createdAt?: InputMaybe<Scalars['Date']>
   projectId?: InputMaybe<Scalars['ID']>
+  type?: InputMaybe<InviteType>
   userId?: InputMaybe<Scalars['ID']>
 }
 
@@ -787,6 +811,14 @@ export const StringFilterMode = {
 } as const
 
 export type StringFilterMode = typeof StringFilterMode[keyof typeof StringFilterMode]
+export type UploadFilterInput = {
+  eq?: InputMaybe<Scalars['Upload']>
+  exists?: InputMaybe<Scalars['Boolean']>
+  in?: InputMaybe<Array<Scalars['Upload']>>
+  ne?: InputMaybe<Scalars['Upload']>
+  nin?: InputMaybe<Array<Scalars['Upload']>>
+}
+
 export type User = {
   __typename?: 'User'
   avatarLink?: Maybe<Scalars['String']>

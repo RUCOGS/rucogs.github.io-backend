@@ -10,11 +10,13 @@ export type ScalarsSpecification = {
   Float: { type: types.Scalars['Float']; isTextual: false; isQuantitative: true }
   Access: { type: types.Access; isTextual: false; isQuantitative: false }
   Date: { type: types.Scalars['Date']; isTextual: false; isQuantitative: false }
+  InviteType: { type: types.InviteType; isTextual: false; isQuantitative: false }
   Json: { type: types.Scalars['Json']; isTextual: false; isQuantitative: false }
   Permission: { type: types.Permission; isTextual: false; isQuantitative: false }
   RoleCode: { type: types.RoleCode; isTextual: false; isQuantitative: false }
   SortDirection: { type: types.SortDirection; isTextual: false; isQuantitative: false }
   StringFilterMode: { type: types.StringFilterMode; isTextual: false; isQuantitative: false }
+  Upload: { type: types.Scalars['Upload']; isTextual: false; isQuantitative: false }
 }
 
 export type AST = {
@@ -116,6 +118,7 @@ export type AST = {
         generationStrategy: 'undefined'
       }
       projectId: { type: 'scalar'; isList: false; astName: 'ID'; isRequired: true; isListElementRequired: false; isExcluded: false; isId: false; generationStrategy: 'undefined' }
+      type: { type: 'scalar'; isList: false; astName: 'InviteType'; isRequired: true; isListElementRequired: false; isExcluded: false; isId: false; generationStrategy: 'undefined' }
       user: { type: 'relation'; relation: 'inner'; isList: false; astName: 'User'; isRequired: true; isListElementRequired: false; isExcluded: false; isId: false; generationStrategy: 'undefined' }
       userId: { type: 'scalar'; isList: false; astName: 'ID'; isRequired: true; isListElementRequired: false; isExcluded: false; isId: false; generationStrategy: 'undefined' }
     }
@@ -715,6 +718,12 @@ export function projectInviteSchema(): T.Schema<ScalarsSpecification> {
       scalar: 'ID',
       required: true,
       metadata: Object.fromEntries([['undefined', 'undefined']]),
+    },
+    type: {
+      type: 'scalar',
+      scalar: 'String',
+      required: true,
+      isEnum: true,
     },
     user: {
       type: 'relation',
@@ -1942,11 +1951,13 @@ export class EntityManager<
         ? T.userInputDataTypeAdapterToDataTypeAdapter(params.scalars, [
             'Access',
             'Date',
+            'InviteType',
             'Json',
             'Permission',
             'RoleCode',
             'SortDirection',
             'StringFilterMode',
+            'Upload',
             'ID',
             'String',
             'Boolean',

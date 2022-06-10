@@ -23,8 +23,8 @@ async function startMockServer() {
   
   const unsecure = createUnsecureEntityManager("mock");
   
-  const userIds = await generateUsers(unsecure, 1000);
-  const projectIds = await generateProjects(unsecure, userIds, 100);
+  const userIds = await generateUsers(unsecure, 100);
+  const projectIds = await generateProjects(unsecure, userIds, 50);
 
   console.log("🥸 Mock server configured!");
 }

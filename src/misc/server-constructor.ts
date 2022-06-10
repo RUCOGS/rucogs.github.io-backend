@@ -17,6 +17,7 @@ import ServerConfig from '@src/config/server.config.json';
 import { ApolloResolversContext, RequestWithDefaultContext } from '@src/misc/context';
 import { typeDefs, resolvers } from '@src/graphql';
 import { DefaultSecurityContext } from '@src/shared/security';
+import { GraphQLUpload, graphqlUploadExpress } from 'graphql-upload';
 
 
 export async function startServer(debug: boolean, mock: boolean = false) {
@@ -32,13 +33,23 @@ export async function startServer(debug: boolean, mock: boolean = false) {
 
   const httpServer = http.createServer(app);
 
-  startApolloServer(app, mongoDb, ServerConfig.baseUrl + "/api/graphql", {
-    debug,
-    csrfPrevention: true,
-    typeDefs,
-    resolvers,
-    plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
-  });
+  startApolloServer(
+    app, 
+    mongoDb, 
+    ServerConfig.baseUrl + "/api/graphql", 
+    unsecuredEntityManager,
+    mongoClient,
+    {
+      debug,
+      csrfPrevention: true,
+      typeDefs,
+      resolvers: {
+        Upload: GraphQLUpload,
+        ...resolvers
+      },
+      plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
+    }
+  );
   // Set port, listen for requests
   const port = ServerConfig.port;
   // Promisfy httpServer.listen();
@@ -50,49 +61,52 @@ export async function startServer(debug: boolean, mock: boolean = false) {
   );  
 }
 
-async function startApolloServer(app: express.Application, mongoDb: Db | "mock", endpointPath: string, apolloConfig: Config<ExpressContext>, securityEnabled: boolean = true) {
+async function startApolloServer(app: express.Application, mongoDb: Db | "mock", endpointPath: string, unsecureEntityManager: EntityManager, mongoClient: MongoClient, apolloConfig: Config<ExpressContext>) {
   const server = new ExpressApolloServer({
     ...apolloConfig,
     context: async ({ req }): Promise<ApolloResolversContext> => {
-      if (securityEnabled) {
-        const authenticated = await authenticate(req);
-        if (authenticated) {
-          const [authScheme, authPayload] = authenticated;
-          switch (authScheme) {
-            case AuthScheme.BasicRoot: {
-              const entityManager = createUnsecureEntityManager(mongoDb);
-              return {
-                entityManager,
-              };
-            }
-            case AuthScheme.Bearer:
-            default: {
-              const securityContext = await getCompleteSecurityContext(createUnsecureEntityManager(mongoDb), authPayload.userId);
-              const metadata = getOperationMetadataFromRequest(req);
-              const entityManager = createSecureEntityManager(securityContext, mongoDb, metadata);
-              return {
-                entityManager,
-                securityContext
-              };
-            }
+      const authenticated = await authenticate(req);
+      if (authenticated) {
+        const [authScheme, authPayload] = authenticated;
+        switch (authScheme) {
+          case AuthScheme.BasicRoot: {
+            return {
+              entityManager: unsecureEntityManager,
+              unsecureEntityManager,
+              mongoClient,
+              securityContext: DefaultSecurityContext,
+            };
           }
-        } else {
-          // Fallback to public api
-          const entityManager = createSecureEntityManager(DefaultSecurityContext, mongoDb);
-          return {
-            entityManager,
-            securityContext: DefaultSecurityContext
+          case AuthScheme.Bearer:
+          default: {
+            const securityContext = await getCompleteSecurityContext(createUnsecureEntityManager(mongoDb), authPayload.userId);
+            const metadata = getOperationMetadataFromRequest(req);
+            const entityManager = createSecureEntityManager(securityContext, mongoDb, metadata);
+            return {
+              entityManager,
+              unsecureEntityManager,
+              securityContext,
+              mongoClient,
+            };
           }
         }
       } else {
+        // Fallback to public api
+        const entityManager = createSecureEntityManager(DefaultSecurityContext, mongoDb);
         return {
-          entityManager: createUnsecureEntityManager(mongoDb)
-        };
+          entityManager,
+          unsecureEntityManager,
+          securityContext: DefaultSecurityContext,
+          mongoClient,
+        }
       }
     },
   });
 
   await server.start();
+
+  app.use(graphqlUploadExpress({ maxFileSize: 1000000 * 20, maxFiles: 10 }));
+
   server.applyMiddleware({ app, path: endpointPath });
 
   console.log(

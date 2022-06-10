@@ -3,6 +3,9 @@ import fs from "fs";
 import path from "path";
 import https from "https";
 import http from "http";
+import { ReadStream } from "fs-capacitor";
+import { finished } from 'stream/promises';
+import { FileUpload } from "graphql-upload";
 
 export const UPLOAD_DIRECTORY = "src/uploads";
 export const SELF_HOSTED_PREFIX = "cdn://";
@@ -59,6 +62,32 @@ export async function downloadToCdn(url: string, filename: string = path.basenam
       });
     });
   });
+}
+
+export async function readStreamToCdn(readStream: ReadStream, filename: string, dest: string = ""): Promise<string> {
+  const uniqueName = uniqueFileName(filename);
+  const relativePath = path.join(UPLOAD_DIRECTORY, dest, uniqueName);
+
+  const file = fs.createWriteStream(relativePath);
+  readStream.pipe(file);
+  await finished(file)
+  file.close();
+
+  const selfHostedPath = relativeToSelfHostedFilePath(relativePath);
+  return selfHostedPath;
+}
+
+export async function fileUploadToCdn(fileUpload: FileUpload, dest: string = ""): Promise<string> {
+  const readStream = fileUpload.createReadStream();
+  const selfHostedPath = await readStreamToCdn(readStream, fileUpload.filename, dest);
+  return selfHostedPath;
+}
+
+export async function fileUploadPromiseToCdn(fileUploadPromise: Promise<FileUpload>, dest: string = ""): Promise<string> {
+  const fileUpload = await fileUploadPromise;
+  const readStream = fileUpload.createReadStream();
+  const selfHostedPath = await readStreamToCdn(readStream, fileUpload.filename, dest);
+  return selfHostedPath;
 }
 
 export function uniqueFileName(filename: string) {

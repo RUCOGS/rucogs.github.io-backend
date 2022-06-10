@@ -6,7 +6,9 @@ import express from "express";
 
 export type ApolloResolversContext = {
   entityManager: AnyEntityManager
-  securityContext?: SecurityContext
+  unsecureEntityManager: EntityManager
+  mongoClient: MongoClient
+  securityContext: SecurityContext
 };
 export type RequestContext = {
   unsecureEntityManager: EntityManager

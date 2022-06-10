@@ -10,6 +10,7 @@ export default gql`
 
 scalar Date
 scalar Json
+scalar Upload
 
 enum RoleCode {
   SUPER_ADMIN,
@@ -54,6 +55,11 @@ enum Access {
   OPEN,
   INVITE,
   CLOSED,
+}
+
+enum InviteType {
+  INCOMING,
+  OUTGOING
 }
 
 type User @entity @mongodb {
@@ -158,6 +164,7 @@ type ProjectMemberRole @entity @mongodb {
 type ProjectInvite @entity @mongodb {
   id: ID! @id(from: "db") @alias(value: "_id")
   createdAt: Date @schema(metadata: [{ key: "createdAt", value: true }])
+  type: InviteType!
   user: User! @innerRef
   userId: ID! @schema(metadata: [{unique: 0}])
   project: Project! @innerRef

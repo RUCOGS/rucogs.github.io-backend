@@ -65,6 +65,7 @@ export default gql`
 
   scalar Date
   scalar Json
+  scalar Upload
 
   input AccessFilterInput {
     eq: Access
@@ -84,6 +85,18 @@ export default gql`
     in: [Date!]
     nin: [Date!]
     exists: Boolean
+  }
+
+  input InviteTypeFilterInput {
+    eq: InviteType
+    ne: InviteType
+    in: [InviteType!]
+    nin: [InviteType!]
+    exists: Boolean
+    contains: String
+    startsWith: String
+    endsWith: String
+    mode: StringFilterMode
   }
 
   input JsonFilterInput {
@@ -116,6 +129,14 @@ export default gql`
     startsWith: String
     endsWith: String
     mode: StringFilterMode
+  }
+
+  input UploadFilterInput {
+    eq: Upload
+    ne: Upload
+    in: [Upload!]
+    nin: [Upload!]
+    exists: Boolean
   }
 
   ########### EBoard ###########
@@ -270,23 +291,27 @@ export default gql`
   input ProjectInviteInsertInput {
     createdAt: Date
     projectId: ID!
+    type: InviteType!
     userId: ID!
   }
   input ProjectInviteUpdateInput {
     createdAt: Date
     projectId: ID
+    type: InviteType
     userId: ID
   }
   input ProjectInviteSortInput {
     createdAt: SortDirection
     id: SortDirection
     projectId: SortDirection
+    type: SortDirection
     userId: SortDirection
   }
   input ProjectInviteFilterInput {
     createdAt: DateFilterInput
     id: IDFilterInput
     projectId: IDFilterInput
+    type: InviteTypeFilterInput
     userId: IDFilterInput
     and_: [ProjectInviteFilterInput!]
     or_: [ProjectInviteFilterInput!]

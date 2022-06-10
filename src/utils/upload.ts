@@ -1,6 +1,7 @@
 //#region // ----- UPLOAD HELPERS ----- //
 
 import { deleteSelfHostedFile, isSelfHostedFile, relativeToSelfHostedFilePath } from "@src/controllers/cdn.controller";
+import { AnyEntityManager } from "@src/controllers/entity-manager.controller";
 import { RoleCode } from "@src/generated/graphql-endpoint.types";
 import { EntityManager } from "@src/generated/typetta";
 import { RequestContext, RequestWithContext } from "@src/misc/context";
@@ -9,6 +10,7 @@ import { assertNoDuplicates } from "@src/shared/utils";
 import { AbstractDAO } from "@twinlogix/typetta";
 import express from "express";
 import { HttpError } from "./entity-manager";
+import { MongoClient } from "mongodb"
 
 export function tryDeleteOldFileLinkFromEntity(req: RequestWithContext<RequestContext>, fileName: string, object: any): [boolean, string] {
   const files = req.files as { [fieldname: string]: Express.Multer.File[] };
@@ -43,27 +45,19 @@ export async function getRoleCodes(roleDao: AbstractDAO<any>, idKey: string, id:
 }
 
 export async function startEntityManagerTransaction(
-  req: RequestWithContext<RequestContext>, 
-  next: express.NextFunction, 
+  entityManager: EntityManager, 
+  mongoClient: MongoClient,
   fn: (transactionEntityManager: EntityManager & {
     __transaction_enabled__: true;
-  }) => Promise<void>
-) {
-  if (!req.context || !req.context.securityContext || !req.context.securityContext.userId) {
-    next(new HttpError(400, "Expected context, context.securityContext, context.securityContext.userId, and context.metadata."))
-    return false;
-  }
-
-  const entityManager = req.context.unsecureEntityManager;
-  const mongoClient = req.context.mongoClient;
-  
+  }) => Promise<void>,
+): Promise<Error | undefined> {
   const session = mongoClient.startSession()
   session.startTransaction({
     readConcern: { level: 'local' },
     writeConcern: { w: 'majority' },
-  })
-  let success = false;
+  });
 
+  let error: Error | undefined = undefined;
   try {
     await entityManager.transaction({
         mongodb: { default: session }
@@ -71,15 +65,37 @@ export async function startEntityManagerTransaction(
       fn
     );
     await session.commitTransaction();
-    success = true;
   } catch (err) {
+    if (err instanceof Error)
+      error = err;
     await session.abortTransaction();
-    success = false;
-    next(err);
   } finally {
     await session.endSession();
-    return success;
   }
+  return error;
+}
+
+export async function startEntityManagerTransactionREST(
+  req: RequestWithContext<RequestContext>, 
+  next: express.NextFunction, 
+  fn: (transactionEntityManager: EntityManager & {
+    __transaction_enabled__: true;
+  }) => Promise<void>
+): Promise<Error | undefined> {
+  if (!req.context || !req.context.securityContext || !req.context.securityContext.userId) {
+    const error = new HttpError(400, "Expected context, context.securityContext, context.securityContext.userId, and context.metadata.");
+    next(error);
+    return error;
+  }
+
+  const entityManager = req.context.unsecureEntityManager;
+  const mongoClient = req.context.mongoClient;
+  
+  const error = await startEntityManagerTransaction(entityManager, mongoClient, fn);
+  if (error instanceof Error) {
+    next(error);
+  }
+  return error;
 }
 
 export async function daoInsertBatch(options: {

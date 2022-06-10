@@ -7,8 +7,10 @@ import { typeDefs as typettaDirectivesTypeDefs } from '@twinlogix/typetta'
 import scalarResolvers from './scalar.resolvers';
 import authTypeDefs from './auth/auth.typedefs';
 import authResolvers from './auth/auth.resolvers';
-import uploadTypedefs from './upload/upload.typedefs'
-import uploadResolvers from './upload/upload.resolvers'
+import projectTypedefs from './project/project.typedefs'
+import projectResolvers from './project/project.resolvers'
+import userTypedefs from './user/user.typedefs'
+import userResolvers from './user/user.resolvers'
 
 // CONFIG: Apollo GraphQL typdefs and resolvers
 export const typeDefs = mergeTypeDefs([
@@ -16,14 +18,16 @@ export const typeDefs = mergeTypeDefs([
   schemaTypeDefs,
   typettaDirectivesTypeDefs,
   authTypeDefs,
-  uploadTypedefs
+  userTypedefs,
+  projectTypedefs
 ]);
 
 export const resolvers = mergeResolvers([
   generatedResolvers,
   authResolvers,
   scalarResolvers,
-  uploadResolvers
+  userResolvers,
+  projectResolvers
 ]);
 
 export function mergeResolvers(resolversArr: any[]) {

@@ -2,11 +2,11 @@ import { authAddSecurityContext } from '@src/controllers/auth.controller';
 import { uniqueFileName } from '@src/controllers/cdn.controller';
 import { getOperationMetadataFromRequest } from '@src/controllers/entity-manager.controller/entity-manager';
 import { RoleCode } from '@src/generated/graphql-endpoint.types';
-import { Permission } from '@src/generated/model.types';
+import { InviteType, Permission } from '@src/generated/model.types';
 import { ProjectMemberFilter, ProjectMemberInsert, UserSocialFilter, UserSocialInsert } from '@src/generated/typetta';
 import { RequestContext, RequestWithContext } from '@src/misc/context';
 import { makePermsCalc } from '@src/shared/security/permissions-calculator';
-import { assertNoDuplicatesHttpError, assertRequesterCanAddRoleCodes, daoInsertBatch, daoInsertRolesBatch, getRoleCodes, HttpError, startEntityManagerTransaction, tryDeleteOldFileLinkFromEntity } from '@src/utils';
+import { assertNoDuplicatesHttpError, assertRequesterCanAddRoleCodes, daoInsertBatch, daoInsertRolesBatch, getRoleCodes, HttpError, startEntityManagerTransactionREST, tryDeleteOldFileLinkFromEntity } from '@src/utils';
 import express from 'express';
 import multer from 'multer';
 
@@ -113,7 +113,7 @@ router.post('/user',
     const user = req.context.user;
     
     let response = {};
-    const transSucceeded = await startEntityManagerTransaction(req, next, async (transEntityManager) => {
+    const transSucceeded = await startEntityManagerTransactionREST(req, next, async (transEntityManager) => {
       const rolesUpdated = req.body.roles;
       let roleCodes: RoleCode[] = [];
       if (rolesUpdated) {
@@ -286,7 +286,7 @@ router.post('/project',
     const files = req.files as { [fieldname: string]: Express.Multer.File[] };
 
     let response = {};
-    const transSucceeded = await startEntityManagerTransaction(req, next, async (transEntityManager) => {
+    const transSucceeded = await startEntityManagerTransactionREST(req, next, async (transEntityManager) => {
       const projectMembersUpdated = req.body.projectMembers;
       if (projectMembersUpdated) {
         type ProjectMemberEdit = {
@@ -426,148 +426,6 @@ router.post('/project',
 TODO AFTER BASIC FUNC: Apollo can handle file uploads. See https://www.apollographql.com/docs/apollo-server/data/file-uploads/. We should use this instead of using dedicated rest APIs for creation. Using graphql's upload system also makes it easier for us to process the files, because we can control exactly what file goes where, and also halt saving the file if permissions fail, etc.
 */
 
-//#region // ----- NEW PROJECT ROUTE ----- //
-router.post('/project/new', 
-  // Authenticate and add security context
-  authAddSecurityContext,
-  upload.none(),
-  async function(req: RequestWithContext<RequestContext>, res, next) {
-    if (!req.context || !req.context.securityContext) {
-      next(new HttpError(400, "Expected context and context.securityContext."))
-      return;
-    }
-
-    try {
-      const securityContext = req.context.securityContext;
-
-      // Check permissions
-      if (!makePermsCalc()
-          .withContext(securityContext)
-          .hasPermission(Permission.CreateProject)) {
-        throw new HttpError(401, "Not authorized!");
-      }
-    } catch (err) {
-      next(err);
-      return;
-    }
-    
-    const userId = req.context.securityContext.userId!;
-    let response = {};
-    const transSucceeded = await startEntityManagerTransaction(req, next, async (transEntityManager) => {
-      const insertedProject = await transEntityManager.project.insertOne({
-        record: {
-          name: req.body.name,
-          pitch: req.body.pitch,
-          access: req.body.access,
-          description: "",
-          downloadLinks: [],
-          galleryImageLinks: [],
-        }
-      });
-
-      const projectOwner = await transEntityManager.projectMember.insertOne({
-        record: {
-          userId,
-          contributions: "",
-          projectId: insertedProject.id,
-          createdAt: Date.now()
-        }
-      })
-
-      await daoInsertRolesBatch({
-        dao: transEntityManager.projectMemberRole, 
-        roleCodes: [RoleCode.ProjectMember, RoleCode.ProjectOwner],
-        idKey: "projectMemberId",
-        id: projectOwner.id
-      });
-
-      response = {
-        message: "New project upload success!",
-        data: {
-          id: insertedProject.id
-        }
-      };
-    });
-    if (transSucceeded) {
-      res.status(201).send(response);
-    }
-  }
-);
-//#endregion // -- NEW PROJECT ROUTE ----- //
-
-//#region // ----- NEW INVITE ROUTE ----- //
-router.post('/project/invite/new', 
-  // Authenticate and add security context
-  authAddSecurityContext,
-  upload.none(),
-  async function(req: RequestWithContext<RequestContext>, res, next) {
-    if (!req.context || !req.context.securityContext) {
-      next(new HttpError(400, "Expected context and context.securityContext."))
-      return;
-    }
-
-    try {
-      const securityContext = req.context.securityContext;
-      const unsecureEntityManager = req.context.unsecureEntityManager;
-
-      // Check permissions
-      if (!makePermsCalc()
-          .withContext(securityContext)
-          .withDomain({
-            projectId: [req.body.projectId]
-          })
-          .hasPermission(Permission.UpdateProject)) {
-        throw new HttpError(401, "Not authorized!");
-      }
-
-      const projectExists = await unsecureEntityManager.projectMember.exists({
-        filter: {
-          userId: req.body.userId,
-          projectId: req.body.projectId
-        }
-      });
-
-      if (projectExists) {
-        throw new HttpError(400, "User is aready a member of the project!");
-      }
-
-      const inviteExists = await unsecureEntityManager.projectInvite.exists({
-        filter: {
-          userId: req.body.userId,
-          projectId: req.body.projectId
-        }
-      })
-
-      if (inviteExists) {
-        throw new HttpError(400, "User already has an invite!");
-      }
-    } catch (err) {
-      next(err);
-      return;
-    }
-    
-    const userId = req.context.securityContext.userId!;
-    let response = {};
-    const transSucceeded = await startEntityManagerTransaction(req, next, async (transEntityManager) => {
-      const insertedProject = await transEntityManager.projectInvite.insertOne({
-        record: {
-          userId: req.body.userId,
-          projectId: req.body.projectId
-        }
-      });
-
-      response = {
-        message: "New invite upload success!",
-        data: {}
-      };
-    });
-    if (transSucceeded) {
-      res.status(201).send(response);
-    }
-  }
-);
-//#endregion // -- NEW INVITE ROUTE ----- //
-
 //#region // ----- ACCEPT INVITE ROUTE ----- //
 router.post('/project/invite/accept', 
   // Authenticate and add security context
@@ -613,7 +471,7 @@ router.post('/project/invite/accept',
     }
     
     let response = {};
-    const transSucceeded = await startEntityManagerTransaction(req, next, async (transEntityManager) => {
+    const transSucceeded = await startEntityManagerTransactionREST(req, next, async (transEntityManager) => {
       if (!invite)
         throw new HttpError(400, "Invite doesn't exist!");
       

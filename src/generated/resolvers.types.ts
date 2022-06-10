@@ -81,6 +81,8 @@ export type ResolversTypes = {
   IDFilterInput: types.IdFilterInput
   Int: ResolverTypeWrapper<types.Scalars['Int']>
   IntFilterInput: types.IntFilterInput
+  InviteType: types.InviteType
+  InviteTypeFilterInput: types.InviteTypeFilterInput
   Json: ResolverTypeWrapper<types.Scalars['Json']>
   JsonFilterInput: types.JsonFilterInput
   Mutation: ResolverTypeWrapper<{}>
@@ -121,6 +123,8 @@ export type ResolversTypes = {
   String: ResolverTypeWrapper<types.Scalars['String']>
   StringFilterInput: types.StringFilterInput
   StringFilterMode: types.StringFilterMode
+  Upload: ResolverTypeWrapper<types.Scalars['Upload']>
+  UploadFilterInput: types.UploadFilterInput
   User: ResolverTypeWrapper<types.User>
   UserFilterInput: types.UserFilterInput
   UserFindInput: types.UserFindInput
@@ -178,6 +182,7 @@ export type ResolversParentTypes = {
   IDFilterInput: types.IdFilterInput
   Int: types.Scalars['Int']
   IntFilterInput: types.IntFilterInput
+  InviteTypeFilterInput: types.InviteTypeFilterInput
   Json: types.Scalars['Json']
   JsonFilterInput: types.JsonFilterInput
   Mutation: {}
@@ -214,6 +219,8 @@ export type ResolversParentTypes = {
   RoleCodeFilterInput: types.RoleCodeFilterInput
   String: types.Scalars['String']
   StringFilterInput: types.StringFilterInput
+  Upload: types.Scalars['Upload']
+  UploadFilterInput: types.UploadFilterInput
   User: types.User
   UserFilterInput: types.UserFilterInput
   UserFindInput: types.UserFindInput
@@ -327,6 +334,7 @@ export type ProjectInviteResolvers<ContextType = any, ParentType extends Resolve
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>
   project?: Resolver<ResolversTypes['Project'], ParentType, ContextType>
   projectId?: Resolver<ResolversTypes['ID'], ParentType, ContextType>
+  type?: Resolver<ResolversTypes['InviteType'], ParentType, ContextType>
   user?: Resolver<ResolversTypes['User'], ParentType, ContextType>
   userId?: Resolver<ResolversTypes['ID'], ParentType, ContextType>
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>
@@ -364,6 +372,10 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   userRoles?: Resolver<Array<ResolversTypes['UserRole']>, ParentType, ContextType, Partial<types.QueryUserRolesArgs>>
   userSocials?: Resolver<Array<ResolversTypes['UserSocial']>, ParentType, ContextType, Partial<types.QueryUserSocialsArgs>>
   users?: Resolver<Array<ResolversTypes['User']>, ParentType, ContextType, Partial<types.QueryUsersArgs>>
+}
+
+export interface UploadScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['Upload'], any> {
+  name: 'Upload'
 }
 
 export type UserResolvers<ContextType = any, ParentType extends ResolversParentTypes['User'] = ResolversParentTypes['User']> = {
@@ -424,6 +436,7 @@ export type Resolvers<ContextType = any> = {
   ProjectMember?: ProjectMemberResolvers<ContextType>
   ProjectMemberRole?: ProjectMemberRoleResolvers<ContextType>
   Query?: QueryResolvers<ContextType>
+  Upload?: GraphQLScalarType
   User?: UserResolvers<ContextType>
   UserLoginIdentity?: UserLoginIdentityResolvers<ContextType>
   UserRole?: UserRoleResolvers<ContextType>
