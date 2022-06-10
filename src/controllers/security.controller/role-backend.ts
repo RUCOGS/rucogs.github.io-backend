@@ -1,6 +1,9 @@
 import { AnyEntityManager } from "@src/controllers/entity-manager.controller/entity-manager";
 import { RoleCode } from "@src/generated/model.types";
+import { ProjectDAO, ProjectMemberDAO } from "@src/generated/typetta";
 import { SecurityContext, PermissionCode, SecurityPermissions } from "@src/shared/security";
+import { HttpError } from "@src/utils";
+import { mergeSecurityPermissions } from "./security-context";
 
 export type RoleBackendData = {
   getSecurityPermissions: (entityManager: AnyEntityManager, id: string) => Promise<SecurityPermissions>;
@@ -16,7 +19,7 @@ export const RoleBackendDataDict: {
       return {
         READ_PROFILE_PRIVATE: [{ userId: userId }],
         UPDATE_PROFILE: [{ userId: userId }],
-        MANAGE_USER_ROLES: [{ userId: userId }],
+        ACCEPT_PROJECT_INVITE: [{ userId: userId }],
         CREATE_PROJECT: true, 
       };
     },
@@ -28,8 +31,7 @@ export const RoleBackendDataDict: {
         CREATE_PROJECT: true,
         UPDATE_PROJECT: true,
         READ_PROFILE_PRIVATE: true,
-        MANAGE_USER_ROLES: true,
-        MANAGE_PROJECT_MEMBER_ROLES: true,
+        ACCEPT_PROJECT_INVITE: true,
       };
     }
   },
@@ -38,7 +40,6 @@ export const RoleBackendDataDict: {
       return {
         DELETE_PROFILE: true,
         DELETE_PROJECT: true,
-        MANAGE_USER_ROLES: true,
         MANAGE_EBOARD: true,
       }
     }
@@ -52,15 +53,50 @@ export const RoleBackendDataDict: {
         filter: {
           id: projectMemberId,
         },
-        projection: {
+        projection: ProjectMemberDAO.projection({
           projectId: true
-        }
+        })
       });
 
-      return {
-        MANAGE_PROJECT_MEMBER_ROLES: [{ projectMemberId: projectMemberId }] ,
-        UPDATE_PROJECT: [{ projectId: projectMember?.projectId }],
+      if (!projectMember)
+        throw new Error("Expected project member to exist!");
+
+      const project = await entityManager.project.findOne({
+        filter: {
+          id: projectMember?.projectId
+        },
+        projection: ProjectDAO.projection({
+          members: {
+            id: true
+          }
+        })
+      })
+      
+      if (!project)
+        throw new Error("Expected project to exist!");
+
+      let finalPermissions: SecurityPermissions = {
+        UPDATE_PROJECT: [{ projectId: projectMember.projectId }],
+      };
+
+      for (const member of project.members) {
+        const permissions = await RoleBackendDataDict[RoleCode.ProjectMember]?.getSecurityPermissions(entityManager, member.id);
+
+        if (!permissions)
+          throw new Error("Expected permissions to be defined!");
+
+        finalPermissions = mergeSecurityPermissions(finalPermissions, permissions);
       }
+
+      return finalPermissions;
+    }
+  },
+
+  [RoleCode.ProjectMember]: {
+    async getSecurityPermissions(entityManager, projectMemberId) {
+      return {
+        UPDATE_PROJECT_MEMBER: [{ projectMemberId: projectMemberId }],
+      };
     }
   }
 // #endregion // -- PROJECT MEMBER ROLES ----- //

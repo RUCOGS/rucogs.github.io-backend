@@ -66,6 +66,18 @@ export default gql`
   scalar Date
   scalar Json
 
+  input AccessFilterInput {
+    eq: Access
+    ne: Access
+    in: [Access!]
+    nin: [Access!]
+    exists: Boolean
+    contains: String
+    startsWith: String
+    endsWith: String
+    mode: StringFilterMode
+  }
+
   input DateFilterInput {
     eq: Date
     ne: Date
@@ -181,19 +193,21 @@ export default gql`
 
   ########### Project ###########
   input ProjectInsertInput {
+    access: Access!
     bannerLink: String
     cardImageLink: String
     completedAt: Date
     createdAt: Date
-    description: String!
-    downloadLinks: [String!]!
-    galleryImageLinks: [String!]!
+    description: String
+    downloadLinks: [String!]
+    galleryImageLinks: [String!]
     name: String!
     pitch: String!
     soundcloudEmbedSrc: String
     updatedAt: Date
   }
   input ProjectUpdateInput {
+    access: Access
     bannerLink: String
     cardImageLink: String
     completedAt: Date
@@ -207,6 +221,7 @@ export default gql`
     updatedAt: Date
   }
   input ProjectSortInput {
+    access: SortDirection
     bannerLink: SortDirection
     cardImageLink: SortDirection
     completedAt: SortDirection
@@ -221,6 +236,7 @@ export default gql`
     updatedAt: SortDirection
   }
   input ProjectFilterInput {
+    access: AccessFilterInput
     bannerLink: StringFilterInput
     cardImageLink: StringFilterInput
     completedAt: DateFilterInput
@@ -238,6 +254,7 @@ export default gql`
     nor_: [ProjectFilterInput!]
   }
   input ProjectRelationsFilterInput {
+    invites: ProjectInviteFindInput
     members: ProjectMemberFindInput
   }
   input ProjectFindInput {
@@ -249,9 +266,48 @@ export default gql`
   }
   ########### Project ###########
 
+  ########### ProjectInvite ###########
+  input ProjectInviteInsertInput {
+    createdAt: Date
+    projectId: ID!
+    userId: ID!
+  }
+  input ProjectInviteUpdateInput {
+    createdAt: Date
+    projectId: ID
+    userId: ID
+  }
+  input ProjectInviteSortInput {
+    createdAt: SortDirection
+    id: SortDirection
+    projectId: SortDirection
+    userId: SortDirection
+  }
+  input ProjectInviteFilterInput {
+    createdAt: DateFilterInput
+    id: IDFilterInput
+    projectId: IDFilterInput
+    userId: IDFilterInput
+    and_: [ProjectInviteFilterInput!]
+    or_: [ProjectInviteFilterInput!]
+    nor_: [ProjectInviteFilterInput!]
+  }
+  input ProjectInviteRelationsFilterInput {
+    project: ProjectFindInput
+    user: UserFindInput
+  }
+  input ProjectInviteFindInput {
+    filter: ProjectInviteFilterInput
+    sorts: [ProjectInviteSortInput!]
+    skip: Int
+    limit: Int
+    relations: ProjectInviteRelationsFilterInput
+  }
+  ########### ProjectInvite ###########
+
   ########### ProjectMember ###########
   input ProjectMemberInsertInput {
-    contributions: String!
+    contributions: String
     createdAt: Date
     projectId: ID!
     updatedAt: Date
@@ -331,32 +387,6 @@ export default gql`
   }
   ########### ProjectMemberRole ###########
 
-  ########### SomeType ###########
-  input SomeTypeInsertInput {
-    someField: Date
-  }
-  input SomeTypeUpdateInput {
-    someField: Date
-  }
-  input SomeTypeSortInput {
-    id: SortDirection
-    someField: SortDirection
-  }
-  input SomeTypeFilterInput {
-    id: IDFilterInput
-    someField: DateFilterInput
-    and_: [SomeTypeFilterInput!]
-    or_: [SomeTypeFilterInput!]
-    nor_: [SomeTypeFilterInput!]
-  }
-  input SomeTypeFindInput {
-    filter: SomeTypeFilterInput
-    sorts: [SomeTypeSortInput!]
-    skip: Int
-    limit: Int
-  }
-  ########### SomeType ###########
-
   ########### User ###########
   input UserInsertInput {
     avatarLink: String
@@ -406,6 +436,7 @@ export default gql`
   input UserRelationsFilterInput {
     eboard: EBoardFindInput
     loginIdentities: UserLoginIdentityFindInput
+    projectInvites: ProjectInviteFindInput
     projectMembers: ProjectMemberFindInput
     roles: UserRoleFindInput
     socials: UserSocialFindInput
@@ -541,9 +572,9 @@ export default gql`
     eBoards(filter: EBoardFilterInput, sorts: [EBoardSortInput!], relations: EBoardRelationsFilterInput, skip: Int, limit: Int): [EBoard!]!
     eBoardRoles(filter: EBoardRoleFilterInput, sorts: [EBoardRoleSortInput!], relations: EBoardRoleRelationsFilterInput, skip: Int, limit: Int): [EBoardRole!]!
     projects(filter: ProjectFilterInput, sorts: [ProjectSortInput!], relations: ProjectRelationsFilterInput, skip: Int, limit: Int): [Project!]!
+    projectInvites(filter: ProjectInviteFilterInput, sorts: [ProjectInviteSortInput!], relations: ProjectInviteRelationsFilterInput, skip: Int, limit: Int): [ProjectInvite!]!
     projectMembers(filter: ProjectMemberFilterInput, sorts: [ProjectMemberSortInput!], relations: ProjectMemberRelationsFilterInput, skip: Int, limit: Int): [ProjectMember!]!
     projectMemberRoles(filter: ProjectMemberRoleFilterInput, sorts: [ProjectMemberRoleSortInput!], relations: ProjectMemberRoleRelationsFilterInput, skip: Int, limit: Int): [ProjectMemberRole!]!
-    someTypes(filter: SomeTypeFilterInput, sorts: [SomeTypeSortInput!], skip: Int, limit: Int): [SomeType!]!
     users(filter: UserFilterInput, sorts: [UserSortInput!], relations: UserRelationsFilterInput, skip: Int, limit: Int): [User!]!
     userLoginIdentitys(filter: UserLoginIdentityFilterInput, sorts: [UserLoginIdentitySortInput!], relations: UserLoginIdentityRelationsFilterInput, skip: Int, limit: Int): [UserLoginIdentity!]!
     userRoles(filter: UserRoleFilterInput, sorts: [UserRoleSortInput!], relations: UserRoleRelationsFilterInput, skip: Int, limit: Int): [UserRole!]!
@@ -560,15 +591,15 @@ export default gql`
     createProject(record: ProjectInsertInput!): Project!
     updateProjects(filter: ProjectFilterInput!, changes: ProjectUpdateInput!): Boolean
     deleteProjects(filter: ProjectFilterInput!): Boolean
+    createProjectInvite(record: ProjectInviteInsertInput!): ProjectInvite!
+    updateProjectInvites(filter: ProjectInviteFilterInput!, changes: ProjectInviteUpdateInput!): Boolean
+    deleteProjectInvites(filter: ProjectInviteFilterInput!): Boolean
     createProjectMember(record: ProjectMemberInsertInput!): ProjectMember!
     updateProjectMembers(filter: ProjectMemberFilterInput!, changes: ProjectMemberUpdateInput!): Boolean
     deleteProjectMembers(filter: ProjectMemberFilterInput!): Boolean
     createProjectMemberRole(record: ProjectMemberRoleInsertInput!): ProjectMemberRole!
     updateProjectMemberRoles(filter: ProjectMemberRoleFilterInput!, changes: ProjectMemberRoleUpdateInput!): Boolean
     deleteProjectMemberRoles(filter: ProjectMemberRoleFilterInput!): Boolean
-    createSomeType(record: SomeTypeInsertInput!): SomeType!
-    updateSomeTypes(filter: SomeTypeFilterInput!, changes: SomeTypeUpdateInput!): Boolean
-    deleteSomeTypes(filter: SomeTypeFilterInput!): Boolean
     createUser(record: UserInsertInput!): User!
     updateUsers(filter: UserFilterInput!, changes: UserUpdateInput!): Boolean
     deleteUsers(filter: UserFilterInput!): Boolean

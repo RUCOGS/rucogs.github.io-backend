@@ -1,6 +1,6 @@
 import { createUnsecureEntityManager } from "@src/controllers/entity-manager.controller";
 import { User } from "@src/generated/graphql-endpoint.types";
-import { RoleCode, UserInsertInput } from "@src/generated/model.types";
+import { Access, RoleCode, UserInsertInput } from "@src/generated/model.types";
 import { EntityManager } from "@src/generated/typetta";
 import { startServer } from "@src/misc/server-constructor";
 import { getRolesOfType, RoleData, RoleDataList, RoleType } from "@src/shared/security";
@@ -106,6 +106,7 @@ async function generateProjects(unsecure: EntityManager, userIds: string[], coun
     const completedAt = updatedAt + randDuration();
     const projectResult = await unsecure.project.insertOne({
       record: {
+        access: Access.Open,
         name: "Minecraft",
         pitch: "Minecraft is a 3-D computer game where players can build anything. The game which has been described as like an 'online Lego' involves building blocks and creating structures across different environments and terrains. Set in a virtual world the game involves resource gathering, crafting items, building, and combat.",
         description: `
@@ -141,6 +142,7 @@ Minecraft is a 3-D computer game where players can build anything. The game whic
     const completedAt = updatedAt + randDuration();
     const projectResult = await unsecure.project.insertOne({
       record: {
+        access: Access.Open,
         bannerLink: getRandElem(banners),
         cardImageLink: getRandElem(banners),
         name: getRandomSubarray(words, randInst.range(3) + 1).join(' '),

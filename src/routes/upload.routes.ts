@@ -1,14 +1,12 @@
 import { authAddSecurityContext } from '@src/controllers/auth.controller';
-import { deleteSelfHostedFile, isSelfHostedFile, relativeToSelfHostedFilePath, uniqueFileName } from '@src/controllers/cdn.controller';
+import { uniqueFileName } from '@src/controllers/cdn.controller';
 import { getOperationMetadataFromRequest } from '@src/controllers/entity-manager.controller/entity-manager';
 import { RoleCode } from '@src/generated/graphql-endpoint.types';
 import { Permission } from '@src/generated/model.types';
-import { EntityManager, ProjectMemberFilter, ProjectMemberInsert, UserSocialFilter, UserSocialInsert } from '@src/generated/typetta';
+import { ProjectMemberFilter, ProjectMemberInsert, UserSocialFilter, UserSocialInsert } from '@src/generated/typetta';
 import { RequestContext, RequestWithContext } from '@src/misc/context';
-import { getHighestRole, isRoleBelowOrEqual } from '@src/shared/security';
 import { makePermsCalc } from '@src/shared/security/permissions-calculator';
-import { HttpError } from '@src/utils';
-import { AbstractDAO } from '@twinlogix/typetta';
+import { assertNoDuplicatesHttpError, assertRequesterCanAddRoleCodes, daoInsertBatch, daoInsertRolesBatch, getRoleCodes, HttpError, startEntityManagerTransaction, tryDeleteOldFileLinkFromEntity } from '@src/utils';
 import express from 'express';
 import multer from 'multer';
 
@@ -113,9 +111,9 @@ router.post('/user',
     
     const userId = req.context.securityContext.userId;
     const user = req.context.user;
-    const files = req.files as { [fieldname: string]: Express.Multer.File[] };
-
-    await startEntityManagerTransaction(req, next, async (transEntityManager) => {
+    
+    let response = {};
+    const transSucceeded = await startEntityManagerTransaction(req, next, async (transEntityManager) => {
       const rolesUpdated = req.body.roles;
       let roleCodes: RoleCode[] = [];
       if (rolesUpdated) {
@@ -140,6 +138,9 @@ router.post('/user',
       let socials: UserSocialEdit[] = [];
       if (socialsUpdated) {
         socials = JSON.parse(req.body.socials);
+        
+        assertNoDuplicatesHttpError(socials, "socials");
+        
         await daoInsertBatch({
           dao: transEntityManager.userSocial,
           elements: socials,
@@ -172,30 +173,36 @@ router.post('/user',
 
       const [bannerUpdated, bannerSelfHostedFilePath] = tryDeleteOldFileLinkFromEntity(req, "banner", user);
 
+      const displayNameUpdated = req.body.displayName !== undefined;
+      const bioUpdated = req.body.bio !== undefined;
+
       await transEntityManager.user.updateOne({
         filter: {
           id: user.id
         },
         changes: {
-          ...(req.body.displayName && { displayName: req.body.displayName }),
-          ...(req.body.bio && { bio: req.body.bio }),
+          ...(displayNameUpdated && { displayName: req.body.displayName }),
+          ...(bioUpdated && { bio: req.body.bio }),
           ...(avatarUpdated && { avatarLink: avatarSelfHostedFilePath}),
           ...(bannerUpdated && { bannerLink: bannerSelfHostedFilePath}),
         }
       })
 
-      res.status(201).send({
+      response = {
         message: "User upload success!",
         data: {
           ...(rolesUpdated && { roleCodes }),
           ...(socialsUpdated && { socials }),
-          ...(req.body.displayName && { displayName: req.body.displayName }),
-          ...(req.body.bio && { bio: req.body.bio }),
+          ...(displayNameUpdated && { displayName: req.body.displayName }),
+          ...(bioUpdated && { bio: req.body.bio }),
           ...(avatarUpdated && { avatarLink: avatarSelfHostedFilePath }),
           ...(bannerUpdated && { bannerLink: bannerSelfHostedFilePath }),
         }
-      });
+      };
     });
+    if (transSucceeded) {
+      res.status(201).send(response);
+    }
   }
 );
 //#endregion // -- USER ROUTE ----- //
@@ -277,16 +284,18 @@ router.post('/project',
     const userId = req.context.securityContext.userId;
     const project = req.context.project;
     const files = req.files as { [fieldname: string]: Express.Multer.File[] };
-    await startEntityManagerTransaction(req, next, async (transEntityManager) => {
+
+    let response = {};
+    const transSucceeded = await startEntityManagerTransaction(req, next, async (transEntityManager) => {
       const projectMembersUpdated = req.body.projectMembers;
-      type ProjectMemberEdit = {
-        userId: string,
-        contributions: string,
-        roles: RoleCode[]
-      }
-      let projectMembers: ProjectMemberEdit[] = [];
       if (projectMembersUpdated) {
-        projectMembers = JSON.parse(req.body.projectMembers);
+        type ProjectMemberEdit = {
+          userId: string,
+          contributions: string,
+          roles: RoleCode[]
+        }
+        let projectMemberEdits: ProjectMemberEdit[] = [];
+        projectMemberEdits = JSON.parse(req.body.projectMembers);
         
         // Get the requester's roles for this project if they
         // a project member object for this project. Note that
@@ -297,26 +306,28 @@ router.post('/project',
         // kept, and everything else is deleted.
         
         const requesterUserRoleCodes = await getRoleCodes(transEntityManager.userRole, "userId", userId);
-        const requesterProjectMemberRoleCodes = projectMembers.find(x => x.userId === userId)?.roles ?? [];
+        const requesterProjectMemberRoleCodes = projectMemberEdits.find(x => x.userId === userId)?.roles ?? [];
         const requesterRoleCodes = [...requesterUserRoleCodes, ...requesterProjectMemberRoleCodes];
         
         // Insert projectMembers
         await daoInsertBatch({
           dao: transEntityManager.projectMember,
-          elements: projectMembers,
-          // Delete Filter
+          elements: projectMemberEdits,
           deleteFilter: <ProjectMemberFilter>{
             $and: [
               { 
                 projectId: project.id, 
               },
               { 
-                $nor: projectMembers.map(x => ({ 
+                $nor: projectMemberEdits.map(x => ({ 
                   userId: x.userId
                 }))
               }
             ]
           },
+          // All new members must join through
+          // the invite system
+          create: false,
           elementToUpdateFilter: (member: ProjectMemberEdit): ProjectMemberFilter => ({
             userId: member.userId,
             projectId: project.id,
@@ -326,7 +337,7 @@ router.post('/project',
             contributions: member.contributions,
             projectId: project.id
           }),
-          foreach: async (member: ProjectMemberEdit, memberId: string) => {
+          foreachSuccess: async (member: ProjectMemberEdit, memberId: string) => {
             assertRequesterCanAddRoleCodes(requesterRoleCodes, member.roles);
 
             // Insert roles for each member
@@ -335,7 +346,7 @@ router.post('/project',
               roleCodes: member.roles,
               idKey: "projectMemberId",
               id: memberId
-            })
+            });
           }
         });
       }
@@ -344,194 +355,293 @@ router.post('/project',
 
       const [bannerUpdated, bannerSelfHostedFilePath] = tryDeleteOldFileLinkFromEntity(req, "banner", project);
 
+      const accessUpdated = req.body.access !== undefined;
+      const nameUpdated = req.body.name !== undefined;
+      const pitchUpdated = req.body.name !== undefined;
+      const descriptionUpdated = req.body.name !== undefined;
+
       await transEntityManager.project.updateOne({
         filter: {
           id: project.id
         },
         changes: {
-          ...(req.body.name && { displayName: req.body.name }),
-          ...(req.body.pitch && { pitch: req.body.pitch }),
-          ...(req.body.description && { description: req.body.description }),
+          ...(accessUpdated && { access: req.body.access }),
+          ...(nameUpdated && { name: req.body.name }),
+          ...(pitchUpdated && { pitch: req.body.pitch }),
+          ...(descriptionUpdated && { description: req.body.description }),
           ...(cardImageUpdated && { cardImageLink: cardImageSelfHostedFilePath}),
           ...(bannerUpdated && { bannerLink: bannerSelfHostedFilePath}),
         }
       });
 
-      res.status(201).send({
+      // Query for the latest updated members
+      let members;
+      if (projectMembersUpdated) {
+        const result = await transEntityManager.project.findOne({
+          filter: {
+            id: project.id
+          },
+          projection: {
+            members: {
+              id: true,
+              user: {
+                id: true,
+                avatarLink: true,
+                username: true,
+                displayName: true,
+              },
+              contributions: true,
+              roles: {
+                roleCode: true,
+              }
+            }
+          }
+        });
+        members = result?.members;
+      }
+
+      response = {
         message: "Project upload success!",
         data: {
-          ...(projectMembersUpdated && { projectMembers: projectMembers }),
-          ...(req.body.name && { displayName: req.body.name }),
-          ...(req.body.pitch && { pitch: req.body.pitch }),
-          ...(req.body.description && { description: req.body.description }),
-          ...(cardImageUpdated && { cardImageLink: cardImageSelfHostedFilePath }),
-          ...(bannerUpdated && { bannerLink: bannerSelfHostedFilePath }),
+          project: {
+            ...(accessUpdated && { access: req.body.access }),
+            ...(projectMembersUpdated && { members }),
+            ...(nameUpdated && { name: req.body.name }),
+            ...(pitchUpdated && { pitch: req.body.pitch }),
+            ...(descriptionUpdated && { description: req.body.description }),
+            ...(cardImageUpdated && { cardImageLink: cardImageSelfHostedFilePath }),
+            ...(bannerUpdated && { bannerLink: bannerSelfHostedFilePath }),
+          }
         }
-      });
+      };
     });
+    if (transSucceeded) {
+      res.status(201).send(response);
+    }
   }
 );
 //#endregion // -- PROJECT ROUTE ----- //
 
-//#region // ----- UPLOAD HELPERS ----- //
+/**
+TODO AFTER BASIC FUNC: Apollo can handle file uploads. See https://www.apollographql.com/docs/apollo-server/data/file-uploads/. We should use this instead of using dedicated rest APIs for creation. Using graphql's upload system also makes it easier for us to process the files, because we can control exactly what file goes where, and also halt saving the file if permissions fail, etc.
+*/
 
-export function tryDeleteOldFileLinkFromEntity(req: RequestWithContext<RequestContext>, fileName: string, object: any) {
-  const files = req.files as { [fieldname: string]: Express.Multer.File[] };
-  let fileUpdated = files[fileName] && files[fileName].length == 1;
-  const selfHostedFilePath = fileUpdated ? relativeToSelfHostedFilePath(files[fileName][0].path) : "";
-  const oldFilePath = object[fileName + 'Link'];
-  // Purge old card image if it's self hosted
-  if (oldFilePath) {
-    if (req.body.deletedFiles?.includes(fileName)) {
-      // Reset entity's link property for the file to empty
-      object[fileName + 'Link'] = "";
-      deleteSelfHostedFile(oldFilePath);
-      fileUpdated = true;
-    } else if (fileUpdated && isSelfHostedFile(oldFilePath)) {
-      deleteSelfHostedFile(oldFilePath);
+//#region // ----- NEW PROJECT ROUTE ----- //
+router.post('/project/new', 
+  // Authenticate and add security context
+  authAddSecurityContext,
+  upload.none(),
+  async function(req: RequestWithContext<RequestContext>, res, next) {
+    if (!req.context || !req.context.securityContext) {
+      next(new HttpError(400, "Expected context and context.securityContext."))
+      return;
     }
-  }
-  return [fileUpdated, selfHostedFilePath];
-}
 
-export async function getRoleCodes(roleDao: AbstractDAO<any>, idKey: string, id: string): Promise<RoleCode[]> {
-  return (await roleDao.findAll({
-    filter: {
-      // We filter against the userId of the user
-      // that's requesting this change.
-      [idKey]: id
-    },
-    projection: {
-      roleCode: true
-    }
-  })).map(x => x.roleCode as RoleCode)
-}
+    try {
+      const securityContext = req.context.securityContext;
 
-export async function startEntityManagerTransaction(
-  req: RequestWithContext<RequestContext>, 
-  next: express.NextFunction, 
-  fn: (transactionEntityManager: EntityManager & {
-    __transaction_enabled__: true;
-  }) => Promise<void>
-) {
-  if (!req.context || !req.context.securityContext || !req.context.securityContext.userId) {
-    next(new HttpError(400, "Expected context, context.securityContext, context.securityContext.userId, and context.metadata."))
-    return;
-  }
-
-  const entityManager = req.context.unsecureEntityManager;
-  const mongoClient = req.context.mongoClient;
-  
-  const session = mongoClient.startSession()
-  session.startTransaction({
-    readConcern: { level: 'local' },
-    writeConcern: { w: 'majority' },
-  })
-
-  try {
-    await entityManager.transaction({
-        mongodb: { default: session }
-      },
-      fn
-    );
-    await session.commitTransaction();
-  } catch (err) {
-    await session.abortTransaction();
-    next(err);
-  } finally {
-    await session.endSession();
-  }
-}
-
-export async function daoInsertBatch(options: {
-  dao: AbstractDAO<any>, 
-  elements: any[], 
-  deleteFilter: any, 
-  elementToUpdateFilter: (element: any) => any, 
-  elementToRecord: (element: any) => any,
-  foreach?: (element: any, entityId: any) => Promise<void>;
-}) {
-  // Delete socials that aren't part of our new updated batch.
-  const deletedEntities = await options.dao.findAll({
-    filter: options.deleteFilter,
-    projection: {
-      id: true
-    }
-  });
-  await options.dao.deleteAll({
-    filter: {
-      id: { in: deletedEntities.map(x => x.id) }
-    }
-  })
-  // Insert the new updated batch of elements
-  for (const element of options.elements) {
-    const updateFilter = options.elementToUpdateFilter(element);
-    let foundEntity = await options.dao.findOne({
-      filter: updateFilter,
-      projection: {
-        id: true
+      // Check permissions
+      if (!makePermsCalc()
+          .withContext(securityContext)
+          .hasPermission(Permission.CreateProject)) {
+        throw new HttpError(401, "Not authorized!");
       }
-    });
-    if (foundEntity) {
-      await options.dao.updateOne({
-        filter: updateFilter,
-        changes: foundEntity,
-      });
-    } else {
-      foundEntity = await options.dao.insertOne({
-        record: options.elementToRecord(element)
-      });
+    } catch (err) {
+      next(err);
+      return;
     }
     
-    if (options.foreach)
-      await options.foreach(element, foundEntity.id);
-  }
-}
-
-export async function daoInsertRolesBatch(options: {
-  dao: AbstractDAO<any>, 
-  roleCodes: RoleCode[],
-  idKey: string 
-  id: string
-}) {
-  await daoInsertBatch({
-    dao: options.dao,
-    elements: options.roleCodes,
-    // Delete Filter
-    deleteFilter: {
-      $and: [
-        { 
-          [options.idKey]: options.id, 
-        },
-        { 
-          $nor: options.roleCodes.map(x => ({ 
-            roleCode: x
-          }))
+    const userId = req.context.securityContext.userId!;
+    let response = {};
+    const transSucceeded = await startEntityManagerTransaction(req, next, async (transEntityManager) => {
+      const insertedProject = await transEntityManager.project.insertOne({
+        record: {
+          name: req.body.name,
+          pitch: req.body.pitch,
+          access: req.body.access,
+          description: "",
+          downloadLinks: [],
+          galleryImageLinks: [],
         }
-      ]
-    },
-    // Update Filter
-    elementToUpdateFilter: (roleCode: RoleCode) => ( {
-      [options.idKey]: options.id,
-      roleCode
-    }),
-    // Record
-    elementToRecord: (roleCode: RoleCode) => ({
-      [options.idKey]: options.id,
-      roleCode,
-    })
-  });
-}
+      });
 
-export function assertRequesterCanAddRoleCodes(requesterRoleCodes: RoleCode[], roleCodes: RoleCode[]) {
-  const requestHighestRoleCode = getHighestRole(requesterRoleCodes);
-  for (const roleCode of roleCodes) {
-    if (!isRoleBelowOrEqual(roleCode, requestHighestRoleCode)) {
-      throw new HttpError(403, "Cannot only add roles below your current role!");
+      const projectOwner = await transEntityManager.projectMember.insertOne({
+        record: {
+          userId,
+          contributions: "",
+          projectId: insertedProject.id,
+          createdAt: Date.now()
+        }
+      })
+
+      await daoInsertRolesBatch({
+        dao: transEntityManager.projectMemberRole, 
+        roleCodes: [RoleCode.ProjectMember, RoleCode.ProjectOwner],
+        idKey: "projectMemberId",
+        id: projectOwner.id
+      });
+
+      response = {
+        message: "New project upload success!",
+        data: {
+          id: insertedProject.id
+        }
+      };
+    });
+    if (transSucceeded) {
+      res.status(201).send(response);
     }
   }
-}
+);
+//#endregion // -- NEW PROJECT ROUTE ----- //
 
-//#endregion // -- UPLOAD HELPERS ----- //
+//#region // ----- NEW INVITE ROUTE ----- //
+router.post('/project/invite/new', 
+  // Authenticate and add security context
+  authAddSecurityContext,
+  upload.none(),
+  async function(req: RequestWithContext<RequestContext>, res, next) {
+    if (!req.context || !req.context.securityContext) {
+      next(new HttpError(400, "Expected context and context.securityContext."))
+      return;
+    }
+
+    try {
+      const securityContext = req.context.securityContext;
+      const unsecureEntityManager = req.context.unsecureEntityManager;
+
+      // Check permissions
+      if (!makePermsCalc()
+          .withContext(securityContext)
+          .withDomain({
+            projectId: [req.body.projectId]
+          })
+          .hasPermission(Permission.UpdateProject)) {
+        throw new HttpError(401, "Not authorized!");
+      }
+
+      const projectExists = await unsecureEntityManager.projectMember.exists({
+        filter: {
+          userId: req.body.userId,
+          projectId: req.body.projectId
+        }
+      });
+
+      if (projectExists) {
+        throw new HttpError(400, "User is aready a member of the project!");
+      }
+
+      const inviteExists = await unsecureEntityManager.projectInvite.exists({
+        filter: {
+          userId: req.body.userId,
+          projectId: req.body.projectId
+        }
+      })
+
+      if (inviteExists) {
+        throw new HttpError(400, "User already has an invite!");
+      }
+    } catch (err) {
+      next(err);
+      return;
+    }
+    
+    const userId = req.context.securityContext.userId!;
+    let response = {};
+    const transSucceeded = await startEntityManagerTransaction(req, next, async (transEntityManager) => {
+      const insertedProject = await transEntityManager.projectInvite.insertOne({
+        record: {
+          userId: req.body.userId,
+          projectId: req.body.projectId
+        }
+      });
+
+      response = {
+        message: "New invite upload success!",
+        data: {}
+      };
+    });
+    if (transSucceeded) {
+      res.status(201).send(response);
+    }
+  }
+);
+//#endregion // -- NEW INVITE ROUTE ----- //
+
+//#region // ----- ACCEPT INVITE ROUTE ----- //
+router.post('/project/invite/accept', 
+  // Authenticate and add security context
+  authAddSecurityContext,
+  upload.none(),
+  async function(req: RequestWithContext<RequestContext>, res, next) {
+    if (!req.context || !req.context.securityContext) {
+      next(new HttpError(400, "Expected context and context.securityContext."))
+      return;
+    }
+
+    let invite: {
+      id: string,
+      userId: string,
+      projectId: string,
+    } | null; 
+    try {
+      const unsecureEntityManager = req.context.unsecureEntityManager;
+      const securityContext = req.context.securityContext;
+
+      invite = await unsecureEntityManager.projectInvite.findOne({
+        filter: {
+          id: req.body.id
+        }
+      });
+
+      if (!invite) {
+        throw new HttpError(400, "Invite doesn't exist!");
+      }
+
+      // Check permissions
+      if (!makePermsCalc()
+          .withContext(securityContext)
+          .withDomain({ 
+            userId: [invite.userId]
+          })
+          .hasPermission(Permission.AcceptProjectInvite)) {
+        throw new HttpError(401, "Not authorized!");
+      }
+    } catch (err) {
+      next(err);
+      return;
+    }
+    
+    let response = {};
+    const transSucceeded = await startEntityManagerTransaction(req, next, async (transEntityManager) => {
+      if (!invite)
+        throw new HttpError(400, "Invite doesn't exist!");
+      
+      await transEntityManager.project.deleteOne({
+        filter: {
+          id: req.body.id
+        }
+      });
+
+      const projectMember = await transEntityManager.projectMember.insertOne({
+        record: {
+          userId: invite.userId,
+          projectId: invite.projectId,
+        }
+      });
+
+      response = {
+        message: "Project invite accepted!",
+        data: {
+          ...projectMember
+        }
+      };
+    });
+    if (transSucceeded) {
+      res.status(201).send(response);
+    }
+  }
+);
+//#endregion // -- ACCEPT INVITE ROUTE ----- //
 
 export default router;

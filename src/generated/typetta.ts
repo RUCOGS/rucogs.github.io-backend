@@ -8,6 +8,7 @@ export type ScalarsSpecification = {
   Boolean: { type: types.Scalars['Boolean']; isTextual: false; isQuantitative: false }
   Int: { type: types.Scalars['Int']; isTextual: false; isQuantitative: true }
   Float: { type: types.Scalars['Float']; isTextual: false; isQuantitative: true }
+  Access: { type: types.Access; isTextual: false; isQuantitative: false }
   Date: { type: types.Scalars['Date']; isTextual: false; isQuantitative: false }
   Json: { type: types.Scalars['Json']; isTextual: false; isQuantitative: false }
   Permission: { type: types.Permission; isTextual: false; isQuantitative: false }
@@ -57,20 +58,32 @@ export type AST = {
   }
   Project: {
     fields: {
+      access: { type: 'scalar'; isList: false; astName: 'Access'; isRequired: true; isListElementRequired: false; isExcluded: false; isId: false; generationStrategy: 'undefined' }
       bannerLink: { type: 'scalar'; isList: false; astName: 'String'; isRequired: false; isListElementRequired: false; isExcluded: false; isId: false; generationStrategy: 'undefined' }
       cardImageLink: { type: 'scalar'; isList: false; astName: 'String'; isRequired: false; isListElementRequired: false; isExcluded: false; isId: false; generationStrategy: 'undefined' }
       completedAt: { type: 'scalar'; isList: false; astName: 'Date'; isRequired: false; isListElementRequired: false; isExcluded: false; isId: false; generationStrategy: 'undefined' }
       createdAt: { type: 'scalar'; isList: false; astName: 'Date'; isRequired: false; isListElementRequired: false; isExcluded: false; isId: false; generationStrategy: 'undefined' }
-      description: { type: 'scalar'; isList: false; astName: 'String'; isRequired: true; isListElementRequired: false; isExcluded: false; isId: false; generationStrategy: 'undefined' }
-      downloadLinks: { type: 'scalar'; isList: true; astName: 'String'; isRequired: true; isListElementRequired: true; isExcluded: false; isId: false; generationStrategy: 'undefined' }
-      galleryImageLinks: { type: 'scalar'; isList: true; astName: 'String'; isRequired: true; isListElementRequired: true; isExcluded: false; isId: false; generationStrategy: 'undefined' }
+      description: { type: 'scalar'; isList: false; astName: 'String'; isRequired: false; isListElementRequired: false; isExcluded: false; isId: false; generationStrategy: 'undefined' }
+      downloadLinks: { type: 'scalar'; isList: true; astName: 'String'; isRequired: false; isListElementRequired: true; isExcluded: false; isId: false; generationStrategy: 'undefined' }
+      galleryImageLinks: { type: 'scalar'; isList: true; astName: 'String'; isRequired: false; isListElementRequired: true; isExcluded: false; isId: false; generationStrategy: 'undefined' }
       id: { type: 'scalar'; isList: false; astName: 'ID'; isRequired: true; isListElementRequired: false; isExcluded: false; isId: true; generationStrategy: 'db' }
+      invites: {
+        type: 'relation'
+        relation: 'foreign'
+        isList: true
+        astName: 'ProjectInvite'
+        isRequired: true
+        isListElementRequired: true
+        isExcluded: false
+        isId: false
+        generationStrategy: 'undefined'
+      }
       members: {
         type: 'relation'
         relation: 'foreign'
         isList: true
         astName: 'ProjectMember'
-        isRequired: false
+        isRequired: true
         isListElementRequired: true
         isExcluded: false
         isId: false
@@ -87,9 +100,34 @@ export type AST = {
       rawSorts: () => M.Sort
     }
   }
+  ProjectInvite: {
+    fields: {
+      createdAt: { type: 'scalar'; isList: false; astName: 'Date'; isRequired: false; isListElementRequired: false; isExcluded: false; isId: false; generationStrategy: 'undefined' }
+      id: { type: 'scalar'; isList: false; astName: 'ID'; isRequired: true; isListElementRequired: false; isExcluded: false; isId: true; generationStrategy: 'db' }
+      project: {
+        type: 'relation'
+        relation: 'inner'
+        isList: false
+        astName: 'Project'
+        isRequired: true
+        isListElementRequired: false
+        isExcluded: false
+        isId: false
+        generationStrategy: 'undefined'
+      }
+      projectId: { type: 'scalar'; isList: false; astName: 'ID'; isRequired: true; isListElementRequired: false; isExcluded: false; isId: false; generationStrategy: 'undefined' }
+      user: { type: 'relation'; relation: 'inner'; isList: false; astName: 'User'; isRequired: true; isListElementRequired: false; isExcluded: false; isId: false; generationStrategy: 'undefined' }
+      userId: { type: 'scalar'; isList: false; astName: 'ID'; isRequired: true; isListElementRequired: false; isExcluded: false; isId: false; generationStrategy: 'undefined' }
+    }
+    driverSpecification: {
+      rawFilter: () => M.Filter<M.Document>
+      rawUpdate: () => M.UpdateFilter<M.Document>
+      rawSorts: () => M.Sort
+    }
+  }
   ProjectMember: {
     fields: {
-      contributions: { type: 'scalar'; isList: false; astName: 'String'; isRequired: true; isListElementRequired: false; isExcluded: false; isId: false; generationStrategy: 'undefined' }
+      contributions: { type: 'scalar'; isList: false; astName: 'String'; isRequired: false; isListElementRequired: false; isExcluded: false; isId: false; generationStrategy: 'undefined' }
       createdAt: { type: 'scalar'; isList: false; astName: 'Date'; isRequired: false; isListElementRequired: false; isExcluded: false; isId: false; generationStrategy: 'undefined' }
       id: { type: 'scalar'; isList: false; astName: 'ID'; isRequired: true; isListElementRequired: false; isExcluded: false; isId: true; generationStrategy: 'db' }
       project: {
@@ -148,17 +186,6 @@ export type AST = {
       rawSorts: () => M.Sort
     }
   }
-  SomeType: {
-    fields: {
-      id: { type: 'scalar'; isList: false; astName: 'ID'; isRequired: true; isListElementRequired: false; isExcluded: false; isId: true; generationStrategy: 'db' }
-      someField: { type: 'scalar'; isList: false; astName: 'Date'; isRequired: false; isListElementRequired: false; isExcluded: false; isId: false; generationStrategy: 'undefined' }
-    }
-    driverSpecification: {
-      rawFilter: () => M.Filter<M.Document>
-      rawUpdate: () => M.UpdateFilter<M.Document>
-      rawSorts: () => M.Sort
-    }
-  }
   User: {
     fields: {
       avatarLink: { type: 'scalar'; isList: false; astName: 'String'; isRequired: false; isListElementRequired: false; isExcluded: false; isId: false; generationStrategy: 'undefined' }
@@ -184,6 +211,17 @@ export type AST = {
         relation: 'foreign'
         isList: true
         astName: 'UserLoginIdentity'
+        isRequired: true
+        isListElementRequired: true
+        isExcluded: false
+        isId: false
+        generationStrategy: 'undefined'
+      }
+      projectInvites: {
+        type: 'relation'
+        relation: 'foreign'
+        isList: true
+        astName: 'ProjectInvite'
         isRequired: true
         isListElementRequired: true
         isExcluded: false
@@ -488,6 +526,12 @@ export class InMemoryEBoardRoleDAO<MetadataType, OperationMetadataType> extends 
 }
 export function projectSchema(): T.Schema<ScalarsSpecification> {
   return {
+    access: {
+      type: 'scalar',
+      scalar: 'String',
+      required: true,
+      isEnum: true,
+    },
     bannerLink: {
       type: 'scalar',
       scalar: 'String',
@@ -508,20 +552,17 @@ export function projectSchema(): T.Schema<ScalarsSpecification> {
     description: {
       type: 'scalar',
       scalar: 'String',
-      required: true,
     },
     downloadLinks: {
       type: 'scalar',
       scalar: 'String',
       isListElementRequired: true,
-      required: true,
       isList: true,
     },
     galleryImageLinks: {
       type: 'scalar',
       scalar: 'String',
       isListElementRequired: true,
-      required: true,
       isList: true,
     },
     id: {
@@ -532,6 +573,17 @@ export function projectSchema(): T.Schema<ScalarsSpecification> {
       required: true,
       alias: '_id',
     },
+    invites: {
+      type: 'relation',
+      relation: 'foreign',
+      schema: () => projectInviteSchema(),
+      refFrom: 'projectId',
+      refTo: 'id',
+      dao: 'projectInvite',
+      isListElementRequired: true,
+      required: true,
+      isList: true,
+    },
     members: {
       type: 'relation',
       relation: 'foreign',
@@ -540,6 +592,7 @@ export function projectSchema(): T.Schema<ScalarsSpecification> {
       refTo: 'id',
       dao: 'projectMember',
       isListElementRequired: true,
+      required: true,
       isList: true,
     },
     name: {
@@ -633,12 +686,134 @@ export class InMemoryProjectDAO<MetadataType, OperationMetadataType> extends T.A
     })
   }
 }
+export function projectInviteSchema(): T.Schema<ScalarsSpecification> {
+  return {
+    createdAt: {
+      type: 'scalar',
+      scalar: 'Date',
+      metadata: Object.fromEntries([['createdAt', 'true']]),
+    },
+    id: {
+      type: 'scalar',
+      scalar: 'ID',
+      isId: true,
+      generationStrategy: 'db',
+      required: true,
+      alias: '_id',
+    },
+    project: {
+      type: 'relation',
+      relation: 'inner',
+      schema: () => projectSchema(),
+      refFrom: 'projectId',
+      refTo: 'id',
+      dao: 'project',
+      required: true,
+    },
+    projectId: {
+      type: 'scalar',
+      scalar: 'ID',
+      required: true,
+      metadata: Object.fromEntries([['undefined', 'undefined']]),
+    },
+    user: {
+      type: 'relation',
+      relation: 'inner',
+      schema: () => userSchema(),
+      refFrom: 'userId',
+      refTo: 'id',
+      dao: 'user',
+      required: true,
+    },
+    userId: {
+      type: 'scalar',
+      scalar: 'ID',
+      required: true,
+      metadata: Object.fromEntries([['undefined', 'undefined']]),
+    },
+  }
+}
+
+type ProjectInviteDAOGenerics<MetadataType, OperationMetadataType> = T.MongoDBDAOGenerics<
+  'ProjectInvite',
+  AST,
+  ScalarsSpecification,
+  ProjectInviteCachedTypes,
+  MetadataType,
+  OperationMetadataType,
+  EntityManager<MetadataType, OperationMetadataType>
+>
+export type ProjectInviteDAOParams<MetadataType, OperationMetadataType> = Omit<
+  T.MongoDBDAOParams<ProjectInviteDAOGenerics<MetadataType, OperationMetadataType>>,
+  'idGenerator' | 'idField' | 'schema' | 'idScalar' | 'idGeneration'
+>
+export type InMemoryProjectInviteDAOParams<MetadataType, OperationMetadataType> = Omit<
+  T.InMemoryDAOParams<ProjectInviteDAOGenerics<MetadataType, OperationMetadataType>>,
+  'idGenerator' | 'idField' | 'schema' | 'idScalar' | 'idGeneration'
+>
+
+export type ProjectInviteIdFields = T.IdFields<'ProjectInvite', AST>
+export interface ProjectInviteModel extends types.ProjectInvite {}
+export interface ProjectInviteInsert extends T.Insert<'ProjectInvite', AST, ScalarsSpecification> {}
+export interface ProjectInvitePlainModel extends T.GenerateModel<'ProjectInvite', AST, ScalarsSpecification, 'relation'> {}
+export interface ProjectInviteProjection extends T.Projection<'ProjectInvite', AST> {}
+export interface ProjectInviteUpdate extends T.Update<'ProjectInvite', AST, ScalarsSpecification> {}
+export interface ProjectInviteFilter extends T.Filter<'ProjectInvite', AST, ScalarsSpecification> {}
+export interface ProjectInviteSortElement extends T.SortElement<'ProjectInvite', AST> {}
+export interface ProjectInviteRelationsFindParams extends T.RelationsFindParams<'ProjectInvite', AST, ScalarsSpecification> {}
+export type ProjectInviteParams<P extends ProjectInviteProjection> = T.Params<'ProjectInvite', AST, ScalarsSpecification, P>
+export type ProjectInviteCachedTypes = T.CachedTypes<
+  ProjectInviteIdFields,
+  ProjectInviteModel,
+  ProjectInviteInsert,
+  ProjectInvitePlainModel,
+  ProjectInviteProjection,
+  ProjectInviteUpdate,
+  ProjectInviteFilter,
+  ProjectInviteSortElement,
+  ProjectInviteRelationsFindParams
+>
+
+export class ProjectInviteDAO<MetadataType, OperationMetadataType> extends T.AbstractMongoDBDAO<ProjectInviteDAOGenerics<MetadataType, OperationMetadataType>> {
+  public static projection<P extends T.Projection<'ProjectInvite', AST>>(p: P) {
+    return p
+  }
+  public static mergeProjection<P1 extends T.Projection<'ProjectInvite', AST>, P2 extends T.Projection<'ProjectInvite', AST>>(
+    p1: P1,
+    p2: P2,
+  ): T.SelectProjection<T.Projection<'ProjectInvite', AST>, P1, P2> {
+    return T.mergeProjections(p1, p2) as T.SelectProjection<T.Projection<'ProjectInvite', AST>, P1, P2>
+  }
+  public constructor(params: ProjectInviteDAOParams<MetadataType, OperationMetadataType>) {
+    super({
+      ...params,
+      schema: projectInviteSchema(),
+    })
+  }
+}
+
+export class InMemoryProjectInviteDAO<MetadataType, OperationMetadataType> extends T.AbstractInMemoryDAO<ProjectInviteDAOGenerics<MetadataType, OperationMetadataType>> {
+  public static projection<P extends T.Projection<'ProjectInvite', AST>>(p: P) {
+    return p
+  }
+  public static mergeProjection<P1 extends T.Projection<'ProjectInvite', AST>, P2 extends T.Projection<'ProjectInvite', AST>>(
+    p1: P1,
+    p2: P2,
+  ): T.SelectProjection<T.Projection<'ProjectInvite', AST>, P1, P2> {
+    return T.mergeProjections(p1, p2) as T.SelectProjection<T.Projection<'ProjectInvite', AST>, P1, P2>
+  }
+  public constructor(params: InMemoryProjectInviteDAOParams<MetadataType, OperationMetadataType>) {
+    super({
+      ...params,
+      schema: projectInviteSchema(),
+    })
+  }
+}
 export function projectMemberSchema(): T.Schema<ScalarsSpecification> {
   return {
     contributions: {
       type: 'scalar',
       scalar: 'String',
-      required: true,
     },
     createdAt: {
       type: 'scalar',
@@ -885,96 +1060,6 @@ export class InMemoryProjectMemberRoleDAO<MetadataType, OperationMetadataType> e
     })
   }
 }
-export function someTypeSchema(): T.Schema<ScalarsSpecification> {
-  return {
-    id: {
-      type: 'scalar',
-      scalar: 'ID',
-      isId: true,
-      generationStrategy: 'db',
-      required: true,
-      alias: '_id',
-    },
-    someField: {
-      type: 'scalar',
-      scalar: 'Date',
-      metadata: Object.fromEntries([
-        ['keyOne', '[object Object]'],
-        ['keyTwo', 'one,2,three,true'],
-      ]),
-    },
-  }
-}
-
-type SomeTypeDAOGenerics<MetadataType, OperationMetadataType> = T.MongoDBDAOGenerics<
-  'SomeType',
-  AST,
-  ScalarsSpecification,
-  SomeTypeCachedTypes,
-  MetadataType,
-  OperationMetadataType,
-  EntityManager<MetadataType, OperationMetadataType>
->
-export type SomeTypeDAOParams<MetadataType, OperationMetadataType> = Omit<
-  T.MongoDBDAOParams<SomeTypeDAOGenerics<MetadataType, OperationMetadataType>>,
-  'idGenerator' | 'idField' | 'schema' | 'idScalar' | 'idGeneration'
->
-export type InMemorySomeTypeDAOParams<MetadataType, OperationMetadataType> = Omit<
-  T.InMemoryDAOParams<SomeTypeDAOGenerics<MetadataType, OperationMetadataType>>,
-  'idGenerator' | 'idField' | 'schema' | 'idScalar' | 'idGeneration'
->
-
-export type SomeTypeIdFields = T.IdFields<'SomeType', AST>
-export interface SomeTypeModel extends types.SomeType {}
-export interface SomeTypeInsert extends T.Insert<'SomeType', AST, ScalarsSpecification> {}
-export interface SomeTypePlainModel extends T.GenerateModel<'SomeType', AST, ScalarsSpecification, 'relation'> {}
-export interface SomeTypeProjection extends T.Projection<'SomeType', AST> {}
-export interface SomeTypeUpdate extends T.Update<'SomeType', AST, ScalarsSpecification> {}
-export interface SomeTypeFilter extends T.Filter<'SomeType', AST, ScalarsSpecification> {}
-export interface SomeTypeSortElement extends T.SortElement<'SomeType', AST> {}
-export interface SomeTypeRelationsFindParams extends T.RelationsFindParams<'SomeType', AST, ScalarsSpecification> {}
-export type SomeTypeParams<P extends SomeTypeProjection> = T.Params<'SomeType', AST, ScalarsSpecification, P>
-export type SomeTypeCachedTypes = T.CachedTypes<
-  SomeTypeIdFields,
-  SomeTypeModel,
-  SomeTypeInsert,
-  SomeTypePlainModel,
-  SomeTypeProjection,
-  SomeTypeUpdate,
-  SomeTypeFilter,
-  SomeTypeSortElement,
-  SomeTypeRelationsFindParams
->
-
-export class SomeTypeDAO<MetadataType, OperationMetadataType> extends T.AbstractMongoDBDAO<SomeTypeDAOGenerics<MetadataType, OperationMetadataType>> {
-  public static projection<P extends T.Projection<'SomeType', AST>>(p: P) {
-    return p
-  }
-  public static mergeProjection<P1 extends T.Projection<'SomeType', AST>, P2 extends T.Projection<'SomeType', AST>>(p1: P1, p2: P2): T.SelectProjection<T.Projection<'SomeType', AST>, P1, P2> {
-    return T.mergeProjections(p1, p2) as T.SelectProjection<T.Projection<'SomeType', AST>, P1, P2>
-  }
-  public constructor(params: SomeTypeDAOParams<MetadataType, OperationMetadataType>) {
-    super({
-      ...params,
-      schema: someTypeSchema(),
-    })
-  }
-}
-
-export class InMemorySomeTypeDAO<MetadataType, OperationMetadataType> extends T.AbstractInMemoryDAO<SomeTypeDAOGenerics<MetadataType, OperationMetadataType>> {
-  public static projection<P extends T.Projection<'SomeType', AST>>(p: P) {
-    return p
-  }
-  public static mergeProjection<P1 extends T.Projection<'SomeType', AST>, P2 extends T.Projection<'SomeType', AST>>(p1: P1, p2: P2): T.SelectProjection<T.Projection<'SomeType', AST>, P1, P2> {
-    return T.mergeProjections(p1, p2) as T.SelectProjection<T.Projection<'SomeType', AST>, P1, P2>
-  }
-  public constructor(params: InMemorySomeTypeDAOParams<MetadataType, OperationMetadataType>) {
-    super({
-      ...params,
-      schema: someTypeSchema(),
-    })
-  }
-}
 export function userSchema(): T.Schema<ScalarsSpecification> {
   return {
     avatarLink: {
@@ -1026,6 +1111,17 @@ export function userSchema(): T.Schema<ScalarsSpecification> {
       refFrom: 'userId',
       refTo: 'id',
       dao: 'userLoginIdentity',
+      isListElementRequired: true,
+      required: true,
+      isList: true,
+    },
+    projectInvites: {
+      type: 'relation',
+      relation: 'foreign',
+      schema: () => projectInviteSchema(),
+      refFrom: 'userId',
+      refTo: 'id',
+      dao: 'projectInvite',
       isListElementRequired: true,
       required: true,
       isList: true,
@@ -1474,9 +1570,9 @@ export type EntityManagerParams<MetadataType, OperationMetadataType, Permissions
     eBoard?: Pick<Partial<EBoardDAOParams<MetadataType, OperationMetadataType>>, 'middlewares' | 'metadata'>
     eBoardRole?: Pick<Partial<EBoardRoleDAOParams<MetadataType, OperationMetadataType>>, 'middlewares' | 'metadata'>
     project?: Pick<Partial<ProjectDAOParams<MetadataType, OperationMetadataType>>, 'middlewares' | 'metadata'>
+    projectInvite?: Pick<Partial<ProjectInviteDAOParams<MetadataType, OperationMetadataType>>, 'middlewares' | 'metadata'>
     projectMember?: Pick<Partial<ProjectMemberDAOParams<MetadataType, OperationMetadataType>>, 'middlewares' | 'metadata'>
     projectMemberRole?: Pick<Partial<ProjectMemberRoleDAOParams<MetadataType, OperationMetadataType>>, 'middlewares' | 'metadata'>
-    someType?: Pick<Partial<SomeTypeDAOParams<MetadataType, OperationMetadataType>>, 'middlewares' | 'metadata'>
     user?: Pick<Partial<UserDAOParams<MetadataType, OperationMetadataType>>, 'middlewares' | 'metadata'>
     userLoginIdentity?: Pick<Partial<UserLoginIdentityDAOParams<MetadataType, OperationMetadataType>>, 'middlewares' | 'metadata'>
     userRole?: Pick<Partial<UserRoleDAOParams<MetadataType, OperationMetadataType>>, 'middlewares' | 'metadata'>
@@ -1484,7 +1580,7 @@ export type EntityManagerParams<MetadataType, OperationMetadataType, Permissions
   }
   mongodb: Record<'default', M.Db | 'mock'>
   scalars?: T.UserInputDriverDataTypeAdapterMap<ScalarsSpecification, 'mongo'>
-  log?: T.LogInput<'EBoard' | 'EBoardRole' | 'Project' | 'ProjectMember' | 'ProjectMemberRole' | 'SomeType' | 'User' | 'UserLoginIdentity' | 'UserRole' | 'UserSocial'>
+  log?: T.LogInput<'EBoard' | 'EBoardRole' | 'Project' | 'ProjectInvite' | 'ProjectMember' | 'ProjectMemberRole' | 'User' | 'UserLoginIdentity' | 'UserRole' | 'UserSocial'>
   security?: T.EntityManagerSecurtyPolicy<DAOGenericsMap<MetadataType, OperationMetadataType>, OperationMetadataType, Permissions, SecurityDomain>
 }
 type EntityManagerMiddleware<MetadataType = never, OperationMetadataType = never> = T.DAOMiddleware<DAOGenericsUnion<MetadataType, OperationMetadataType>>
@@ -1497,9 +1593,9 @@ export class EntityManager<
   private _eBoard: EBoardDAO<MetadataType, OperationMetadataType> | undefined
   private _eBoardRole: EBoardRoleDAO<MetadataType, OperationMetadataType> | undefined
   private _project: ProjectDAO<MetadataType, OperationMetadataType> | undefined
+  private _projectInvite: ProjectInviteDAO<MetadataType, OperationMetadataType> | undefined
   private _projectMember: ProjectMemberDAO<MetadataType, OperationMetadataType> | undefined
   private _projectMemberRole: ProjectMemberRoleDAO<MetadataType, OperationMetadataType> | undefined
-  private _someType: SomeTypeDAO<MetadataType, OperationMetadataType> | undefined
   private _user: UserDAO<MetadataType, OperationMetadataType> | undefined
   private _userLoginIdentity: UserLoginIdentityDAO<MetadataType, OperationMetadataType> | undefined
   private _userRole: UserRoleDAO<MetadataType, OperationMetadataType> | undefined
@@ -1512,7 +1608,7 @@ export class EntityManager<
 
   private middlewares: (EntityManagerMiddleware<MetadataType, OperationMetadataType> | GroupMiddleware<any, MetadataType, OperationMetadataType>)[]
 
-  private logger?: T.LogFunction<'EBoard' | 'EBoardRole' | 'Project' | 'ProjectMember' | 'ProjectMemberRole' | 'SomeType' | 'User' | 'UserLoginIdentity' | 'UserRole' | 'UserSocial'>
+  private logger?: T.LogFunction<'EBoard' | 'EBoardRole' | 'Project' | 'ProjectInvite' | 'ProjectMember' | 'ProjectMemberRole' | 'User' | 'UserLoginIdentity' | 'UserRole' | 'UserSocial'>
 
   get eBoard(): EBoardDAO<MetadataType, OperationMetadataType> {
     if (!this._eBoard) {
@@ -1613,6 +1709,39 @@ export class EntityManager<
     }
     return this._project
   }
+  get projectInvite(): ProjectInviteDAO<MetadataType, OperationMetadataType> {
+    if (!this._projectInvite) {
+      const db = this.mongodb.default
+      this._projectInvite =
+        db === 'mock'
+          ? (new InMemoryProjectInviteDAO({
+              entityManager: this,
+              datasource: null,
+              metadata: this.metadata,
+              ...this.overrides?.projectInvite,
+              middlewares: [
+                ...(this.overrides?.projectInvite?.middlewares || []),
+                ...(selectMiddleware('projectInvite', this.middlewares) as T.DAOMiddleware<ProjectInviteDAOGenerics<MetadataType, OperationMetadataType>>[]),
+              ],
+              name: 'ProjectInvite',
+              logger: this.logger,
+            }) as unknown as ProjectInviteDAO<MetadataType, OperationMetadataType>)
+          : new ProjectInviteDAO({
+              entityManager: this,
+              datasource: 'default',
+              metadata: this.metadata,
+              ...this.overrides?.projectInvite,
+              collection: db.collection('projectInvites'),
+              middlewares: [
+                ...(this.overrides?.projectInvite?.middlewares || []),
+                ...(selectMiddleware('projectInvite', this.middlewares) as T.DAOMiddleware<ProjectInviteDAOGenerics<MetadataType, OperationMetadataType>>[]),
+              ],
+              name: 'ProjectInvite',
+              logger: this.logger,
+            })
+    }
+    return this._projectInvite
+  }
   get projectMember(): ProjectMemberDAO<MetadataType, OperationMetadataType> {
     if (!this._projectMember) {
       const db = this.mongodb.default
@@ -1678,39 +1807,6 @@ export class EntityManager<
             })
     }
     return this._projectMemberRole
-  }
-  get someType(): SomeTypeDAO<MetadataType, OperationMetadataType> {
-    if (!this._someType) {
-      const db = this.mongodb.default
-      this._someType =
-        db === 'mock'
-          ? (new InMemorySomeTypeDAO({
-              entityManager: this,
-              datasource: null,
-              metadata: this.metadata,
-              ...this.overrides?.someType,
-              middlewares: [
-                ...(this.overrides?.someType?.middlewares || []),
-                ...(selectMiddleware('someType', this.middlewares) as T.DAOMiddleware<SomeTypeDAOGenerics<MetadataType, OperationMetadataType>>[]),
-              ],
-              name: 'SomeType',
-              logger: this.logger,
-            }) as unknown as SomeTypeDAO<MetadataType, OperationMetadataType>)
-          : new SomeTypeDAO({
-              entityManager: this,
-              datasource: 'default',
-              metadata: this.metadata,
-              ...this.overrides?.someType,
-              collection: db.collection('someTypes'),
-              middlewares: [
-                ...(this.overrides?.someType?.middlewares || []),
-                ...(selectMiddleware('someType', this.middlewares) as T.DAOMiddleware<SomeTypeDAOGenerics<MetadataType, OperationMetadataType>>[]),
-              ],
-              name: 'SomeType',
-              logger: this.logger,
-            })
-    }
-    return this._someType
   }
   get user(): UserDAO<MetadataType, OperationMetadataType> {
     if (!this._user) {
@@ -1843,7 +1939,20 @@ export class EntityManager<
     super({
       ...params,
       scalars: params.scalars
-        ? T.userInputDataTypeAdapterToDataTypeAdapter(params.scalars, ['Date', 'Json', 'Permission', 'RoleCode', 'SortDirection', 'StringFilterMode', 'ID', 'String', 'Boolean', 'Int', 'Float'])
+        ? T.userInputDataTypeAdapterToDataTypeAdapter(params.scalars, [
+            'Access',
+            'Date',
+            'Json',
+            'Permission',
+            'RoleCode',
+            'SortDirection',
+            'StringFilterMode',
+            'ID',
+            'String',
+            'Boolean',
+            'Int',
+            'Float',
+          ])
         : undefined,
     })
     this.overrides = params.overrides
@@ -1871,9 +1980,9 @@ export class EntityManager<
         eBoard: M.Collection<M.Document> | null
         eBoardRole: M.Collection<M.Document> | null
         project: M.Collection<M.Document> | null
+        projectInvite: M.Collection<M.Document> | null
         projectMember: M.Collection<M.Document> | null
         projectMemberRole: M.Collection<M.Document> | null
-        someType: M.Collection<M.Document> | null
         user: M.Collection<M.Document> | null
         userLoginIdentity: M.Collection<M.Document> | null
         userRole: M.Collection<M.Document> | null
@@ -1887,9 +1996,9 @@ export class EntityManager<
         eBoard: this.mongodb.default === 'mock' ? null : this.mongodb.default.collection('eBoards'),
         eBoardRole: this.mongodb.default === 'mock' ? null : this.mongodb.default.collection('eBoardRoles'),
         project: this.mongodb.default === 'mock' ? null : this.mongodb.default.collection('projects'),
+        projectInvite: this.mongodb.default === 'mock' ? null : this.mongodb.default.collection('projectInvites'),
         projectMember: this.mongodb.default === 'mock' ? null : this.mongodb.default.collection('projectMembers'),
         projectMemberRole: this.mongodb.default === 'mock' ? null : this.mongodb.default.collection('projectMemberRoles'),
-        someType: this.mongodb.default === 'mock' ? null : this.mongodb.default.collection('someTypes'),
         user: this.mongodb.default === 'mock' ? null : this.mongodb.default.collection('users'),
         userLoginIdentity: this.mongodb.default === 'mock' ? null : this.mongodb.default.collection('userLoginIdentitys'),
         userRole: this.mongodb.default === 'mock' ? null : this.mongodb.default.collection('userRoles'),
@@ -1908,9 +2017,9 @@ type DAOGenericsMap<MetadataType, OperationMetadataType> = {
   eBoard: EBoardDAOGenerics<MetadataType, OperationMetadataType>
   eBoardRole: EBoardRoleDAOGenerics<MetadataType, OperationMetadataType>
   project: ProjectDAOGenerics<MetadataType, OperationMetadataType>
+  projectInvite: ProjectInviteDAOGenerics<MetadataType, OperationMetadataType>
   projectMember: ProjectMemberDAOGenerics<MetadataType, OperationMetadataType>
   projectMemberRole: ProjectMemberRoleDAOGenerics<MetadataType, OperationMetadataType>
-  someType: SomeTypeDAOGenerics<MetadataType, OperationMetadataType>
   user: UserDAOGenerics<MetadataType, OperationMetadataType>
   userLoginIdentity: UserLoginIdentityDAOGenerics<MetadataType, OperationMetadataType>
   userRole: UserRoleDAOGenerics<MetadataType, OperationMetadataType>

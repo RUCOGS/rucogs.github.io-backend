@@ -42,17 +42,18 @@ enum Permission {
   CREATE_PROJECT,
   DELETE_PROJECT,
   UPDATE_PROJECT,
+  UPDATE_PROJECT_MEMBER,
+  ACCEPT_PROJECT_INVITE,
   UPDATE_PROFILE,
   DELETE_PROFILE,
   READ_PROFILE_PRIVATE,
   MANAGE_EBOARD,
-  MANAGE_USER_ROLES,
-  MANAGE_PROJECT_MEMBER_ROLES,
 }
 
-type SomeType @entity @mongodb {
-  id: ID! @id(from: "db") @alias(value: "_id")
-  someField: Date @schema(metadata: [{ key: "keyOne", value: [{ key: "nestedKey", value: true }] }, { key: "keyTwo", value: [ "one", 2, "three", true ]}])
+enum Access {
+  OPEN,
+  INVITE,
+  CLOSED,
 }
 
 type User @entity @mongodb {
@@ -71,6 +72,7 @@ type User @entity @mongodb {
   projectMembers: [ProjectMember!]! @foreignRef(refFrom: "userId")
   roles: [UserRole!]! @foreignRef(refFrom: "userId")
   eboard: EBoard @foreignRef(refFrom: "userId")
+  projectInvites: [ProjectInvite!]! @foreignRef(refFrom: "userId")
 }
 
 type EBoard @entity @mongodb {
@@ -122,13 +124,15 @@ type Project @entity @mongodb {
   completedAt: Date
   name: String!
   pitch: String!
-  description: String!
+  access: Access!
+  description: String
   cardImageLink: String
   bannerLink: String
-  galleryImageLinks: [String!]!
+  galleryImageLinks: [String!]
   soundcloudEmbedSrc: String
-  downloadLinks: [String!]!
-  members: [ProjectMember!] @foreignRef(refFrom: "projectId")
+  downloadLinks: [String!]
+  members: [ProjectMember!]! @foreignRef(refFrom: "projectId")
+  invites: [ProjectInvite!]! @foreignRef(refFrom: "projectId")
 }
 
 type ProjectMember @entity @mongodb {
@@ -136,7 +140,7 @@ type ProjectMember @entity @mongodb {
   createdAt: Date @schema(metadata: [{ key: "createdAt", value: true }])
   updatedAt: Date @schema(metadata: [{ key: "createdAt", value: true }])
 
-  contributions: String!
+  contributions: String
   roles: [ProjectMemberRole!]! @foreignRef(refFrom: "projectMemberId")         
   project: Project! @innerRef
   projectId: ID!
@@ -149,5 +153,14 @@ type ProjectMemberRole @entity @mongodb {
   roleCode: RoleCode! @schema(metadata: [{unique: 0}])
   projectMember: ProjectMember! @innerRef
   projectMemberId: ID!
+}
+
+type ProjectInvite @entity @mongodb {
+  id: ID! @id(from: "db") @alias(value: "_id")
+  createdAt: Date @schema(metadata: [{ key: "createdAt", value: true }])
+  user: User! @innerRef
+  userId: ID! @schema(metadata: [{unique: 0}])
+  project: Project! @innerRef
+  projectId: ID! @schema(metadata: [{unique: 0}])
 }
 `

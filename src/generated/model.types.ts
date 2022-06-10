@@ -14,6 +14,25 @@ export type Scalars = {
   Json: any
 }
 
+export const Access = {
+  Closed: 'CLOSED',
+  Invite: 'INVITE',
+  Open: 'OPEN',
+} as const
+
+export type Access = typeof Access[keyof typeof Access]
+export type AccessFilterInput = {
+  contains?: InputMaybe<Scalars['String']>
+  endsWith?: InputMaybe<Scalars['String']>
+  eq?: InputMaybe<Access>
+  exists?: InputMaybe<Scalars['Boolean']>
+  in?: InputMaybe<Array<Access>>
+  mode?: InputMaybe<StringFilterMode>
+  ne?: InputMaybe<Access>
+  nin?: InputMaybe<Array<Access>>
+  startsWith?: InputMaybe<Scalars['String']>
+}
+
 export type BooleanFilterInput = {
   eq?: InputMaybe<Scalars['Boolean']>
   exists?: InputMaybe<Scalars['Boolean']>
@@ -172,29 +191,29 @@ export type Mutation = {
   createEBoard: EBoard
   createEBoardRole: EBoardRole
   createProject: Project
+  createProjectInvite: ProjectInvite
   createProjectMember: ProjectMember
   createProjectMemberRole: ProjectMemberRole
-  createSomeType: SomeType
   createUser: User
   createUserLoginIdentity: UserLoginIdentity
   createUserRole: UserRole
   createUserSocial: UserSocial
   deleteEBoardRoles?: Maybe<Scalars['Boolean']>
   deleteEBoards?: Maybe<Scalars['Boolean']>
+  deleteProjectInvites?: Maybe<Scalars['Boolean']>
   deleteProjectMemberRoles?: Maybe<Scalars['Boolean']>
   deleteProjectMembers?: Maybe<Scalars['Boolean']>
   deleteProjects?: Maybe<Scalars['Boolean']>
-  deleteSomeTypes?: Maybe<Scalars['Boolean']>
   deleteUserLoginIdentitys?: Maybe<Scalars['Boolean']>
   deleteUserRoles?: Maybe<Scalars['Boolean']>
   deleteUserSocials?: Maybe<Scalars['Boolean']>
   deleteUsers?: Maybe<Scalars['Boolean']>
   updateEBoardRoles?: Maybe<Scalars['Boolean']>
   updateEBoards?: Maybe<Scalars['Boolean']>
+  updateProjectInvites?: Maybe<Scalars['Boolean']>
   updateProjectMemberRoles?: Maybe<Scalars['Boolean']>
   updateProjectMembers?: Maybe<Scalars['Boolean']>
   updateProjects?: Maybe<Scalars['Boolean']>
-  updateSomeTypes?: Maybe<Scalars['Boolean']>
   updateUserLoginIdentitys?: Maybe<Scalars['Boolean']>
   updateUserRoles?: Maybe<Scalars['Boolean']>
   updateUserSocials?: Maybe<Scalars['Boolean']>
@@ -213,16 +232,16 @@ export type MutationCreateProjectArgs = {
   record: ProjectInsertInput
 }
 
+export type MutationCreateProjectInviteArgs = {
+  record: ProjectInviteInsertInput
+}
+
 export type MutationCreateProjectMemberArgs = {
   record: ProjectMemberInsertInput
 }
 
 export type MutationCreateProjectMemberRoleArgs = {
   record: ProjectMemberRoleInsertInput
-}
-
-export type MutationCreateSomeTypeArgs = {
-  record: SomeTypeInsertInput
 }
 
 export type MutationCreateUserArgs = {
@@ -249,6 +268,10 @@ export type MutationDeleteEBoardsArgs = {
   filter: EBoardFilterInput
 }
 
+export type MutationDeleteProjectInvitesArgs = {
+  filter: ProjectInviteFilterInput
+}
+
 export type MutationDeleteProjectMemberRolesArgs = {
   filter: ProjectMemberRoleFilterInput
 }
@@ -259,10 +282,6 @@ export type MutationDeleteProjectMembersArgs = {
 
 export type MutationDeleteProjectsArgs = {
   filter: ProjectFilterInput
-}
-
-export type MutationDeleteSomeTypesArgs = {
-  filter: SomeTypeFilterInput
 }
 
 export type MutationDeleteUserLoginIdentitysArgs = {
@@ -291,6 +310,11 @@ export type MutationUpdateEBoardsArgs = {
   filter: EBoardFilterInput
 }
 
+export type MutationUpdateProjectInvitesArgs = {
+  changes: ProjectInviteUpdateInput
+  filter: ProjectInviteFilterInput
+}
+
 export type MutationUpdateProjectMemberRolesArgs = {
   changes: ProjectMemberRoleUpdateInput
   filter: ProjectMemberRoleFilterInput
@@ -304,11 +328,6 @@ export type MutationUpdateProjectMembersArgs = {
 export type MutationUpdateProjectsArgs = {
   changes: ProjectUpdateInput
   filter: ProjectFilterInput
-}
-
-export type MutationUpdateSomeTypesArgs = {
-  changes: SomeTypeUpdateInput
-  filter: SomeTypeFilterInput
 }
 
 export type MutationUpdateUserLoginIdentitysArgs = {
@@ -332,15 +351,15 @@ export type MutationUpdateUsersArgs = {
 }
 
 export const Permission = {
+  AcceptProjectInvite: 'ACCEPT_PROJECT_INVITE',
   CreateProject: 'CREATE_PROJECT',
   DeleteProfile: 'DELETE_PROFILE',
   DeleteProject: 'DELETE_PROJECT',
   ManageEboard: 'MANAGE_EBOARD',
-  ManageProjectMemberRoles: 'MANAGE_PROJECT_MEMBER_ROLES',
-  ManageUserRoles: 'MANAGE_USER_ROLES',
   ReadProfilePrivate: 'READ_PROFILE_PRIVATE',
   UpdateProfile: 'UPDATE_PROFILE',
   UpdateProject: 'UPDATE_PROJECT',
+  UpdateProjectMember: 'UPDATE_PROJECT_MEMBER',
 } as const
 
 export type Permission = typeof Permission[keyof typeof Permission]
@@ -358,15 +377,17 @@ export type PermissionFilterInput = {
 
 export type Project = {
   __typename?: 'Project'
+  access: Access
   bannerLink?: Maybe<Scalars['String']>
   cardImageLink?: Maybe<Scalars['String']>
   completedAt?: Maybe<Scalars['Date']>
   createdAt?: Maybe<Scalars['Date']>
-  description: Scalars['String']
-  downloadLinks: Array<Scalars['String']>
-  galleryImageLinks: Array<Scalars['String']>
+  description?: Maybe<Scalars['String']>
+  downloadLinks?: Maybe<Array<Scalars['String']>>
+  galleryImageLinks?: Maybe<Array<Scalars['String']>>
   id: Scalars['ID']
-  members?: Maybe<Array<ProjectMember>>
+  invites: Array<ProjectInvite>
+  members: Array<ProjectMember>
   name: Scalars['String']
   pitch: Scalars['String']
   soundcloudEmbedSrc?: Maybe<Scalars['String']>
@@ -374,6 +395,7 @@ export type Project = {
 }
 
 export type ProjectFilterInput = {
+  access?: InputMaybe<AccessFilterInput>
   and_?: InputMaybe<Array<ProjectFilterInput>>
   bannerLink?: InputMaybe<StringFilterInput>
   cardImageLink?: InputMaybe<StringFilterInput>
@@ -400,22 +422,75 @@ export type ProjectFindInput = {
 }
 
 export type ProjectInsertInput = {
+  access: Access
   bannerLink?: InputMaybe<Scalars['String']>
   cardImageLink?: InputMaybe<Scalars['String']>
   completedAt?: InputMaybe<Scalars['Date']>
   createdAt?: InputMaybe<Scalars['Date']>
-  description: Scalars['String']
-  downloadLinks: Array<Scalars['String']>
-  galleryImageLinks: Array<Scalars['String']>
+  description?: InputMaybe<Scalars['String']>
+  downloadLinks?: InputMaybe<Array<Scalars['String']>>
+  galleryImageLinks?: InputMaybe<Array<Scalars['String']>>
   name: Scalars['String']
   pitch: Scalars['String']
   soundcloudEmbedSrc?: InputMaybe<Scalars['String']>
   updatedAt?: InputMaybe<Scalars['Date']>
 }
 
+export type ProjectInvite = {
+  __typename?: 'ProjectInvite'
+  createdAt?: Maybe<Scalars['Date']>
+  id: Scalars['ID']
+  project: Project
+  projectId: Scalars['ID']
+  user: User
+  userId: Scalars['ID']
+}
+
+export type ProjectInviteFilterInput = {
+  and_?: InputMaybe<Array<ProjectInviteFilterInput>>
+  createdAt?: InputMaybe<DateFilterInput>
+  id?: InputMaybe<IdFilterInput>
+  nor_?: InputMaybe<Array<ProjectInviteFilterInput>>
+  or_?: InputMaybe<Array<ProjectInviteFilterInput>>
+  projectId?: InputMaybe<IdFilterInput>
+  userId?: InputMaybe<IdFilterInput>
+}
+
+export type ProjectInviteFindInput = {
+  filter?: InputMaybe<ProjectInviteFilterInput>
+  limit?: InputMaybe<Scalars['Int']>
+  relations?: InputMaybe<ProjectInviteRelationsFilterInput>
+  skip?: InputMaybe<Scalars['Int']>
+  sorts?: InputMaybe<Array<ProjectInviteSortInput>>
+}
+
+export type ProjectInviteInsertInput = {
+  createdAt?: InputMaybe<Scalars['Date']>
+  projectId: Scalars['ID']
+  userId: Scalars['ID']
+}
+
+export type ProjectInviteRelationsFilterInput = {
+  project?: InputMaybe<ProjectFindInput>
+  user?: InputMaybe<UserFindInput>
+}
+
+export type ProjectInviteSortInput = {
+  createdAt?: InputMaybe<SortDirection>
+  id?: InputMaybe<SortDirection>
+  projectId?: InputMaybe<SortDirection>
+  userId?: InputMaybe<SortDirection>
+}
+
+export type ProjectInviteUpdateInput = {
+  createdAt?: InputMaybe<Scalars['Date']>
+  projectId?: InputMaybe<Scalars['ID']>
+  userId?: InputMaybe<Scalars['ID']>
+}
+
 export type ProjectMember = {
   __typename?: 'ProjectMember'
-  contributions: Scalars['String']
+  contributions?: Maybe<Scalars['String']>
   createdAt?: Maybe<Scalars['Date']>
   id: Scalars['ID']
   project: Project
@@ -447,7 +522,7 @@ export type ProjectMemberFindInput = {
 }
 
 export type ProjectMemberInsertInput = {
-  contributions: Scalars['String']
+  contributions?: InputMaybe<Scalars['String']>
   createdAt?: InputMaybe<Scalars['Date']>
   projectId: Scalars['ID']
   updatedAt?: InputMaybe<Scalars['Date']>
@@ -523,10 +598,12 @@ export type ProjectMemberUpdateInput = {
 }
 
 export type ProjectRelationsFilterInput = {
+  invites?: InputMaybe<ProjectInviteFindInput>
   members?: InputMaybe<ProjectMemberFindInput>
 }
 
 export type ProjectSortInput = {
+  access?: InputMaybe<SortDirection>
   bannerLink?: InputMaybe<SortDirection>
   cardImageLink?: InputMaybe<SortDirection>
   completedAt?: InputMaybe<SortDirection>
@@ -542,6 +619,7 @@ export type ProjectSortInput = {
 }
 
 export type ProjectUpdateInput = {
+  access?: InputMaybe<Access>
   bannerLink?: InputMaybe<Scalars['String']>
   cardImageLink?: InputMaybe<Scalars['String']>
   completedAt?: InputMaybe<Scalars['Date']>
@@ -559,10 +637,10 @@ export type Query = {
   __typename?: 'Query'
   eBoardRoles: Array<EBoardRole>
   eBoards: Array<EBoard>
+  projectInvites: Array<ProjectInvite>
   projectMemberRoles: Array<ProjectMemberRole>
   projectMembers: Array<ProjectMember>
   projects: Array<Project>
-  someTypes: Array<SomeType>
   userLoginIdentitys: Array<UserLoginIdentity>
   userRoles: Array<UserRole>
   userSocials: Array<UserSocial>
@@ -583,6 +661,14 @@ export type QueryEBoardsArgs = {
   relations?: InputMaybe<EBoardRelationsFilterInput>
   skip?: InputMaybe<Scalars['Int']>
   sorts?: InputMaybe<Array<EBoardSortInput>>
+}
+
+export type QueryProjectInvitesArgs = {
+  filter?: InputMaybe<ProjectInviteFilterInput>
+  limit?: InputMaybe<Scalars['Int']>
+  relations?: InputMaybe<ProjectInviteRelationsFilterInput>
+  skip?: InputMaybe<Scalars['Int']>
+  sorts?: InputMaybe<Array<ProjectInviteSortInput>>
 }
 
 export type QueryProjectMemberRolesArgs = {
@@ -607,13 +693,6 @@ export type QueryProjectsArgs = {
   relations?: InputMaybe<ProjectRelationsFilterInput>
   skip?: InputMaybe<Scalars['Int']>
   sorts?: InputMaybe<Array<ProjectSortInput>>
-}
-
-export type QuerySomeTypesArgs = {
-  filter?: InputMaybe<SomeTypeFilterInput>
-  limit?: InputMaybe<Scalars['Int']>
-  skip?: InputMaybe<Scalars['Int']>
-  sorts?: InputMaybe<Array<SomeTypeSortInput>>
 }
 
 export type QueryUserLoginIdentitysArgs = {
@@ -684,40 +763,6 @@ export type RoleCodeFilterInput = {
   startsWith?: InputMaybe<Scalars['String']>
 }
 
-export type SomeType = {
-  __typename?: 'SomeType'
-  id: Scalars['ID']
-  someField?: Maybe<Scalars['Date']>
-}
-
-export type SomeTypeFilterInput = {
-  and_?: InputMaybe<Array<SomeTypeFilterInput>>
-  id?: InputMaybe<IdFilterInput>
-  nor_?: InputMaybe<Array<SomeTypeFilterInput>>
-  or_?: InputMaybe<Array<SomeTypeFilterInput>>
-  someField?: InputMaybe<DateFilterInput>
-}
-
-export type SomeTypeFindInput = {
-  filter?: InputMaybe<SomeTypeFilterInput>
-  limit?: InputMaybe<Scalars['Int']>
-  skip?: InputMaybe<Scalars['Int']>
-  sorts?: InputMaybe<Array<SomeTypeSortInput>>
-}
-
-export type SomeTypeInsertInput = {
-  someField?: InputMaybe<Scalars['Date']>
-}
-
-export type SomeTypeSortInput = {
-  id?: InputMaybe<SortDirection>
-  someField?: InputMaybe<SortDirection>
-}
-
-export type SomeTypeUpdateInput = {
-  someField?: InputMaybe<Scalars['Date']>
-}
-
 export const SortDirection = {
   Asc: 'asc',
   Desc: 'desc',
@@ -753,6 +798,7 @@ export type User = {
   email: Scalars['String']
   id: Scalars['ID']
   loginIdentities: Array<UserLoginIdentity>
+  projectInvites: Array<ProjectInvite>
   projectMembers: Array<ProjectMember>
   roles: Array<UserRole>
   socials: Array<UserSocial>
@@ -852,6 +898,7 @@ export type UserLoginIdentityUpdateInput = {
 export type UserRelationsFilterInput = {
   eboard?: InputMaybe<EBoardFindInput>
   loginIdentities?: InputMaybe<UserLoginIdentityFindInput>
+  projectInvites?: InputMaybe<ProjectInviteFindInput>
   projectMembers?: InputMaybe<ProjectMemberFindInput>
   roles?: InputMaybe<UserRoleFindInput>
   socials?: InputMaybe<UserSocialFindInput>

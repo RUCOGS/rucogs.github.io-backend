@@ -177,6 +177,10 @@ export function isRoleBelowOrEqual(targetRole: RoleCode, currentRole: RoleCode) 
 }
 
 export function getHighestRole(roles: RoleCode[]) {
+  return getHighestRoles(roles)[0];
+}
+
+export function getHighestRoles(roles: RoleCode[]): RoleCode[] {
   const validRoles = new Set<RoleCode>(roles);
   for (const role of roles) {
     if (!validRoles.has(role))
@@ -191,19 +195,19 @@ export function getHighestRole(roles: RoleCode[]) {
       }
     }
   }
-  return validRoles.values().next().value;
+  return Array.from(validRoles.values());
 }
 
-export function getRolesBelowRoles(targetRoles: RoleCode[]) {
+export function getRolesBelowOrEqualRoles(targetRoles: RoleCode[]) {
   let checkedRoles = new Set<RoleCode>();
   let rolesBelow: RoleCode[] = [];
   for (const role of targetRoles) {
-    rolesBelow = rolesBelow.concat(getRolesBelowExitEarly(role, checkedRoles));
+    rolesBelow = rolesBelow.concat(getRolesBelowOrEqualExitEarly(role, checkedRoles));
   }
   return rolesBelow;
 }
 
-function getRolesBelowExitEarly(targetRole: RoleCode, checkedRoles: Set<RoleCode>) {
+function getRolesBelowOrEqualExitEarly(targetRole: RoleCode, checkedRoles: Set<RoleCode>) {
   if (checkedRoles.has(targetRole))
     return [];
   checkedRoles.add(targetRole);
@@ -211,7 +215,7 @@ function getRolesBelowExitEarly(targetRole: RoleCode, checkedRoles: Set<RoleCode
   const roleData = RoleData[targetRole];
   if (roleData && roleData.childRoles) {
     for (const child of roleData.childRoles) {
-      rolesBelow = rolesBelow.concat(getRolesBelowExitEarly(child, checkedRoles));
+      rolesBelow = rolesBelow.concat(getRolesBelowOrEqualExitEarly(child, checkedRoles));
     }
   }
   rolesBelow.push(targetRole);

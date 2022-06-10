@@ -3,15 +3,24 @@
 Contains all permissions/roles related code.
 
  */
-import { RoleCode, } from '@src/generated/model.types';
 import { AnyEntityManager, TypettaSecurityContext } from '@src/controllers/entity-manager.controller';
-import { RoleData, SecurityPermissions, isExtendedSecurityDomain, isBaseSecurityDomain, BaseSecurityDomain, ExtendedSecurityDomain, PermissionCode, SecurityContext } from '@src/shared/security';
+import { RoleCode } from '@src/generated/model.types';
+import { BaseSecurityDomain, DefaultSecurityContext, ExtendedSecurityDomain, isBaseSecurityDomain, isExtendedSecurityDomain, PermissionCode, RoleData, SecurityContext, SecurityDomain, SecurityPermissions } from '@src/shared/security';
+import { PermissionDataDict } from '@src/shared/security/permissions';
+import { isDeepEquals } from '@src/shared/utils';
 import { HttpError } from '@src/utils';
 import { RoleBackendDataDict } from './role-backend';
-import { PermissionDataDict } from '@src/shared/security/permissions';
 
 // Centeral point to get security context.
 export async function getCompleteSecurityContext(entityManager: AnyEntityManager, userId: string) {
+  // Check if user exists
+  const userExists = await entityManager.user.exists({
+    filter: {
+      id: userId
+    }
+  })
+  if (!userExists)
+    return DefaultSecurityContext;
   return <SecurityContext>{
     userId,
     permissions: await getCompleteSecurityPermissions(entityManager, userId)
@@ -161,11 +170,16 @@ function mergeSecurityPermissionsHalf(contextOne: SecurityPermissions, contextTw
 function mergeBaseDomains(domainOne: BaseSecurityDomain, domainTwo: BaseSecurityDomain) {
   if (domainOne === true || domainTwo === true)
     return true;
-  if (domainOne) {
-    
+  if (domainOne && domainTwo) {
+    const mergedDomain: Partial<SecurityDomain>[] = [...domainOne];
+    for (const two of domainTwo) {
+      if (mergedDomain.some(x => isDeepEquals(x, two)))
+        continue;
+      mergedDomain.push(two);
+    }
+    return mergedDomain;
   } else {
-    if (domainTwo)
-      return domainTwo;
+    return domainOne ?? domainTwo;
   }
 }
 
