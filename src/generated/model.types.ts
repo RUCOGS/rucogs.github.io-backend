@@ -12,7 +12,6 @@ export type Scalars = {
   Float: number
   Date: any
   Json: any
-  Upload: any
 }
 
 export const Access = {
@@ -811,14 +810,6 @@ export const StringFilterMode = {
 } as const
 
 export type StringFilterMode = typeof StringFilterMode[keyof typeof StringFilterMode]
-export type UploadFilterInput = {
-  eq?: InputMaybe<Scalars['Upload']>
-  exists?: InputMaybe<Scalars['Boolean']>
-  in?: InputMaybe<Array<Scalars['Upload']>>
-  ne?: InputMaybe<Scalars['Upload']>
-  nin?: InputMaybe<Array<Scalars['Upload']>>
-}
-
 export type User = {
   __typename?: 'User'
   avatarLink?: Maybe<Scalars['String']>

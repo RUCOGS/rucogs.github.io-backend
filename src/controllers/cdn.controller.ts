@@ -6,9 +6,17 @@ import http from "http";
 import { ReadStream } from "fs-capacitor";
 import { finished } from 'stream/promises';
 import { FileUpload } from "graphql-upload";
+import { Transform, TransformCallback } from 'stream';
 
 export const UPLOAD_DIRECTORY = "src/uploads";
 export const SELF_HOSTED_PREFIX = "cdn://";
+
+export function tryDeleteFileIfSelfHosted(filePath: string | null | undefined) {
+  if (!filePath)
+    return;
+  if (isSelfHostedFile(filePath))
+    return deleteSelfHostedFile(filePath);
+}
 
 // We use `self://` prefix to denote a self-hosted file
 export function isSelfHostedFile(selfHostedFilePath: string) {
@@ -34,21 +42,37 @@ export async function deleteSelfHostedFile(selfHostedFilePath: string) {
   if (!isSelfHostedFile(selfHostedFilePath))
     throw new HttpError(400, "Expected a self hosted file path.");
   const relativeFilePath = selfHostedToRelativeFilePath(selfHostedFilePath);
-  return await fs.promises.unlink(UPLOAD_DIRECTORY + "/" + relativeFilePath);
+  const path = UPLOAD_DIRECTORY + "/" + relativeFilePath;
+  try {
+    await fs.promises.unlink(path);
+  } catch (error) {
+    
+  }
 }
 
 // dest is relative to UPLOAD_DIRECTORY
 // Downloads a file and returns the 
-export async function downloadToCdn(url: string, filename: string = path.basename(url), dest: string = ""): Promise<string> {
+export async function downloadToCdn(options: {
+  url: string
+  filename?: string
+  dest?: string
+}): Promise<string> {
+  if (options.filename === undefined)
+    options.filename = path.basename(options.url);
+  if (options.dest === undefined)
+    options.dest = "";
+    
   let httpModule: typeof http | typeof https = http;
-  if (url.startsWith("https://")) {
+  if (options.url.startsWith("https://")) {
     httpModule = https;
   }
-  const uniqueName = uniqueFileName(filename);
-  const relativePath = path.join(UPLOAD_DIRECTORY, dest, uniqueName);
+
+  const uniqueName = uniqueFileName(options.filename);
+  const relativePath = path.join(UPLOAD_DIRECTORY, options.dest, uniqueName);
+
   return new Promise<string>((resolve, reject) => {
     var file = fs.createWriteStream(relativePath);
-    var request = httpModule.get(url, function(response) {
+    var request = httpModule.get(options.url, function(response) {
       response.pipe(file);
       file.on('finish', function() {
         file.close();  // close() is async, call cb after close completes.
@@ -64,29 +88,98 @@ export async function downloadToCdn(url: string, filename: string = path.basenam
   });
 }
 
-export async function readStreamToCdn(readStream: ReadStream, filename: string, dest: string = ""): Promise<string> {
-  const uniqueName = uniqueFileName(filename);
-  const relativePath = path.join(UPLOAD_DIRECTORY, dest, uniqueName);
+export class StreamSizeLimiter extends Transform {
+  constructor(public sizeLimitBytes: number) {
+    super();
+  }
 
-  const file = fs.createWriteStream(relativePath);
-  readStream.pipe(file);
-  await finished(file)
-  file.close();
+  length: number = 0;
+
+  _transform(chunk: any, encoding: BufferEncoding, callback: TransformCallback): void {
+      this.length += chunk.length;
+
+      if (this.length > this.sizeLimitBytes) {
+        this.destroy(new Error(`Max stream size of ${this.sizeLimitBytes} exceeded.`));
+        return;
+      }
+
+      this.push(chunk);
+      callback();
+  }
+}
+
+export enum DataSize {
+  GB = 1_000_000_000,
+  MB = 1_000_000,
+  KB = 1_000,
+}
+
+export async function readStreamToCdn(options: {
+  readStream: ReadStream
+  filename: string
+  maxSizeBytes?: number
+  dest?: string
+}): Promise<string> {
+  if (options.dest == undefined)
+    options.dest = "";
+  
+  const uniqueName = uniqueFileName(options.filename);
+  const relativePath = path.join(UPLOAD_DIRECTORY, options.dest, uniqueName);
+  const destination = fs.createWriteStream(relativePath);
+  
+  if (options.maxSizeBytes) {
+    const sizeLimiter = new StreamSizeLimiter(options.maxSizeBytes);
+    sizeLimiter.on("error", error => {
+      options.readStream.destroy(error);
+      destination.destroy(error);
+    });
+    // Connect streams.
+    options.readStream
+      .pipe(sizeLimiter)
+      .pipe(destination);
+  } else {
+    options.readStream
+      .pipe(destination);
+  }
+    
+  await finished(destination);
+  destination.close();
 
   const selfHostedPath = relativeToSelfHostedFilePath(relativePath);
   return selfHostedPath;
 }
 
-export async function fileUploadToCdn(fileUpload: FileUpload, dest: string = ""): Promise<string> {
-  const readStream = fileUpload.createReadStream();
-  const selfHostedPath = await readStreamToCdn(readStream, fileUpload.filename, dest);
+export async function fileUploadToCdn(options: {
+  fileUpload: FileUpload,
+  maxSizeBytes?: number, 
+  dest?: string
+}): Promise<string> {
+  if (options.dest === undefined)
+    options.dest = "";
+  
+  const readStream = options.fileUpload.createReadStream();
+  const selfHostedPath = await readStreamToCdn({
+    readStream, 
+    maxSizeBytes: options.maxSizeBytes,
+    filename: options.fileUpload.filename, 
+    dest: options.dest
+  });
   return selfHostedPath;
 }
 
-export async function fileUploadPromiseToCdn(fileUploadPromise: Promise<FileUpload>, dest: string = ""): Promise<string> {
-  const fileUpload = await fileUploadPromise;
+export async function fileUploadPromiseToCdn(options: {
+  fileUploadPromise: Promise<FileUpload>
+  maxSizeBytes?: number
+  dest?: string
+}): Promise<string> {
+  const fileUpload = await options.fileUploadPromise;
   const readStream = fileUpload.createReadStream();
-  const selfHostedPath = await readStreamToCdn(readStream, fileUpload.filename, dest);
+  const selfHostedPath = await readStreamToCdn({
+    readStream, 
+    maxSizeBytes: options.maxSizeBytes,
+    filename: fileUpload.filename, 
+    dest: options.dest
+  });
   return selfHostedPath;
 }
 

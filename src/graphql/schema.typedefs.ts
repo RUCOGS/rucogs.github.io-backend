@@ -1,16 +1,9 @@
 import { gql } from 'graphql-tag'
 
-const someVar = `
-type Query {
-  oof(sdfsd: String!): Boolean
-}
-`
-
 export default gql`
 
 scalar Date
 scalar Json
-scalar Upload
 
 enum RoleCode {
   SUPER_ADMIN,
@@ -170,4 +163,4 @@ type ProjectInvite @entity @mongodb {
   project: Project! @innerRef
   projectId: ID! @schema(metadata: [{unique: 0}])
 }
-`
+`;

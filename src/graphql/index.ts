@@ -11,6 +11,11 @@ import projectTypedefs from './project/project.typedefs'
 import projectResolvers from './project/project.resolvers'
 import userTypedefs from './user/user.typedefs'
 import userResolvers from './user/user.resolvers'
+import customTypedefs from './custom.typedefs'
+import projectInviteTypedefs from './project-invite/project-invite.typedefs'
+import projectInviteResolvers from './project-invite/project-invite.resolvers'
+import projectMemberResolvers from './project-member/project-member.resolvers'
+import projectMemberTypedefs from './project-member/project-member.typedefs'
 
 // CONFIG: Apollo GraphQL typdefs and resolvers
 export const typeDefs = mergeTypeDefs([
@@ -19,14 +24,21 @@ export const typeDefs = mergeTypeDefs([
   typettaDirectivesTypeDefs,
   authTypeDefs,
   userTypedefs,
+  projectTypedefs,
+  projectInviteTypedefs,
+  projectMemberTypedefs,
+  customTypedefs,
   projectTypedefs
 ]);
 
 export const resolvers = mergeResolvers([
   generatedResolvers,
   authResolvers,
-  scalarResolvers,
   userResolvers,
+  scalarResolvers,
+  projectResolvers,
+  projectInviteResolvers,
+  projectMemberResolvers,
   projectResolvers
 ]);
 

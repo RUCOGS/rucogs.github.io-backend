@@ -12,6 +12,11 @@ import express from "express";
 import { HttpError } from "./entity-manager";
 import { MongoClient } from "mongodb"
 
+
+export function isDefined<T>(value: T | undefined | null): value is T {
+  return value !== undefined && value !== null;
+}
+
 export function tryDeleteOldFileLinkFromEntity(req: RequestWithContext<RequestContext>, fileName: string, object: any): [boolean, string] {
   const files = req.files as { [fieldname: string]: Express.Multer.File[] };
   let fileUpdated = files[fileName] && files[fileName].length == 1;
@@ -222,15 +227,6 @@ export function assertRequesterCanAddRoleCodes(requesterRoleCodes: RoleCode[], r
     if (!isBelowAHighestRole) {
       throw new HttpError(403, "Cannot only add roles below your current role!");
     }
-  }
-}
-
-export function assertNoDuplicatesHttpError(array: any[], name: string) {
-  try {
-    assertNoDuplicates(array, name);
-  } catch (err) {
-    if (err instanceof Error)
-      throw new HttpError(200, err.message);
   }
 }
 

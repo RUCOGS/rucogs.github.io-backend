@@ -16,7 +16,6 @@ export type ScalarsSpecification = {
   RoleCode: { type: types.RoleCode; isTextual: false; isQuantitative: false }
   SortDirection: { type: types.SortDirection; isTextual: false; isQuantitative: false }
   StringFilterMode: { type: types.StringFilterMode; isTextual: false; isQuantitative: false }
-  Upload: { type: types.Scalars['Upload']; isTextual: false; isQuantitative: false }
 }
 
 export type AST = {
@@ -1957,7 +1956,6 @@ export class EntityManager<
             'RoleCode',
             'SortDirection',
             'StringFilterMode',
-            'Upload',
             'ID',
             'String',
             'Boolean',

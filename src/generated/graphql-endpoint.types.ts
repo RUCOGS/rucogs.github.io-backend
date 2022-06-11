@@ -17,11 +17,6 @@ export type Scalars = {
   Upload: any;
 };
 
-export type AcceptProjectInvitePayload = {
-  __typename?: 'AcceptProjectInvitePayload';
-  projectMemberId: Scalars['ID'];
-};
-
 export const Access = {
   Closed: 'CLOSED',
   Invite: 'INVITE',
@@ -204,11 +199,6 @@ export type InviteTypeFilterInput = {
   startsWith?: InputMaybe<Scalars['String']>;
 };
 
-export type JoinOpenProjectPayload = {
-  __typename?: 'JoinOpenProjectPayload';
-  projectMemberId: Scalars['ID'];
-};
-
 export type JsonFilterInput = {
   eq?: InputMaybe<Scalars['Json']>;
   exists?: InputMaybe<Scalars['Boolean']>;
@@ -224,7 +214,7 @@ export type KeyValue = {
 
 export type Mutation = {
   __typename?: 'Mutation';
-  acceptProjectInvite: AcceptProjectInvitePayload;
+  acceptProjectInvite?: Maybe<Scalars['Boolean']>;
   createEBoard: EBoard;
   createEBoardRole: EBoardRole;
   createProject: Project;
@@ -237,21 +227,29 @@ export type Mutation = {
   createUserSocial: UserSocial;
   deleteEBoardRoles?: Maybe<Scalars['Boolean']>;
   deleteEBoards?: Maybe<Scalars['Boolean']>;
+  deleteProject?: Maybe<Scalars['Boolean']>;
+  deleteProjectInvite?: Maybe<Scalars['Boolean']>;
   deleteProjectInvites?: Maybe<Scalars['Boolean']>;
+  deleteProjectMember?: Maybe<Scalars['Boolean']>;
+  deleteProjectMemberRole?: Maybe<Scalars['Boolean']>;
   deleteProjectMemberRoles?: Maybe<Scalars['Boolean']>;
   deleteProjectMembers?: Maybe<Scalars['Boolean']>;
   deleteProjects?: Maybe<Scalars['Boolean']>;
   deleteUserLoginIdentitys?: Maybe<Scalars['Boolean']>;
+  deleteUserRole?: Maybe<Scalars['Boolean']>;
   deleteUserRoles?: Maybe<Scalars['Boolean']>;
   deleteUserSocials?: Maybe<Scalars['Boolean']>;
   deleteUsers?: Maybe<Scalars['Boolean']>;
-  joinOpenProject: JoinOpenProjectPayload;
-  newIncomingProjectInvite: NewIncomingProjectInvitePayload;
-  newOutgoingProjectInvite: NewOutgoingProjectInvitePayload;
-  newProject: NewProjectPayload;
+  joinOpenProject?: Maybe<Scalars['Boolean']>;
+  newProject: Scalars['ID'];
+  newProjectInvite: Scalars['ID'];
+  newProjectMemberRole: Scalars['ID'];
+  newUserRole: Scalars['ID'];
   updateEBoardRoles?: Maybe<Scalars['Boolean']>;
   updateEBoards?: Maybe<Scalars['Boolean']>;
+  updateProject?: Maybe<Scalars['Boolean']>;
   updateProjectInvites?: Maybe<Scalars['Boolean']>;
+  updateProjectMember?: Maybe<Scalars['Boolean']>;
   updateProjectMemberRoles?: Maybe<Scalars['Boolean']>;
   updateProjectMembers?: Maybe<Scalars['Boolean']>;
   updateProjects?: Maybe<Scalars['Boolean']>;
@@ -328,8 +326,28 @@ export type MutationDeleteEBoardsArgs = {
 };
 
 
+export type MutationDeleteProjectArgs = {
+  id: Scalars['ID'];
+};
+
+
+export type MutationDeleteProjectInviteArgs = {
+  inviteId: Scalars['ID'];
+};
+
+
 export type MutationDeleteProjectInvitesArgs = {
   filter: ProjectInviteFilterInput;
+};
+
+
+export type MutationDeleteProjectMemberArgs = {
+  id: Scalars['ID'];
+};
+
+
+export type MutationDeleteProjectMemberRoleArgs = {
+  id: Scalars['ID'];
 };
 
 
@@ -353,6 +371,11 @@ export type MutationDeleteUserLoginIdentitysArgs = {
 };
 
 
+export type MutationDeleteUserRoleArgs = {
+  id: Scalars['ID'];
+};
+
+
 export type MutationDeleteUserRolesArgs = {
   filter: UserRoleFilterInput;
 };
@@ -373,19 +396,23 @@ export type MutationJoinOpenProjectArgs = {
 };
 
 
-export type MutationNewIncomingProjectInviteArgs = {
-  projectId: Scalars['ID'];
-};
-
-
-export type MutationNewOutgoingProjectInviteArgs = {
-  projectId: Scalars['ID'];
-  userId: Scalars['ID'];
-};
-
-
 export type MutationNewProjectArgs = {
   input: NewProjectInput;
+};
+
+
+export type MutationNewProjectInviteArgs = {
+  input: NewProjectInviteInput;
+};
+
+
+export type MutationNewProjectMemberRoleArgs = {
+  input: NewProjectMemberRoleInput;
+};
+
+
+export type MutationNewUserRoleArgs = {
+  input: NewUserRoleInput;
 };
 
 
@@ -401,9 +428,19 @@ export type MutationUpdateEBoardsArgs = {
 };
 
 
+export type MutationUpdateProjectArgs = {
+  input: UpdateProjectInput;
+};
+
+
 export type MutationUpdateProjectInvitesArgs = {
   changes: ProjectInviteUpdateInput;
   filter: ProjectInviteFilterInput;
+};
+
+
+export type MutationUpdateProjectMemberArgs = {
+  input: UpdateProjectMemberInput;
 };
 
 
@@ -453,25 +490,25 @@ export type MutationUpdateUsersArgs = {
   filter: UserFilterInput;
 };
 
-export type NewIncomingProjectInvitePayload = {
-  __typename?: 'NewIncomingProjectInvitePayload';
-  inviteId: Scalars['ID'];
-};
-
-export type NewOutgoingProjectInvitePayload = {
-  __typename?: 'NewOutgoingProjectInvitePayload';
-  inviteId: Scalars['ID'];
-};
-
 export type NewProjectInput = {
   access: Access;
   name: Scalars['String'];
   pitch: Scalars['String'];
 };
 
-export type NewProjectPayload = {
-  __typename?: 'NewProjectPayload';
+export type NewProjectInviteInput = {
   projectId: Scalars['ID'];
+  userId: Scalars['ID'];
+};
+
+export type NewProjectMemberRoleInput = {
+  projectMemberId: Scalars['ID'];
+  roleCode: RoleCode;
+};
+
+export type NewUserRoleInput = {
+  roleCode: RoleCode;
+  userId: Scalars['ID'];
 };
 
 export const Permission = {
@@ -766,6 +803,7 @@ export type Query = {
   __typename?: 'Query';
   eBoardRoles: Array<EBoardRole>;
   eBoards: Array<EBoard>;
+  isAuthTokenValid?: Maybe<Scalars['Boolean']>;
   projectInvites: Array<ProjectInvite>;
   projectMemberRoles: Array<ProjectMemberRole>;
   projectMembers: Array<ProjectMember>;
@@ -938,11 +976,31 @@ export const StringFilterMode = {
 } as const;
 
 export type StringFilterMode = typeof StringFilterMode[keyof typeof StringFilterMode];
+export type UpdateProjectInput = {
+  access?: InputMaybe<Access>;
+  bannerLink?: InputMaybe<Scalars['String']>;
+  cardImageLink?: InputMaybe<Scalars['String']>;
+  description?: InputMaybe<Scalars['String']>;
+  downloadLinks?: InputMaybe<Array<Scalars['String']>>;
+  galleryImageLinks?: InputMaybe<Array<Scalars['String']>>;
+  id: Scalars['ID'];
+  name?: InputMaybe<Scalars['String']>;
+  pitch?: InputMaybe<Scalars['String']>;
+  soundcloudEmbedSrc?: InputMaybe<Scalars['String']>;
+};
+
+export type UpdateProjectMemberInput = {
+  contributions?: InputMaybe<Scalars['String']>;
+  roles?: InputMaybe<Array<RoleCode>>;
+};
+
 export type UpdateUserInput = {
-  avatar?: InputMaybe<Scalars['Upload']>;
-  banner?: InputMaybe<Scalars['Upload']>;
+  avatar?: InputMaybe<UploadWithOperation>;
+  banner?: InputMaybe<UploadWithOperation>;
   bio?: InputMaybe<Scalars['String']>;
   displayName?: InputMaybe<Scalars['String']>;
+  id: Scalars['ID'];
+  roles?: InputMaybe<Array<RoleCode>>;
   socials?: InputMaybe<Array<UpdateUserSocialInput>>;
 };
 
@@ -952,12 +1010,15 @@ export type UpdateUserSocialInput = {
   username: Scalars['String'];
 };
 
-export type UploadFilterInput = {
-  eq?: InputMaybe<Scalars['Upload']>;
-  exists?: InputMaybe<Scalars['Boolean']>;
-  in?: InputMaybe<Array<Scalars['Upload']>>;
-  ne?: InputMaybe<Scalars['Upload']>;
-  nin?: InputMaybe<Array<Scalars['Upload']>>;
+export const UploadOperation = {
+  Delete: 'DELETE',
+  Insert: 'INSERT'
+} as const;
+
+export type UploadOperation = typeof UploadOperation[keyof typeof UploadOperation];
+export type UploadWithOperation = {
+  operation?: InputMaybe<UploadOperation>;
+  upload?: InputMaybe<Scalars['Upload']>;
 };
 
 export type User = {
@@ -1269,7 +1330,6 @@ export type DirectiveResolverFn<TResult = {}, TParent = {}, TContext = {}, TArgs
 
 /** Mapping between all available schema types and the resolvers types */
 export type ResolversTypes = {
-  AcceptProjectInvitePayload: ResolverTypeWrapper<AcceptProjectInvitePayload>;
   Access: Access;
   AccessFilterInput: AccessFilterInput;
   Boolean: ResolverTypeWrapper<Scalars['Boolean']>;
@@ -1298,15 +1358,14 @@ export type ResolversTypes = {
   IntFilterInput: IntFilterInput;
   InviteType: InviteType;
   InviteTypeFilterInput: InviteTypeFilterInput;
-  JoinOpenProjectPayload: ResolverTypeWrapper<JoinOpenProjectPayload>;
   Json: ResolverTypeWrapper<Scalars['Json']>;
   JsonFilterInput: JsonFilterInput;
   KeyValue: KeyValue;
   Mutation: ResolverTypeWrapper<{}>;
-  NewIncomingProjectInvitePayload: ResolverTypeWrapper<NewIncomingProjectInvitePayload>;
-  NewOutgoingProjectInvitePayload: ResolverTypeWrapper<NewOutgoingProjectInvitePayload>;
   NewProjectInput: NewProjectInput;
-  NewProjectPayload: ResolverTypeWrapper<NewProjectPayload>;
+  NewProjectInviteInput: NewProjectInviteInput;
+  NewProjectMemberRoleInput: NewProjectMemberRoleInput;
+  NewUserRoleInput: NewUserRoleInput;
   Permission: Permission;
   PermissionFilterInput: PermissionFilterInput;
   Project: ResolverTypeWrapper<Project>;
@@ -1345,10 +1404,13 @@ export type ResolversTypes = {
   String: ResolverTypeWrapper<Scalars['String']>;
   StringFilterInput: StringFilterInput;
   StringFilterMode: StringFilterMode;
+  UpdateProjectInput: UpdateProjectInput;
+  UpdateProjectMemberInput: UpdateProjectMemberInput;
   UpdateUserInput: UpdateUserInput;
   UpdateUserSocialInput: UpdateUserSocialInput;
   Upload: ResolverTypeWrapper<Scalars['Upload']>;
-  UploadFilterInput: UploadFilterInput;
+  UploadOperation: UploadOperation;
+  UploadWithOperation: UploadWithOperation;
   User: ResolverTypeWrapper<User>;
   UserFilterInput: UserFilterInput;
   UserFindInput: UserFindInput;
@@ -1381,7 +1443,6 @@ export type ResolversTypes = {
 
 /** Mapping between all available schema types and the resolvers parents */
 export type ResolversParentTypes = {
-  AcceptProjectInvitePayload: AcceptProjectInvitePayload;
   AccessFilterInput: AccessFilterInput;
   Boolean: Scalars['Boolean'];
   BooleanFilterInput: BooleanFilterInput;
@@ -1408,15 +1469,14 @@ export type ResolversParentTypes = {
   Int: Scalars['Int'];
   IntFilterInput: IntFilterInput;
   InviteTypeFilterInput: InviteTypeFilterInput;
-  JoinOpenProjectPayload: JoinOpenProjectPayload;
   Json: Scalars['Json'];
   JsonFilterInput: JsonFilterInput;
   KeyValue: KeyValue;
   Mutation: {};
-  NewIncomingProjectInvitePayload: NewIncomingProjectInvitePayload;
-  NewOutgoingProjectInvitePayload: NewOutgoingProjectInvitePayload;
   NewProjectInput: NewProjectInput;
-  NewProjectPayload: NewProjectPayload;
+  NewProjectInviteInput: NewProjectInviteInput;
+  NewProjectMemberRoleInput: NewProjectMemberRoleInput;
+  NewUserRoleInput: NewUserRoleInput;
   PermissionFilterInput: PermissionFilterInput;
   Project: Project;
   ProjectFilterInput: ProjectFilterInput;
@@ -1451,10 +1511,12 @@ export type ResolversParentTypes = {
   RoleCodeFilterInput: RoleCodeFilterInput;
   String: Scalars['String'];
   StringFilterInput: StringFilterInput;
+  UpdateProjectInput: UpdateProjectInput;
+  UpdateProjectMemberInput: UpdateProjectMemberInput;
   UpdateUserInput: UpdateUserInput;
   UpdateUserSocialInput: UpdateUserSocialInput;
   Upload: Scalars['Upload'];
-  UploadFilterInput: UploadFilterInput;
+  UploadWithOperation: UploadWithOperation;
   User: User;
   UserFilterInput: UserFilterInput;
   UserFindInput: UserFindInput;
@@ -1569,11 +1631,6 @@ export type TextualDirectiveArgs = { };
 
 export type TextualDirectiveResolver<Result, Parent, ContextType = any, Args = TextualDirectiveArgs> = DirectiveResolverFn<Result, Parent, ContextType, Args>;
 
-export type AcceptProjectInvitePayloadResolvers<ContextType = any, ParentType extends ResolversParentTypes['AcceptProjectInvitePayload'] = ResolversParentTypes['AcceptProjectInvitePayload']> = {
-  projectMemberId?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-};
-
 export interface DateScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['Date'], any> {
   name: 'Date';
 }
@@ -1596,17 +1653,12 @@ export type EBoardRoleResolvers<ContextType = any, ParentType extends ResolversP
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
-export type JoinOpenProjectPayloadResolvers<ContextType = any, ParentType extends ResolversParentTypes['JoinOpenProjectPayload'] = ResolversParentTypes['JoinOpenProjectPayload']> = {
-  projectMemberId?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-};
-
 export interface JsonScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['Json'], any> {
   name: 'Json';
 }
 
 export type MutationResolvers<ContextType = any, ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']> = {
-  acceptProjectInvite?: Resolver<ResolversTypes['AcceptProjectInvitePayload'], ParentType, ContextType, RequireFields<MutationAcceptProjectInviteArgs, 'inviteId'>>;
+  acceptProjectInvite?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationAcceptProjectInviteArgs, 'inviteId'>>;
   createEBoard?: Resolver<ResolversTypes['EBoard'], ParentType, ContextType, RequireFields<MutationCreateEBoardArgs, 'record'>>;
   createEBoardRole?: Resolver<ResolversTypes['EBoardRole'], ParentType, ContextType, RequireFields<MutationCreateEBoardRoleArgs, 'record'>>;
   createProject?: Resolver<ResolversTypes['Project'], ParentType, ContextType, RequireFields<MutationCreateProjectArgs, 'record'>>;
@@ -1619,21 +1671,29 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   createUserSocial?: Resolver<ResolversTypes['UserSocial'], ParentType, ContextType, RequireFields<MutationCreateUserSocialArgs, 'record'>>;
   deleteEBoardRoles?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationDeleteEBoardRolesArgs, 'filter'>>;
   deleteEBoards?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationDeleteEBoardsArgs, 'filter'>>;
+  deleteProject?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationDeleteProjectArgs, 'id'>>;
+  deleteProjectInvite?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationDeleteProjectInviteArgs, 'inviteId'>>;
   deleteProjectInvites?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationDeleteProjectInvitesArgs, 'filter'>>;
+  deleteProjectMember?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationDeleteProjectMemberArgs, 'id'>>;
+  deleteProjectMemberRole?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationDeleteProjectMemberRoleArgs, 'id'>>;
   deleteProjectMemberRoles?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationDeleteProjectMemberRolesArgs, 'filter'>>;
   deleteProjectMembers?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationDeleteProjectMembersArgs, 'filter'>>;
   deleteProjects?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationDeleteProjectsArgs, 'filter'>>;
   deleteUserLoginIdentitys?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationDeleteUserLoginIdentitysArgs, 'filter'>>;
+  deleteUserRole?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationDeleteUserRoleArgs, 'id'>>;
   deleteUserRoles?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationDeleteUserRolesArgs, 'filter'>>;
   deleteUserSocials?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationDeleteUserSocialsArgs, 'filter'>>;
   deleteUsers?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationDeleteUsersArgs, 'filter'>>;
-  joinOpenProject?: Resolver<ResolversTypes['JoinOpenProjectPayload'], ParentType, ContextType, RequireFields<MutationJoinOpenProjectArgs, 'projectId'>>;
-  newIncomingProjectInvite?: Resolver<ResolversTypes['NewIncomingProjectInvitePayload'], ParentType, ContextType, RequireFields<MutationNewIncomingProjectInviteArgs, 'projectId'>>;
-  newOutgoingProjectInvite?: Resolver<ResolversTypes['NewOutgoingProjectInvitePayload'], ParentType, ContextType, RequireFields<MutationNewOutgoingProjectInviteArgs, 'projectId' | 'userId'>>;
-  newProject?: Resolver<ResolversTypes['NewProjectPayload'], ParentType, ContextType, RequireFields<MutationNewProjectArgs, 'input'>>;
+  joinOpenProject?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationJoinOpenProjectArgs, 'projectId'>>;
+  newProject?: Resolver<ResolversTypes['ID'], ParentType, ContextType, RequireFields<MutationNewProjectArgs, 'input'>>;
+  newProjectInvite?: Resolver<ResolversTypes['ID'], ParentType, ContextType, RequireFields<MutationNewProjectInviteArgs, 'input'>>;
+  newProjectMemberRole?: Resolver<ResolversTypes['ID'], ParentType, ContextType, RequireFields<MutationNewProjectMemberRoleArgs, 'input'>>;
+  newUserRole?: Resolver<ResolversTypes['ID'], ParentType, ContextType, RequireFields<MutationNewUserRoleArgs, 'input'>>;
   updateEBoardRoles?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationUpdateEBoardRolesArgs, 'changes' | 'filter'>>;
   updateEBoards?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationUpdateEBoardsArgs, 'changes' | 'filter'>>;
+  updateProject?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationUpdateProjectArgs, 'input'>>;
   updateProjectInvites?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationUpdateProjectInvitesArgs, 'changes' | 'filter'>>;
+  updateProjectMember?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationUpdateProjectMemberArgs, 'input'>>;
   updateProjectMemberRoles?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationUpdateProjectMemberRolesArgs, 'changes' | 'filter'>>;
   updateProjectMembers?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationUpdateProjectMembersArgs, 'changes' | 'filter'>>;
   updateProjects?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationUpdateProjectsArgs, 'changes' | 'filter'>>;
@@ -1642,21 +1702,6 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   updateUserRoles?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationUpdateUserRolesArgs, 'changes' | 'filter'>>;
   updateUserSocials?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationUpdateUserSocialsArgs, 'changes' | 'filter'>>;
   updateUsers?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationUpdateUsersArgs, 'changes' | 'filter'>>;
-};
-
-export type NewIncomingProjectInvitePayloadResolvers<ContextType = any, ParentType extends ResolversParentTypes['NewIncomingProjectInvitePayload'] = ResolversParentTypes['NewIncomingProjectInvitePayload']> = {
-  inviteId?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-};
-
-export type NewOutgoingProjectInvitePayloadResolvers<ContextType = any, ParentType extends ResolversParentTypes['NewOutgoingProjectInvitePayload'] = ResolversParentTypes['NewOutgoingProjectInvitePayload']> = {
-  inviteId?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-};
-
-export type NewProjectPayloadResolvers<ContextType = any, ParentType extends ResolversParentTypes['NewProjectPayload'] = ResolversParentTypes['NewProjectPayload']> = {
-  projectId?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
 export type ProjectResolvers<ContextType = any, ParentType extends ResolversParentTypes['Project'] = ResolversParentTypes['Project']> = {
@@ -1713,6 +1758,7 @@ export type ProjectMemberRoleResolvers<ContextType = any, ParentType extends Res
 export type QueryResolvers<ContextType = any, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = {
   eBoardRoles?: Resolver<Array<ResolversTypes['EBoardRole']>, ParentType, ContextType, Partial<QueryEBoardRolesArgs>>;
   eBoards?: Resolver<Array<ResolversTypes['EBoard']>, ParentType, ContextType, Partial<QueryEBoardsArgs>>;
+  isAuthTokenValid?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   projectInvites?: Resolver<Array<ResolversTypes['ProjectInvite']>, ParentType, ContextType, Partial<QueryProjectInvitesArgs>>;
   projectMemberRoles?: Resolver<Array<ResolversTypes['ProjectMemberRole']>, ParentType, ContextType, Partial<QueryProjectMemberRolesArgs>>;
   projectMembers?: Resolver<Array<ResolversTypes['ProjectMember']>, ParentType, ContextType, Partial<QueryProjectMembersArgs>>;
@@ -1777,16 +1823,11 @@ export type UserSocialResolvers<ContextType = any, ParentType extends ResolversP
 };
 
 export type Resolvers<ContextType = any> = {
-  AcceptProjectInvitePayload?: AcceptProjectInvitePayloadResolvers<ContextType>;
   Date?: GraphQLScalarType;
   EBoard?: EBoardResolvers<ContextType>;
   EBoardRole?: EBoardRoleResolvers<ContextType>;
-  JoinOpenProjectPayload?: JoinOpenProjectPayloadResolvers<ContextType>;
   Json?: GraphQLScalarType;
   Mutation?: MutationResolvers<ContextType>;
-  NewIncomingProjectInvitePayload?: NewIncomingProjectInvitePayloadResolvers<ContextType>;
-  NewOutgoingProjectInvitePayload?: NewOutgoingProjectInvitePayloadResolvers<ContextType>;
-  NewProjectPayload?: NewProjectPayloadResolvers<ContextType>;
   Project?: ProjectResolvers<ContextType>;
   ProjectInvite?: ProjectInviteResolvers<ContextType>;
   ProjectMember?: ProjectMemberResolvers<ContextType>;

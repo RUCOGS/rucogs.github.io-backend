@@ -123,8 +123,6 @@ export type ResolversTypes = {
   String: ResolverTypeWrapper<types.Scalars['String']>
   StringFilterInput: types.StringFilterInput
   StringFilterMode: types.StringFilterMode
-  Upload: ResolverTypeWrapper<types.Scalars['Upload']>
-  UploadFilterInput: types.UploadFilterInput
   User: ResolverTypeWrapper<types.User>
   UserFilterInput: types.UserFilterInput
   UserFindInput: types.UserFindInput
@@ -219,8 +217,6 @@ export type ResolversParentTypes = {
   RoleCodeFilterInput: types.RoleCodeFilterInput
   String: types.Scalars['String']
   StringFilterInput: types.StringFilterInput
-  Upload: types.Scalars['Upload']
-  UploadFilterInput: types.UploadFilterInput
   User: types.User
   UserFilterInput: types.UserFilterInput
   UserFindInput: types.UserFindInput
@@ -374,10 +370,6 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   users?: Resolver<Array<ResolversTypes['User']>, ParentType, ContextType, Partial<types.QueryUsersArgs>>
 }
 
-export interface UploadScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['Upload'], any> {
-  name: 'Upload'
-}
-
 export type UserResolvers<ContextType = any, ParentType extends ResolversParentTypes['User'] = ResolversParentTypes['User']> = {
   avatarLink?: Resolver<types.Maybe<ResolversTypes['String']>, ParentType, ContextType>
   bannerLink?: Resolver<types.Maybe<ResolversTypes['String']>, ParentType, ContextType>
@@ -436,7 +428,6 @@ export type Resolvers<ContextType = any> = {
   ProjectMember?: ProjectMemberResolvers<ContextType>
   ProjectMemberRole?: ProjectMemberRoleResolvers<ContextType>
   Query?: QueryResolvers<ContextType>
-  Upload?: GraphQLScalarType
   User?: UserResolvers<ContextType>
   UserLoginIdentity?: UserLoginIdentityResolvers<ContextType>
   UserRole?: UserRoleResolvers<ContextType>

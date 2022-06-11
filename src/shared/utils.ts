@@ -115,14 +115,29 @@ export class OneToManyTwoWayMap<TOne extends string | number | symbol, TMany ext
   }
 }
 
-export function assertNoDuplicates<T>(arr: T[], objectType: string = "") {
+export function hasDuplicates<T>(arr: T[], equalityFn: (one: T, two: T) => boolean) {
   for (let i = 0; i < arr.length; i++) {
     for (let j = i + 1; j < arr.length; j++) {
-      if (isDeepEquals(arr[i], arr[j])) {
-        throw new Error(objectType ? `No duplicates allowed.` : `No duplicates allowed for ${objectType}.`);
+      if (equalityFn(arr[i], arr[j])) {
+        return true;
       }
     }
   }
+  return false;
+}
+
+export function hasDuplicatesDeepEquals<T>(arr: T[]) {
+  return hasDuplicates(arr, isDeepEquals);
+}
+
+export function assertNoDuplicates<T>(arr: T[], equalityFn: (one: T, two: T) => boolean, message: string) {
+  if (hasDuplicates(arr, equalityFn))
+    throw new Error(message);
+}
+
+export function assertNoDuplicatesDeep<T>(arr: T[], message: string) {
+  if (hasDuplicatesDeepEquals(arr))
+    throw new Error(message);
 }
 
 export function assertProjectValid(project: PartialDeep<Project>) {

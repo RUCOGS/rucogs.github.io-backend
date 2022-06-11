@@ -65,7 +65,6 @@ export default gql`
 
   scalar Date
   scalar Json
-  scalar Upload
 
   input AccessFilterInput {
     eq: Access
@@ -129,14 +128,6 @@ export default gql`
     startsWith: String
     endsWith: String
     mode: StringFilterMode
-  }
-
-  input UploadFilterInput {
-    eq: Upload
-    ne: Upload
-    in: [Upload!]
-    nin: [Upload!]
-    exists: Boolean
   }
 
   ########### EBoard ###########

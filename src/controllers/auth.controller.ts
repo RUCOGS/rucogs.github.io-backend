@@ -40,8 +40,14 @@ export function configPassport(passport: PassportStatic, entityManager: EntityMa
         async (profile) => ({
           email: profile.email ?? "",
           username: profile.username.toLowerCase(),
-          avatarLink: profile.avatar ? await downloadToCdn(`https://cdn.discordapp.com/avatars/${profile.id}/${profile.avatar}?size=256`, "avatar") : "",
-          bannerLink: profile.banner ? await downloadToCdn(`https://cdn.discordapp.com/banners/${profile.id}/${profile.banner}?size=512`, "banner") : "",
+          avatarLink: profile.avatar ? await downloadToCdn({ 
+            url: `https://cdn.discordapp.com/avatars/${profile.id}/${profile.avatar}?size=256`, 
+            filename: "avatar"
+          }) : "",
+          bannerLink: profile.banner ? await downloadToCdn({
+            url: `https://cdn.discordapp.com/banners/${profile.id}/${profile.banner}?size=512`, 
+            filename: "banner"
+          }) : "",
           displayName: profile.username,
         }),
         async (profile) => ({ })
@@ -54,7 +60,9 @@ export function configPassport(passport: PassportStatic, entityManager: EntityMa
           email: profile._json.email ?? "",
           username: profile.displayName.replace(" ", "_").toLowerCase(),
           displayName: profile.displayName,
-          avatarLink: profile._json.picture ? await downloadToCdn(profile._json.picture) : "",
+          avatarLink: profile._json.picture ? await downloadToCdn({ 
+            url: profile._json.picture,
+          }) : "",
           bannerLink: ""
         }),
         async (profile) => ({ })
@@ -80,12 +88,12 @@ function getOAuthStrategyPassportCallback<TProfile extends passport.Profile>(ent
       });
 
       if (userLoginIdentity) {
-        await entityManager.user.updateOne({
-          filter: {
-            id: { eq: userLoginIdentity.userId }
-          },
-          changes: await profileToNewUser(profile)
-        })
+        // await entityManager.user.updateOne({
+        //   filter: {
+        //     id: { eq: userLoginIdentity.userId }
+        //   },
+        //   changes: await profileToNewUser(profile)
+        // })
 
         const user = await entityManager.user.findOne({ 
           filter: {
