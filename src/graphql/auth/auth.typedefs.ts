@@ -1,4 +1,3 @@
-import { Permission } from "@src/generated/model.types";
 import { gql } from "apollo-server";
 
 // NOTE: graphql-codegen just isn't working with a typescript file. I've spent

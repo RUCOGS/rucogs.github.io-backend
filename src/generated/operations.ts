@@ -171,20 +171,20 @@ export default gql`
 
   ########### EBoardRole ###########
   input EBoardRoleInsertInput {
-    eboardId: ID!
+    eBoardId: ID!
     roleCode: RoleCode!
   }
   input EBoardRoleUpdateInput {
-    eboardId: ID
+    eBoardId: ID
     roleCode: RoleCode
   }
   input EBoardRoleSortInput {
-    eboardId: SortDirection
+    eBoardId: SortDirection
     id: SortDirection
     roleCode: SortDirection
   }
   input EBoardRoleFilterInput {
-    eboardId: IDFilterInput
+    eBoardId: IDFilterInput
     id: IDFilterInput
     roleCode: RoleCodeFilterInput
     and_: [EBoardRoleFilterInput!]
@@ -192,7 +192,7 @@ export default gql`
     nor_: [EBoardRoleFilterInput!]
   }
   input EBoardRoleRelationsFilterInput {
-    eboard: EBoardFindInput
+    eBoard: EBoardFindInput
   }
   input EBoardRoleFindInput {
     filter: EBoardRoleFilterInput
@@ -450,7 +450,7 @@ export default gql`
     nor_: [UserFilterInput!]
   }
   input UserRelationsFilterInput {
-    eboard: EBoardFindInput
+    eBoard: EBoardFindInput
     loginIdentities: UserLoginIdentityFindInput
     projectInvites: ProjectInviteFindInput
     projectMembers: ProjectMemberFindInput

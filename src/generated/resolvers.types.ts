@@ -262,8 +262,8 @@ export type EBoardResolvers<ContextType = any, ParentType extends ResolversParen
 }
 
 export type EBoardRoleResolvers<ContextType = any, ParentType extends ResolversParentTypes['EBoardRole'] = ResolversParentTypes['EBoardRole']> = {
-  eboard?: Resolver<ResolversTypes['EBoard'], ParentType, ContextType>
-  eboardId?: Resolver<ResolversTypes['ID'], ParentType, ContextType>
+  eBoard?: Resolver<ResolversTypes['EBoard'], ParentType, ContextType>
+  eBoardId?: Resolver<ResolversTypes['ID'], ParentType, ContextType>
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>
   roleCode?: Resolver<ResolversTypes['RoleCode'], ParentType, ContextType>
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>
@@ -376,7 +376,7 @@ export type UserResolvers<ContextType = any, ParentType extends ResolversParentT
   bio?: Resolver<types.Maybe<ResolversTypes['String']>, ParentType, ContextType>
   createdAt?: Resolver<types.Maybe<ResolversTypes['Date']>, ParentType, ContextType>
   displayName?: Resolver<types.Maybe<ResolversTypes['String']>, ParentType, ContextType>
-  eboard?: Resolver<types.Maybe<ResolversTypes['EBoard']>, ParentType, ContextType>
+  eBoard?: Resolver<types.Maybe<ResolversTypes['EBoard']>, ParentType, ContextType>
   email?: Resolver<ResolversTypes['String'], ParentType, ContextType>
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>
   loginIdentities?: Resolver<Array<ResolversTypes['UserLoginIdentity']>, ParentType, ContextType>

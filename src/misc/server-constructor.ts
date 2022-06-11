@@ -7,7 +7,6 @@ import express from 'express';
 import cors from 'cors';
 import passport from 'passport';
 import authRouter from '@src/routes/auth.routes';
-import fileUploadRouter from '@src/routes/upload.routes';
 import http from 'http';
 import { createSecureEntityManager, createUnsecureEntityManager, getOperationMetadataFromRequest } from '@src/controllers/entity-manager.controller/entity-manager';
 import { authenticate, AuthScheme, configPassport } from '@src/controllers/auth.controller';
@@ -126,14 +125,7 @@ function configExpress(app: Express, entityManager: EntityManager, mongoClient: 
   // Enable CORS for any origin
   app.use(cors());
 
-  // TODO: Remove this if unecessary
-  // parse requests of content-type - application/json
-  // app.use(express.json());
-  // parse requests of content-type - application/x-www-form-urlencoded
-  // app.use(express.urlencoded({ extended: true }));
-
   // ----- PASSPORT ----- //
-  // TODO: Add passport
   configPassport(passport, entityManager);
   app.use(passport.initialize());
 
@@ -154,7 +146,6 @@ function configExpress(app: Express, entityManager: EntityManager, mongoClient: 
 
   const router = express.Router();
   router.use('/auth', authRouter);
-  router.use('/upload', fileUploadRouter);
   router.use('/cdn/', express.static("src/uploads"))
 
   router.get('/', (req, res) => {

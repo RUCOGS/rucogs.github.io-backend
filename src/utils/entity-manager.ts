@@ -18,12 +18,3 @@ export async function findAndModifyOrCreate<T extends DAOGenerics>(dao: Abstract
   await modifyOrCreate(dao, params);
   return dao.findOne({ filter: params.filter });
 }
-
-export class HttpError extends Error {
-  constructor(
-    public statusCode: number,
-    public message: string
-  ) {
-    super(message);
-  }
-}

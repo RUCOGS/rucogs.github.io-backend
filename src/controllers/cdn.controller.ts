@@ -1,4 +1,4 @@
-import { HttpError } from "@src/utils";
+import { HttpError } from '@src/shared/utils';
 import fs from "fs";
 import path from "path";
 import https from "https";
@@ -46,7 +46,7 @@ export async function deleteSelfHostedFile(selfHostedFilePath: string) {
   try {
     await fs.promises.unlink(path);
   } catch (error) {
-    
+
   }
 }
 

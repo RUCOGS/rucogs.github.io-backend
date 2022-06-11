@@ -93,15 +93,15 @@ export type EBoardRelationsFilterInput = {
 
 export type EBoardRole = {
   __typename?: 'EBoardRole';
-  eboard: EBoard;
-  eboardId: Scalars['ID'];
+  eBoard: EBoard;
+  eBoardId: Scalars['ID'];
   id: Scalars['ID'];
   roleCode: RoleCode;
 };
 
 export type EBoardRoleFilterInput = {
   and_?: InputMaybe<Array<EBoardRoleFilterInput>>;
-  eboardId?: InputMaybe<IdFilterInput>;
+  eBoardId?: InputMaybe<IdFilterInput>;
   id?: InputMaybe<IdFilterInput>;
   nor_?: InputMaybe<Array<EBoardRoleFilterInput>>;
   or_?: InputMaybe<Array<EBoardRoleFilterInput>>;
@@ -117,22 +117,22 @@ export type EBoardRoleFindInput = {
 };
 
 export type EBoardRoleInsertInput = {
-  eboardId: Scalars['ID'];
+  eBoardId: Scalars['ID'];
   roleCode: RoleCode;
 };
 
 export type EBoardRoleRelationsFilterInput = {
-  eboard?: InputMaybe<EBoardFindInput>;
+  eBoard?: InputMaybe<EBoardFindInput>;
 };
 
 export type EBoardRoleSortInput = {
-  eboardId?: InputMaybe<SortDirection>;
+  eBoardId?: InputMaybe<SortDirection>;
   id?: InputMaybe<SortDirection>;
   roleCode?: InputMaybe<SortDirection>;
 };
 
 export type EBoardRoleUpdateInput = {
-  eboardId?: InputMaybe<Scalars['ID']>;
+  eBoardId?: InputMaybe<Scalars['ID']>;
   roleCode?: InputMaybe<RoleCode>;
 };
 
@@ -521,7 +521,7 @@ export type MutationUpdateUsersArgs = {
 };
 
 export type NewEBoardInput = {
-  eBoardId: Scalars['ID'];
+  userId: Scalars['ID'];
 };
 
 export type NewEBoardRoleInput = {
@@ -537,6 +537,7 @@ export type NewProjectInput = {
 
 export type NewProjectInviteInput = {
   projectId: Scalars['ID'];
+  type: InviteType;
   userId: Scalars['ID'];
 };
 
@@ -1021,12 +1022,13 @@ export type StringFilterMode = typeof StringFilterMode[keyof typeof StringFilter
 export type UpdateEBoardInput = {
   graduatedAt: Scalars['ID'];
   id: Scalars['ID'];
+  roles?: InputMaybe<Array<RoleCode>>;
 };
 
 export type UpdateProjectInput = {
   access?: InputMaybe<Access>;
-  bannerLink?: InputMaybe<Scalars['String']>;
-  cardImageLink?: InputMaybe<Scalars['String']>;
+  banner?: InputMaybe<UploadWithOperation>;
+  cardImage?: InputMaybe<UploadWithOperation>;
   description?: InputMaybe<Scalars['String']>;
   downloadLinks?: InputMaybe<Array<Scalars['String']>>;
   galleryImageLinks?: InputMaybe<Array<Scalars['String']>>;
@@ -1038,6 +1040,7 @@ export type UpdateProjectInput = {
 
 export type UpdateProjectMemberInput = {
   contributions?: InputMaybe<Scalars['String']>;
+  id: Scalars['ID'];
   roles?: InputMaybe<Array<RoleCode>>;
 };
 
@@ -1075,7 +1078,7 @@ export type User = {
   bio?: Maybe<Scalars['String']>;
   createdAt?: Maybe<Scalars['Date']>;
   displayName?: Maybe<Scalars['String']>;
-  eboard?: Maybe<EBoard>;
+  eBoard?: Maybe<EBoard>;
   email: Scalars['String'];
   id: Scalars['ID'];
   loginIdentities: Array<UserLoginIdentity>;
@@ -1177,7 +1180,7 @@ export type UserLoginIdentityUpdateInput = {
 };
 
 export type UserRelationsFilterInput = {
-  eboard?: InputMaybe<EBoardFindInput>;
+  eBoard?: InputMaybe<EBoardFindInput>;
   loginIdentities?: InputMaybe<UserLoginIdentityFindInput>;
   projectInvites?: InputMaybe<ProjectInviteFindInput>;
   projectMembers?: InputMaybe<ProjectMemberFindInput>;
@@ -1699,8 +1702,8 @@ export type EBoardResolvers<ContextType = any, ParentType extends ResolversParen
 };
 
 export type EBoardRoleResolvers<ContextType = any, ParentType extends ResolversParentTypes['EBoardRole'] = ResolversParentTypes['EBoardRole']> = {
-  eboard?: Resolver<ResolversTypes['EBoard'], ParentType, ContextType>;
-  eboardId?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  eBoard?: Resolver<ResolversTypes['EBoard'], ParentType, ContextType>;
+  eBoardId?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   roleCode?: Resolver<ResolversTypes['RoleCode'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
@@ -1839,7 +1842,7 @@ export type UserResolvers<ContextType = any, ParentType extends ResolversParentT
   bio?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   createdAt?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
   displayName?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  eboard?: Resolver<Maybe<ResolversTypes['EBoard']>, ParentType, ContextType>;
+  eBoard?: Resolver<Maybe<ResolversTypes['EBoard']>, ParentType, ContextType>;
   email?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   loginIdentities?: Resolver<Array<ResolversTypes['UserLoginIdentity']>, ParentType, ContextType>;

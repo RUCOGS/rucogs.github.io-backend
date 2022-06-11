@@ -1,5 +1,6 @@
 import { DefaultSecurityContext, OperationSecurityDomain, PermissionCode, SecurityContext, SecurityPolicy } from "./types";
 import { isSecurityDomainValidForOpDomain } from "./methods";
+import { HttpError } from "@src/shared/utils";
 
 export class PermissionsCalculator {
   constructor(public securityContext: SecurityContext = DefaultSecurityContext, public operationDomain: OperationSecurityDomain = {}) {}
@@ -18,6 +19,11 @@ export class PermissionsCalculator {
     if (!this.securityContext)
       return false;
     return isSecurityDomainValidForOpDomain(permissionCode, this.securityContext.permissions[permissionCode], this.operationDomain);
+  }
+
+  assertPermission(permissionCode: PermissionCode) {
+    if (!this.hasPermission(permissionCode))
+      throw new HttpError(403, `Missing required permission "${permissionCode}".`);
   }
 }
 

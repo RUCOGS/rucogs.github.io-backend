@@ -8,7 +8,7 @@ import { RoleCode } from '@src/generated/model.types';
 import { BaseSecurityDomain, DefaultSecurityContext, ExtendedSecurityDomain, isBaseSecurityDomain, isExtendedSecurityDomain, PermissionCode, RoleData, SecurityContext, SecurityDomain, SecurityPermissions } from '@src/shared/security';
 import { PermissionDataDict } from '@src/shared/security/permissions';
 import { isDeepEquals } from '@src/shared/utils';
-import { HttpError } from '@src/utils';
+import { HttpError } from '@src/shared/utils';
 import { RoleBackendDataDict } from './role-backend';
 
 // Centeral point to get security context.

@@ -1,8 +1,10 @@
-import { MutationResolvers, Permission, QueryResolvers, RoleCode } from '@src/generated/graphql-endpoint.types';
+import { MutationResolvers, Permission, QueryResolvers, RoleCode, UploadOperation } from '@src/generated/graphql-endpoint.types';
 import { EntityManager } from '@src/generated/typetta';
 import { ApolloResolversContext } from '@src/misc/context';
 import { makePermsCalc } from '@src/shared/security';
-import { daoInsertRolesBatch, HttpError, startEntityManagerTransaction } from '@src/utils';
+import { daoInsertRolesBatch, isDefined, startEntityManagerTransaction } from '@src/utils';
+import { HttpError } from '@src/shared/utils';
+import { DataSize, fileUploadPromiseToCdn, tryDeleteFileIfSelfHosted } from '@src/controllers/cdn.controller';
 
 export default {
   Mutation: {
@@ -52,6 +54,82 @@ export default {
 
       return newProjectId;
     },
+
+    updateProject: async (parent, args, context: ApolloResolversContext, info) => {
+      if (!makePermsCalc()
+          .withContext(context.securityContext)
+          .withDomain({
+            projectId: [ args.input.id ]
+          })
+          .hasPermission(Permission.UpdateProject)) {
+        throw new HttpError(401, "Not authorized!");
+      }
+
+      const project = await context.unsecureEntityManager.project.findOne({
+        filter: {
+          id: args.input.id
+        },
+        projection: {
+          cardImageLink: true,
+          bannerLink: true,
+        }
+      });
+      if (!project) {
+        throw new HttpError(401, "Invalid projectid!");
+      }
+  
+      const error = await startEntityManagerTransaction(context.unsecureEntityManager, context.mongoClient, async (transEntityManager) => {
+        let cardImageSelfHostedFilePath = "";
+        if (isDefined(args.input.cardImage)) {
+          if (args.input.cardImage.operation === UploadOperation.Insert ||
+            args.input.cardImage.operation === UploadOperation.Delete)
+            tryDeleteFileIfSelfHosted(project.cardImageLink);
+          
+          if (args.input.cardImage.operation === UploadOperation.Insert) {
+            cardImageSelfHostedFilePath = await fileUploadPromiseToCdn({
+              fileUploadPromise: args.input.cardImage.upload!,
+              maxSizeBytes: 5 * DataSize.MB
+            });
+          }
+        }
+
+        let bannerSelfHostedFilePath = "";
+        if (isDefined(args.input.banner)) {
+          if (args.input.banner.operation === UploadOperation.Insert ||
+            args.input.banner.operation === UploadOperation.Delete)
+            tryDeleteFileIfSelfHosted(project.bannerLink);
+          
+          if (args.input.banner.operation === UploadOperation.Insert) {
+            bannerSelfHostedFilePath = await fileUploadPromiseToCdn({
+              fileUploadPromise: args.input.banner.upload!,
+              maxSizeBytes: 10 * DataSize.MB
+            });
+          }
+        }
+
+        await transEntityManager.project.updateOne({
+          filter: {
+            id: args.input.id
+          },
+          changes: {
+            ...(isDefined(args.input.access) && { access: args.input.access }),
+            ...(isDefined(args.input.name) && { name: args.input.name }),
+            ...(isDefined(args.input.pitch) && { pitch: args.input.pitch }),
+            ...(isDefined(args.input.description) && { description: args.input.description }),
+            ...(isDefined(args.input.galleryImageLinks) && { galleryImageLinks: args.input.galleryImageLinks }),
+            ...(isDefined(args.input.soundcloudEmbedSrc) && { soundcloudEmbedSrc: args.input.soundcloudEmbedSrc }),
+            ...(isDefined(args.input.downloadLinks) && { downloadLinks: args.input.downloadLinks }),
+            ...(isDefined(args.input.cardImage) && { cardImageLink: cardImageSelfHostedFilePath}),
+            ...(isDefined(args.input.banner) && { bannerLink: bannerSelfHostedFilePath}),
+          }
+        });
+      });
+      if (error) {
+        throw error;
+      }
+
+      return true;
+    }
   }
 } as { Query: QueryResolvers, Mutation: MutationResolvers };
 

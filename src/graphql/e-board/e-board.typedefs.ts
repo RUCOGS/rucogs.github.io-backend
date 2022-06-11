@@ -1,4 +1,3 @@
-import { Permission } from "@src/generated/model.types";
 import { gql } from "apollo-server";
 
 export default gql`
@@ -17,11 +16,12 @@ input NewEBoardRoleInput {
 }
 
 input NewEBoardInput {
-  eBoardId: ID!
+  userId: ID!
 }
 
 input UpdateEBoardInput {
   id: ID!
   graduatedAt: ID!
+  roles: [RoleCode!]
 }
 `;

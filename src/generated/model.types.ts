@@ -90,15 +90,15 @@ export type EBoardRelationsFilterInput = {
 
 export type EBoardRole = {
   __typename?: 'EBoardRole'
-  eboard: EBoard
-  eboardId: Scalars['ID']
+  eBoard: EBoard
+  eBoardId: Scalars['ID']
   id: Scalars['ID']
   roleCode: RoleCode
 }
 
 export type EBoardRoleFilterInput = {
   and_?: InputMaybe<Array<EBoardRoleFilterInput>>
-  eboardId?: InputMaybe<IdFilterInput>
+  eBoardId?: InputMaybe<IdFilterInput>
   id?: InputMaybe<IdFilterInput>
   nor_?: InputMaybe<Array<EBoardRoleFilterInput>>
   or_?: InputMaybe<Array<EBoardRoleFilterInput>>
@@ -114,22 +114,22 @@ export type EBoardRoleFindInput = {
 }
 
 export type EBoardRoleInsertInput = {
-  eboardId: Scalars['ID']
+  eBoardId: Scalars['ID']
   roleCode: RoleCode
 }
 
 export type EBoardRoleRelationsFilterInput = {
-  eboard?: InputMaybe<EBoardFindInput>
+  eBoard?: InputMaybe<EBoardFindInput>
 }
 
 export type EBoardRoleSortInput = {
-  eboardId?: InputMaybe<SortDirection>
+  eBoardId?: InputMaybe<SortDirection>
   id?: InputMaybe<SortDirection>
   roleCode?: InputMaybe<SortDirection>
 }
 
 export type EBoardRoleUpdateInput = {
-  eboardId?: InputMaybe<Scalars['ID']>
+  eBoardId?: InputMaybe<Scalars['ID']>
   roleCode?: InputMaybe<RoleCode>
 }
 
@@ -820,7 +820,7 @@ export type User = {
   bio?: Maybe<Scalars['String']>
   createdAt?: Maybe<Scalars['Date']>
   displayName?: Maybe<Scalars['String']>
-  eboard?: Maybe<EBoard>
+  eBoard?: Maybe<EBoard>
   email: Scalars['String']
   id: Scalars['ID']
   loginIdentities: Array<UserLoginIdentity>
@@ -922,7 +922,7 @@ export type UserLoginIdentityUpdateInput = {
 }
 
 export type UserRelationsFilterInput = {
-  eboard?: InputMaybe<EBoardFindInput>
+  eBoard?: InputMaybe<EBoardFindInput>
   loginIdentities?: InputMaybe<UserLoginIdentityFindInput>
   projectInvites?: InputMaybe<ProjectInviteFindInput>
   projectMembers?: InputMaybe<ProjectMemberFindInput>

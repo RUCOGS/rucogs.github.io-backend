@@ -77,7 +77,7 @@ type User @entity @mongodb {
   socials: [UserSocial!]! @foreignRef(refFrom: "userId")
   projectMembers: [ProjectMember!]! @foreignRef(refFrom: "userId")
   roles: [UserRole!]! @foreignRef(refFrom: "userId")
-  eboard: EBoard @foreignRef(refFrom: "userId")
+  eBoard: EBoard @foreignRef(refFrom: "userId")
   projectInvites: [ProjectInvite!]! @foreignRef(refFrom: "userId")
 }
 
@@ -87,14 +87,14 @@ type EBoard @entity @mongodb {
   userId: ID!
   createdAt: Date! @default(from: "generator")
   graduatedAt: Date
-  roles: [EBoardRole!]! @foreignRef(refFrom: "eboardId")
+  roles: [EBoardRole!]! @foreignRef(refFrom: "eBoardId")
 }
 
 type EBoardRole @entity @mongodb {
   id: ID! @id(from: "db") @alias(value: "_id")
   roleCode: RoleCode!
-  eboard: EBoard! @innerRef
-  eboardId: ID!
+  eBoard: EBoard! @innerRef
+  eBoardId: ID!
 }
 
 type UserRole @entity @mongodb {

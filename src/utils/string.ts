@@ -10,13 +10,29 @@ export function isLowerCase(str: string) {
   return str === str.toLowerCase();
 }
 
+export function spaceToSnakeCase(str: string) {
+  let newStr = "";
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charAt(i);
+    if (char === ' ')
+      newStr += '_'
+    else
+      newStr += char;
+  }
+  return newStr;
+}
+
 export function camelCaseToSpace(str: string) {
   let newStr = "";
   for (let i = 0; i < str.length; i++) {
     const char = str.charAt(i);
     if (isUpperCase(char))
       newStr += " ";
-    newStr += str.charAt(i);
+    newStr += char;
   }
   return newStr;
+}
+
+export function camelCaseToSnakeCase(str: string) {
+  return spaceToSnakeCase(camelCaseToSpace(str));
 }

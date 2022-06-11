@@ -1,16 +1,13 @@
 //#region // ----- UPLOAD HELPERS ----- //
 
 import { deleteSelfHostedFile, isSelfHostedFile, relativeToSelfHostedFilePath } from "@src/controllers/cdn.controller";
-import { AnyEntityManager } from "@src/controllers/entity-manager.controller";
 import { RoleCode } from "@src/generated/graphql-endpoint.types";
 import { EntityManager } from "@src/generated/typetta";
 import { RequestContext, RequestWithContext } from "@src/misc/context";
-import { getHighestRoles, isRoleBelowOrEqual } from "@src/shared/security";
-import { assertNoDuplicates } from "@src/shared/utils";
+import { HttpError } from '@src/shared/utils';
 import { AbstractDAO } from "@twinlogix/typetta";
 import express from "express";
-import { HttpError } from "./entity-manager";
-import { MongoClient } from "mongodb"
+import { MongoClient } from "mongodb";
 
 
 export function isDefined<T>(value: T | undefined | null): value is T {

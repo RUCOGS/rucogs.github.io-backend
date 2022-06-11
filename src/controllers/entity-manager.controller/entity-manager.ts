@@ -5,7 +5,7 @@ import { Db, ObjectId } from 'mongodb';
 import { EntityManagerMetadata, BaseSecurityDomainFieldSet, SecurityContext } from "@src/shared/security";
 import { roleValidation } from "@src/controllers/security.controller";
 import express from 'express';
-import { HttpError } from "@src/utils";
+import { HttpError } from '@src/shared/utils';
 import { validationMiddleware } from "@src/middlewares/validation.middleware";
 import { securityContextToTypettaSecurityContext } from "@src/controllers/security.controller";
 import { SecurityPolicy } from "@src/controllers/security.controller";

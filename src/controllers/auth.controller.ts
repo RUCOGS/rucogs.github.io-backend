@@ -9,7 +9,7 @@ import { User } from '@src/generated/model.types';
 import { EntityManager, UserInsert } from '@src/generated/typetta';
 import { RequestWithDefaultContext } from '@src/misc/context';
 import { downloadToCdn } from '@src/controllers/cdn.controller';
-import { HttpError } from '@src/utils';
+import { HttpError } from '@src/shared/utils';
 import { getCompleteSecurityContext } from '@src/controllers/security.controller/security-context';
 
 // #region // ----- AUTHENTICATION ----- //

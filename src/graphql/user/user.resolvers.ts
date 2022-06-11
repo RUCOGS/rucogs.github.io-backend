@@ -1,10 +1,11 @@
 import { DataSize, fileUploadPromiseToCdn, tryDeleteFileIfSelfHosted } from '@src/controllers/cdn.controller';
-import { MutationResolvers, Permission, QueryResolvers, UpdateUserSocialInput, UploadOperation } from '@src/generated/graphql-endpoint.types';
+import { MutationResolvers, Permission, QueryResolvers, RoleCode, UpdateUserSocialInput, UploadOperation } from '@src/generated/graphql-endpoint.types';
 import { EntityManager, UserSocialFilter, UserSocialInsert } from '@src/generated/typetta';
 import { ApolloResolversContext } from '@src/misc/context';
 import { makePermsCalc } from '@src/shared/security';
-import { assertNoDuplicates } from '@src/shared/utils';
-import { assertRequesterCanManageRoleCodes, daoInsertBatch, daoInsertRolesBatch, deleteEntityRoleResolver, EntityRoleResolverOptions, getEntityRoleCodes, getRoleCodes, HttpError, isDefined, newEntityRoleResolver, startEntityManagerTransaction } from '@src/utils';
+import { assertNoDuplicates } from '@src/shared/validation';
+import { assertRequesterCanDeleteRoleCodes, assertRequesterCanManageRoleCodes, daoInsertBatch, daoInsertRolesBatch, deleteEntityRoleResolver, EntityRoleResolverOptions, getEntityRoleCodes, getRoleCodes, isDefined, newEntityRoleResolver, startEntityManagerTransaction } from '@src/utils';
+import { HttpError } from '@src/shared/utils';
 
 const roleResolverOptions = <EntityRoleResolverOptions>{
   entityCamelCaseName: "user",
@@ -16,23 +17,18 @@ const roleResolverOptions = <EntityRoleResolverOptions>{
 export default {
   Mutation: {
     updateUser: async (parent, args, context: ApolloResolversContext, info) => {
-      const unsecureEntityManager = context.unsecureEntityManager;
-      const securityContext = context.securityContext;
-
-      const error = await startEntityManagerTransaction(unsecureEntityManager, context.mongoClient, async (transEntityManager) => {
+      const error = await startEntityManagerTransaction(context.unsecureEntityManager, context.mongoClient, async (transEntityManager) => {
         if (!context.securityContext.userId)
           throw new HttpError(400, "Expected context.securityContext.userId!");
 
-        if (!makePermsCalc()
-            .withContext(securityContext)
-            .withDomain({
-              userId: [ args.input.id ]
-            })
-            .hasPermission(Permission.UpdateUser)) {
-          throw new HttpError(401, "Not authorized!");
-        }
+        makePermsCalc()
+          .withContext(context.securityContext)
+          .withDomain({
+            userId: [ args.input.id ]
+          })
+          .assertPermission(Permission.UpdateUser);
 
-        const user = await unsecureEntityManager.user.findOne({
+        const user = await context.unsecureEntityManager.user.findOne({
           filter: {
             id: args.input.id
           },
@@ -52,7 +48,9 @@ export default {
         }
 
         if (isDefined(args.input.roles)) {
-          const requesterRoleCodes = await getRoleCodes(transEntityManager.userRole, "userId", context.securityContext.userId);
+          const requesterRoleCodes = await roleResolverOptions.getRequesterRoles(transEntityManager, context.securityContext.userId, context.securityContext.userId);
+          if (!args.input.roles.some(x => x === RoleCode.User))
+            throw new HttpError(400, "User must have User role!");
           assertRequesterCanManageRoleCodes(requesterRoleCodes, args.input.roles);
           await daoInsertRolesBatch({
             dao: transEntityManager.userRole,

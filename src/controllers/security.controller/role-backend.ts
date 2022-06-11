@@ -2,7 +2,7 @@ import { AnyEntityManager } from "@src/controllers/entity-manager.controller/ent
 import { RoleCode } from "@src/generated/model.types";
 import { ProjectDAO, ProjectMemberDAO } from "@src/generated/typetta";
 import { SecurityContext, PermissionCode, SecurityPermissions } from "@src/shared/security";
-import { HttpError } from "@src/utils";
+import { HttpError } from '@src/shared/utils';
 import { mergeSecurityPermissions } from "./security-context";
 
 export type RoleBackendData = {
@@ -17,8 +17,8 @@ export const RoleBackendDataDict: {
   [RoleCode.User]: {
     async getSecurityPermissions(entityManager, userId) {
       return {
-        READ_PROFILE_PRIVATE: [{ userId: userId }],
-        UPDATE_PROFILE: [{ userId: userId }],
+        READ_USER_PRIVATE: [{ userId: userId }],
+        UPDATE_USER: [{ userId: userId }],
         ACCEPT_PROJECT_INVITE: [{ userId: userId }],
         CREATE_PROJECT: true, 
       };
@@ -27,10 +27,10 @@ export const RoleBackendDataDict: {
   [RoleCode.Moderator]: {
     async getSecurityPermissions(entityManager, userId) {
       return {
-        UPDATE_PROFILE: true,
+        UPDATE_USER: true,
         CREATE_PROJECT: true,
         UPDATE_PROJECT: true,
-        READ_PROFILE_PRIVATE: true,
+        READ_USER_PRIVATE: true,
         ACCEPT_PROJECT_INVITE: true,
       };
     }
@@ -38,7 +38,7 @@ export const RoleBackendDataDict: {
   [RoleCode.SuperAdmin]: {
     async getSecurityPermissions(entityManager, userId) {
       return {
-        DELETE_PROFILE: true,
+        DELETE_USER: true,
         DELETE_PROJECT: true,
         MANAGE_EBOARD: true,
       }
@@ -98,6 +98,6 @@ export const RoleBackendDataDict: {
         UPDATE_PROJECT_MEMBER: [{ projectMemberId: projectMemberId }],
       };
     }
-  }
+  },
 // #endregion // -- PROJECT MEMBER ROLES ----- //
 }

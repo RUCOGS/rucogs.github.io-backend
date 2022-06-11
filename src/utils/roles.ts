@@ -2,15 +2,16 @@ import { Permission, RoleCode } from "@src/generated/graphql-endpoint.types";
 import { EntityManager } from "@src/generated/typetta";
 import { ApolloResolversContext } from "@src/misc/context";
 import { getHighestRoles, isRoleBelow, isRoleBelowOrEqual, makePermsCalc } from "@src/shared/security";
+import { HttpError } from '@src/shared/utils';
 import { AbstractDAO } from "@twinlogix/typetta";
-import { HttpError } from "./entity-manager";
-import { camelCaseToSpace, capitalizeFirstLetter } from "./string";
+import { camelCaseToSnakeCase, camelCaseToSpace, capitalizeFirstLetter } from "./string";
 
 export type EntityRoleResolverOptions = {
   entityCamelCaseName?: string
   roleDao?: string
   entityName?: string
   entityIdKey?: string
+  permission?: string
   getRequesterRoles: (unsecureEntityManager: EntityManager, requesterUserId: string, roleEntityId: string) => Promise<RoleCode[]>
 };
 
@@ -26,7 +27,7 @@ export function newEntityRoleResolver(options: EntityRoleResolverOptions) {
       .withDomain({
         [concreteOptions.entityIdKey]: [ args.input[concreteOptions.entityIdKey] ]
       })
-      .hasPermission(Permission.ManageUserRoles))
+      .hasPermission(concreteOptions.permission as Permission))
       throw new HttpError(403, `Forbidden from changing this ${concreteOptions.entityName}'s roles!`);
     
     const roleExists = await (<any>context.unsecureEntityManager)[concreteOptions.roleDao].exists({
@@ -96,7 +97,11 @@ function getEntityRoleResolverConcreteOptions(options: EntityRoleResolverOptions
       options.roleDao = options.entityCamelCaseName + "Role";
     if (!options.entityIdKey)
       options.entityIdKey = options.entityCamelCaseName + "Id";
-  } else {
+    if (!options.permission)
+      options.permission = `MANAGE_${camelCaseToSnakeCase(options.entityCamelCaseName).toUpperCase()}_ROLES`;
+    if (!Object.values(Permission).includes(options.permission as Permission))
+      throw new Error(`Permission ${options.permission} doesn't exist! Maybe the auto generation was wrong?`);
+  } else if (!options.entityName || !options.roleDao || !options.entityIdKey || !options.permission) {
     throw new Error("Resolver must specify entityCamelCaseName for auto options generation.");
   }
 
@@ -104,6 +109,7 @@ function getEntityRoleResolverConcreteOptions(options: EntityRoleResolverOptions
     roleDao: string
     entityName: string
     entityIdKey: string
+    permission: string
     getRequesterRoles: (unsecureEntityManager: EntityManager, requesterUserId: string, roleEntityId: string) => Promise<RoleCode[]>
   };
 }
@@ -122,18 +128,25 @@ export async function getEntityRoleCodes(roleDao: AbstractDAO<any>, entityIdKey:
   return roles.map(x => x.roleCode as RoleCode);
 }
 
+export function assertRequesterCanDeleteRoleCodes(requesterRoleCodes: RoleCode[], roleCodes: RoleCode[]) {
+  const requestHighestRoleCodes = getHighestRoles(requesterRoleCodes);
+  for (const roleCode of roleCodes)
+    if (requestHighestRoleCodes.includes(roleCode))
+      throw new HttpError(403, "Cannot remove your own highest role!");
+}
+
 export function assertRequesterCanManageRoleCodes(requesterRoleCodes: RoleCode[], roleCodes: RoleCode[]) {
   const requestHighestRoleCodes = getHighestRoles(requesterRoleCodes);
   for (const roleCode of roleCodes) {
     let isBelowAHighestRole = false;
     for (const highestRole of requestHighestRoleCodes) {
-      if (isRoleBelow(roleCode, highestRole)) {
+      if (isRoleBelowOrEqual(roleCode, highestRole)) {
         isBelowAHighestRole = true;
         break;
       }
     }
     if (!isBelowAHighestRole) {
-      throw new HttpError(403, "Cannot only add roles below your current role!");
+      throw new HttpError(403, "Can only add roles below your current role!");
     }
   }
 }

@@ -7,7 +7,7 @@ export const SecurityPolicy = {
       userId: "id",
     },
     permissions: {
-      READ_PROFILE_PRIVATE: PERMISSION.READ_ONLY,
+      READ_USER_PRIVATE: PERMISSION.READ_ONLY,
     }, 
     defaultPermissions: {
       read: {

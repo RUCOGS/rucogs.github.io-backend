@@ -46,8 +46,8 @@ export type AST = {
   }
   EBoardRole: {
     fields: {
-      eboard: { type: 'relation'; relation: 'inner'; isList: false; astName: 'EBoard'; isRequired: true; isListElementRequired: false; isExcluded: false; isId: false; generationStrategy: 'undefined' }
-      eboardId: { type: 'scalar'; isList: false; astName: 'ID'; isRequired: true; isListElementRequired: false; isExcluded: false; isId: false; generationStrategy: 'undefined' }
+      eBoard: { type: 'relation'; relation: 'inner'; isList: false; astName: 'EBoard'; isRequired: true; isListElementRequired: false; isExcluded: false; isId: false; generationStrategy: 'undefined' }
+      eBoardId: { type: 'scalar'; isList: false; astName: 'ID'; isRequired: true; isListElementRequired: false; isExcluded: false; isId: false; generationStrategy: 'undefined' }
       id: { type: 'scalar'; isList: false; astName: 'ID'; isRequired: true; isListElementRequired: false; isExcluded: false; isId: true; generationStrategy: 'db' }
       roleCode: { type: 'scalar'; isList: false; astName: 'RoleCode'; isRequired: true; isListElementRequired: false; isExcluded: false; isId: false; generationStrategy: 'undefined' }
     }
@@ -195,7 +195,7 @@ export type AST = {
       bio: { type: 'scalar'; isList: false; astName: 'String'; isRequired: false; isListElementRequired: false; isExcluded: false; isId: false; generationStrategy: 'undefined' }
       createdAt: { type: 'scalar'; isList: false; astName: 'Date'; isRequired: false; isListElementRequired: false; isExcluded: false; isId: false; generationStrategy: 'undefined' }
       displayName: { type: 'scalar'; isList: false; astName: 'String'; isRequired: false; isListElementRequired: false; isExcluded: false; isId: false; generationStrategy: 'undefined' }
-      eboard: {
+      eBoard: {
         type: 'relation'
         relation: 'foreign'
         isList: false
@@ -341,7 +341,7 @@ export function eBoardSchema(): T.Schema<ScalarsSpecification> {
       type: 'relation',
       relation: 'foreign',
       schema: () => eBoardRoleSchema(),
-      refFrom: 'eboardId',
+      refFrom: 'eBoardId',
       refTo: 'id',
       dao: 'eBoardRole',
       isListElementRequired: true,
@@ -426,16 +426,16 @@ export class InMemoryEBoardDAO<MetadataType, OperationMetadataType> extends T.Ab
 }
 export function eBoardRoleSchema(): T.Schema<ScalarsSpecification> {
   return {
-    eboard: {
+    eBoard: {
       type: 'relation',
       relation: 'inner',
       schema: () => eBoardSchema(),
-      refFrom: 'eboardId',
+      refFrom: 'eBoardId',
       refTo: 'id',
       dao: 'eBoard',
       required: true,
     },
-    eboardId: {
+    eBoardId: {
       type: 'scalar',
       scalar: 'ID',
       required: true,
@@ -1091,7 +1091,7 @@ export function userSchema(): T.Schema<ScalarsSpecification> {
       type: 'scalar',
       scalar: 'String',
     },
-    eboard: {
+    eBoard: {
       type: 'relation',
       relation: 'foreign',
       schema: () => eBoardSchema(),

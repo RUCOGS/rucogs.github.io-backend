@@ -1,4 +1,3 @@
-import { Permission } from "@src/generated/model.types";
 import { gql } from "apollo-server";
 
 export default gql`
@@ -10,6 +9,7 @@ extend type Mutation {
 }
 
 input NewProjectInviteInput {
+  type: InviteType!
   userId: ID!
   projectId: ID!
 }

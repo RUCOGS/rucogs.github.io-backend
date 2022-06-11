@@ -22,11 +22,49 @@ async function startMockServer() {
   await startServer(true, true);
   
   const unsecure = createUnsecureEntityManager("mock");
-  
   const userIds = await generateUsers(unsecure, 100);
   const projectIds = await generateProjects(unsecure, userIds, 50);
+  const eboardIds = await generateEBoard(unsecure, userIds, 20);
 
   console.log("🥸 Mock server configured!");
+}
+
+async function generateEBoard(unsecure: EntityManager, userIds: string[], count: number) {
+  const validEBoardRoles = getRolesOfType(RoleType.EBoard).filter(x => x.roleCode !== RoleCode.Eboard).map(x => x.roleCode);
+
+  let eBoardIds: string[] = [];
+  for (const id of userIds) {
+    const user = await unsecure.user.findOne({ filter: { id }});
+    if (!user)
+      throw Error("User doesn't exist in Mock generation!");
+    await unsecure.user.updateOne({
+      filter: { id },
+      changes: {
+        username: "eboard_" + user?.username
+      }
+    });
+    const eBoardResult = await unsecure.eBoard.insertOne({
+      record: {
+        userId: user.id,
+        createdAt: Date.now(),
+        ...(randInst.range(2) && { graduatedAt: Date.now() - randDuration(0.25) })
+      }
+    });
+    eBoardIds.push(eBoardResult.id);
+
+    const roleCodes = randInst.range(2) ? getRandomSubarray(validEBoardRoles, validEBoardRoles.length) : [];
+    roleCodes.push(RoleCode.Eboard);
+
+    for (const roleCode of roleCodes) {
+      await unsecure.eBoardRole.insertOne({
+        record: {
+          eBoardId: eBoardResult.id,
+          roleCode
+        }
+      });
+    }
+  }
+  return eBoardIds;
 }
 
 async function generateProjects(unsecure: EntityManager, userIds: string[], count: number) {

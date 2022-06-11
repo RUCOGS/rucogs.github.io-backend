@@ -1,4 +1,3 @@
-import { Permission } from "@src/generated/model.types";
 import { gql } from "apollo-server";
 
 export default gql`
@@ -14,8 +13,8 @@ input UpdateProjectInput {
   pitch: String
   access: Access
   description: String
-  bannerLink: String
-  cardImageLink: String
+  banner: UploadWithOperation
+  cardImage: UploadWithOperation
   galleryImageLinks: [String!]
   soundcloudEmbedSrc: String
   downloadLinks: [String!]
