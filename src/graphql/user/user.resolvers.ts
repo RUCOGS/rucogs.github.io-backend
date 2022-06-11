@@ -1,11 +1,17 @@
-import { DataSize, deleteSelfHostedFile, fileUploadPromiseToCdn, isSelfHostedFile, tryDeleteFileIfSelfHosted } from '@src/controllers/cdn.controller';
+import { DataSize, fileUploadPromiseToCdn, tryDeleteFileIfSelfHosted } from '@src/controllers/cdn.controller';
 import { MutationResolvers, Permission, QueryResolvers, UpdateUserSocialInput, UploadOperation } from '@src/generated/graphql-endpoint.types';
-import { UserSocialFilter, UserSocialInsert } from '@src/generated/typetta';
+import { EntityManager, UserSocialFilter, UserSocialInsert } from '@src/generated/typetta';
 import { ApolloResolversContext } from '@src/misc/context';
 import { makePermsCalc } from '@src/shared/security';
 import { assertNoDuplicates } from '@src/shared/utils';
-import { assertRequesterCanAddRoleCodes, daoInsertBatch, daoInsertRolesBatch, getRoleCodes, HttpError, isDefined, startEntityManagerTransaction, tryDeleteOldFileLinkFromEntity } from '@src/utils';
-import { FileUpload, Upload } from 'graphql-upload';
+import { assertRequesterCanManageRoleCodes, daoInsertBatch, daoInsertRolesBatch, deleteEntityRoleResolver, EntityRoleResolverOptions, getEntityRoleCodes, getRoleCodes, HttpError, isDefined, newEntityRoleResolver, startEntityManagerTransaction } from '@src/utils';
+
+const roleResolverOptions = <EntityRoleResolverOptions>{
+  entityCamelCaseName: "user",
+  async getRequesterRoles(unsecureEntityManager: EntityManager, requesterUserId: string, roleEntityId: string) {
+    return getEntityRoleCodes(unsecureEntityManager.userRole, "userId", requesterUserId);
+  }
+};
 
 export default {
   Mutation: {
@@ -22,7 +28,7 @@ export default {
             .withDomain({
               userId: [ args.input.id ]
             })
-            .hasPermission(Permission.UpdateProfile)) {
+            .hasPermission(Permission.UpdateUser)) {
           throw new HttpError(401, "Not authorized!");
         }
 
@@ -47,7 +53,7 @@ export default {
 
         if (isDefined(args.input.roles)) {
           const requesterRoleCodes = await getRoleCodes(transEntityManager.userRole, "userId", context.securityContext.userId);
-          assertRequesterCanAddRoleCodes(requesterRoleCodes, args.input.roles);
+          assertRequesterCanManageRoleCodes(requesterRoleCodes, args.input.roles);
           await daoInsertRolesBatch({
             dao: transEntityManager.userRole,
             roleCodes: args.input.roles,
@@ -137,12 +143,7 @@ export default {
         throw error;
       return true;
     },
-    newUserRole: async (parent, args, context: ApolloResolversContext, info) => {
-      context.entityManager.userRole.findOne({
-        filter: 
-      });
-
-      return "";
-    }
+    newUserRole: newEntityRoleResolver(roleResolverOptions),
+    deleteUserRole: deleteEntityRoleResolver(roleResolverOptions)
   }
 } as { Query: QueryResolvers, Mutation: MutationResolvers };

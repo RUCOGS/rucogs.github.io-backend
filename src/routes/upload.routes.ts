@@ -6,7 +6,7 @@ import { Permission } from '@src/generated/model.types';
 import { ProjectMemberFilter, ProjectMemberInsert } from '@src/generated/typetta';
 import { RequestContext, RequestWithContext } from '@src/misc/context';
 import { makePermsCalc } from '@src/shared/security/permissions-calculator';
-import { assertRequesterCanAddRoleCodes, daoInsertBatch, daoInsertRolesBatch, getRoleCodes, HttpError, startEntityManagerTransactionREST, tryDeleteOldFileLinkFromEntity } from '@src/utils';
+import { assertRequesterCanManageRoleCodes, daoInsertBatch, daoInsertRolesBatch, getRoleCodes, HttpError, startEntityManagerTransactionREST, tryDeleteOldFileLinkFromEntity } from '@src/utils';
 import express from 'express';
 import multer from 'multer';
 
@@ -166,7 +166,7 @@ router.post('/project',
             projectId: project.id
           }),
           foreachSuccess: async (member: ProjectMemberEdit, memberId: string) => {
-            assertRequesterCanAddRoleCodes(requesterRoleCodes, member.roles);
+            assertRequesterCanManageRoleCodes(requesterRoleCodes, member.roles);
 
             // Insert roles for each member
             await daoInsertRolesBatch({

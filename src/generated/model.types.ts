@@ -371,13 +371,16 @@ export type MutationUpdateUsersArgs = {
 export const Permission = {
   AcceptProjectInvite: 'ACCEPT_PROJECT_INVITE',
   CreateProject: 'CREATE_PROJECT',
-  DeleteProfile: 'DELETE_PROFILE',
   DeleteProject: 'DELETE_PROJECT',
+  DeleteUser: 'DELETE_USER',
   ManageEboard: 'MANAGE_EBOARD',
-  ReadProfilePrivate: 'READ_PROFILE_PRIVATE',
-  UpdateProfile: 'UPDATE_PROFILE',
+  ManageEboardRoles: 'MANAGE_EBOARD_ROLES',
+  ManageProjectMemberRoles: 'MANAGE_PROJECT_MEMBER_ROLES',
+  ManageUserRoles: 'MANAGE_USER_ROLES',
+  ReadUserPrivate: 'READ_USER_PRIVATE',
   UpdateProject: 'UPDATE_PROJECT',
   UpdateProjectMember: 'UPDATE_PROJECT_MEMBER',
+  UpdateUser: 'UPDATE_USER',
 } as const
 
 export type Permission = typeof Permission[keyof typeof Permission]

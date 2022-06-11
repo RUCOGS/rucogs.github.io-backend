@@ -16,6 +16,8 @@ import projectInviteTypedefs from './project-invite/project-invite.typedefs'
 import projectInviteResolvers from './project-invite/project-invite.resolvers'
 import projectMemberResolvers from './project-member/project-member.resolvers'
 import projectMemberTypedefs from './project-member/project-member.typedefs'
+import eBoardTypedefs from './e-board/e-board.typedefs'
+import eBoardResolvers from './e-board/e-board.resolvers'
 
 // CONFIG: Apollo GraphQL typdefs and resolvers
 export const typeDefs = mergeTypeDefs([
@@ -28,7 +30,8 @@ export const typeDefs = mergeTypeDefs([
   projectInviteTypedefs,
   projectMemberTypedefs,
   customTypedefs,
-  projectTypedefs
+  projectTypedefs,
+  eBoardTypedefs,
 ]);
 
 export const resolvers = mergeResolvers([
@@ -39,7 +42,8 @@ export const resolvers = mergeResolvers([
   projectResolvers,
   projectInviteResolvers,
   projectMemberResolvers,
-  projectResolvers
+  projectResolvers,
+  eBoardResolvers,
 ]);
 
 export function mergeResolvers(resolversArr: any[]) {

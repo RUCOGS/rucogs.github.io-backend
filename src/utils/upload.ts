@@ -214,22 +214,6 @@ export async function daoInsertRolesBatch(options: {
   });
 }
 
-export function assertRequesterCanAddRoleCodes(requesterRoleCodes: RoleCode[], roleCodes: RoleCode[]) {
-  const requestHighestRoleCodes = getHighestRoles(requesterRoleCodes);
-  for (const roleCode of roleCodes) {
-    let isBelowAHighestRole = false;
-    for (const highestRole of requestHighestRoleCodes) {
-      if (isRoleBelowOrEqual(roleCode, highestRole)) {
-        isBelowAHighestRole = true;
-        break;
-      }
-    }
-    if (!isBelowAHighestRole) {
-      throw new HttpError(403, "Cannot only add roles below your current role!");
-    }
-  }
-}
-
 export function bodyFieldExists(req: express.Request, name: string) {
   return req.body[name] !== undefined;
 }
