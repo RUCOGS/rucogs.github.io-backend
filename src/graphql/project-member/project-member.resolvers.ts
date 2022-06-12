@@ -66,7 +66,7 @@ export default {
       if (!projectMember)
         throw new HttpError(400, "Project member doesn't exist!");
 
-      const error = startEntityManagerTransaction(context.unsecureEntityManager, context.mongoClient, async (transEntityManager) => {
+      const error = await startEntityManagerTransaction(context.unsecureEntityManager, context.mongoClient, async (transEntityManager) => {
         if (!context.securityContext.userId)
           throw new HttpError(400, "Expected context.securityContext.userId!");
         
@@ -93,9 +93,9 @@ export default {
           assertProjectHasMember(project as PartialDeep<Project>);
 
           await daoInsertRolesBatch({
-            dao: transEntityManager.eBoardRole,
+            dao: transEntityManager.projectMemberRole,
             roleCodes: args.input.roles,
-            idKey: "eBoardId",
+            idKey: "projectMemberId",
             id: args.input.id
           });
         }

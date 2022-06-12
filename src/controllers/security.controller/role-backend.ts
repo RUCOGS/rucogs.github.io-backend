@@ -77,6 +77,7 @@ export const RoleBackendDataDict: {
 
       let finalPermissions: SecurityPermissions = {
         UPDATE_PROJECT: [{ projectId: projectMember.projectId }],
+        UPDATE_PROJECT_MEMBER: project.members.map(x => ({ projectMemberId: x }))
       };
 
       for (const member of project.members) {

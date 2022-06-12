@@ -198,6 +198,18 @@ export function getHighestRoles(roles: RoleCode[]): RoleCode[] {
   return Array.from(validRoles.values());
 }
 
+export function getRolesBelowRoles(targetRoles: RoleCode[]) {
+  let checkedRoles = new Set<RoleCode>();
+  let rolesBelow: RoleCode[] = [];
+  for (const role of targetRoles) {
+    const childRoles = RoleData[role].childRoles;
+    if (childRoles)
+      for (const childRole of childRoles)
+        rolesBelow = rolesBelow.concat(getRolesBelowOrEqualExitEarly(childRole, checkedRoles));
+  }
+  return rolesBelow;
+}
+
 export function getRolesBelowOrEqualRoles(targetRoles: RoleCode[]) {
   let checkedRoles = new Set<RoleCode>();
   let rolesBelow: RoleCode[] = [];

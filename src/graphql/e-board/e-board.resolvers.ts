@@ -96,7 +96,7 @@ export default {
           userId: [ eBoard.userId ]
         }).assertPermission(Permission.ManageEboard);
       
-      const error = startEntityManagerTransaction(context.unsecureEntityManager, context.mongoClient, async (transEntityManager) => {
+      const error = await startEntityManagerTransaction(context.unsecureEntityManager, context.mongoClient, async (transEntityManager) => {
         if (!context.securityContext.userId)
           throw new HttpError(400, "Expected context.securityContext.userId!");
         
@@ -140,7 +140,7 @@ export default {
           userId: [ eBoard.userId ]
         }).assertPermission(Permission.ManageEboard);
       
-      const error = startEntityManagerTransaction(context.unsecureEntityManager, context.mongoClient, async (transEntityManager) => {
+      const error = await startEntityManagerTransaction(context.unsecureEntityManager, context.mongoClient, async (transEntityManager) => {
         await transEntityManager.eBoardRole.deleteAll({
           filter: { eBoardId: args.id }
         })
