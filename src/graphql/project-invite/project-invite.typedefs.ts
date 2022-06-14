@@ -11,8 +11,8 @@ extend type Mutation {
 
 extend type Subscription {
   test(filter: TestSubscriptionFilter): TestSubscriptionPayload 
-  inviteCreated(filter: ProjectInviteSubscriptionFilter!): ID!
-  inviteDeleted(filter: ProjectInviteSubscriptionFilter!): ID!
+  inviteCreated(filter: ProjectInviteSubscriptionFilter!): ProjectInvite!
+  inviteDeleted(filter: ProjectInviteSubscriptionFilter!): ProjectInvite!
 }
 
 input TestSubscriptionFilter {

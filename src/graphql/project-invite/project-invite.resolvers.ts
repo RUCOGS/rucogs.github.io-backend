@@ -1,4 +1,4 @@
-import { InviteType, MutationResolvers, Permission, QueryResolvers, RoleCode, SubscriptionResolvers } from '@src/generated/graphql-endpoint.types';
+import { InviteType, MutationResolvers, Permission, ProjectInvite, QueryResolvers, RoleCode, SubscriptionInviteCreatedArgs, SubscriptionResolvers, SubscriptionTestArgs, TestSubscriptionFilter, TestSubscriptionPayload } from '@src/generated/graphql-endpoint.types';
 import { Access, ProjectMemberInsertInput } from '@src/generated/model.types';
 import { EntityManager, ProjectDAO, ProjectInviteDAO } from '@src/generated/typetta';
 import pubsub, { GraphQLEvents } from '@src/graphql/pubsub';
@@ -7,6 +7,7 @@ import { makePermsCalc } from '@src/shared/security';
 import { HttpError } from '@src/shared/utils';
 import { daoInsertRolesBatch, startEntityManagerTransaction } from '@src/utils';
 import { withFilter } from 'graphql-subscriptions';
+import { toSubResolverFn } from '../utils';
 
 export default {
   Mutation: {
@@ -176,7 +177,7 @@ export default {
     },
 
     test: async (parent, args, context: ApolloResolversContext, info) => {
-      pubsub.publish(GraphQLEvents.InviteDeleted, { test: {
+      pubsub.publish(GraphQLEvents.Test, { test: {
         joe: "joes", 
         mama: "xd"
       }});
@@ -185,12 +186,40 @@ export default {
   },
   Subscription: {
     test: {
-      subscribe: (withFilter(
-        () => pubsub.asyncIterator([GraphQLEvents.InviteDeleted]),
-        (payload, variables) => {
-          return (payload.test.joe === variables.filter.id);
+      subscribe: toSubResolverFn(withFilter(
+        () => pubsub.asyncIterator([GraphQLEvents.Test]),
+        (payload: { test: TestSubscriptionPayload }, args: SubscriptionTestArgs) => {
+          return (payload.test.joe === args.filter!.id);
         }
-      )) as any
+      ))
+    },
+
+    inviteCreated: {
+      subscribe: toSubResolverFn(withFilter(
+        () => pubsub.asyncIterator([GraphQLEvents.InviteCreated]),
+        (payload: { inviteCreated: ProjectInvite }, args: SubscriptionInviteCreatedArgs) => {
+          let matched = false;
+          if (args.filter.projectId)
+            matched = matched && payload.inviteCreated.projectId === args.filter.projectId;
+          if (args.filter.userId)
+            matched = matched && payload.inviteCreated.userId === args.filter.userId;
+          return matched;
+        }
+      ))
+    },
+
+    inviteDeleted: {
+      subscribe: toSubResolverFn(withFilter(
+        () => pubsub.asyncIterator([GraphQLEvents.InviteDeleted]),
+        (payload: { inviteDeleted: ProjectInvite }, args: SubscriptionInviteCreatedArgs) => {
+          let matched = false;
+          if (args.filter.projectId)
+            matched = matched && payload.inviteDeleted.projectId === args.filter.projectId;
+          if (args.filter.userId)
+            matched = matched && payload.inviteDeleted.userId === args.filter.userId;
+          return matched;
+        }
+      ))
     }
   }
 } as { Query: QueryResolvers, Mutation: MutationResolvers, Subscription: SubscriptionResolvers };

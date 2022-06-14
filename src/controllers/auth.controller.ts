@@ -141,11 +141,17 @@ export const AuthScheme = {
   Bearer: "bearer"
 }
 
-export async function authenticate(req: express.Request): Promise<[authScheme: string, payload: AuthPayload] | undefined>{
-  const authHeader = req.headers['authorization'];
-  if (!authHeader)
-    return undefined;
-  const args = authHeader.split(' ');
+export async function authenticate(req: any): Promise<[authScheme: string, payload: AuthPayload] | undefined>{
+  let args = [];
+  
+  if (req.authentication) {
+    args = req.authentication.split(' ');
+  } else if (req.headers) {
+    const authHeader = req.headers['authorization'];
+    if (!authHeader)
+      return undefined;
+    args = authHeader.split(' ');
+  }
   
   const authScheme = args[0].toLowerCase();
   switch (authScheme) {

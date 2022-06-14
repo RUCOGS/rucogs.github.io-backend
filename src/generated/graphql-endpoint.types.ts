@@ -309,8 +309,8 @@ export const RoleCode = {
 export type RoleCode = typeof RoleCode[keyof typeof RoleCode];
 export type Subscription = {
   __typename?: 'Subscription';
-  inviteCreated: Scalars['ID'];
-  inviteDeleted: Scalars['ID'];
+  inviteCreated: ProjectInvite;
+  inviteDeleted: ProjectInvite;
   test?: Maybe<TestSubscriptionPayload>;
 };
 
@@ -694,8 +694,8 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
 };
 
 export type SubscriptionResolvers<ContextType = any, ParentType extends ResolversParentTypes['Subscription'] = ResolversParentTypes['Subscription']> = {
-  inviteCreated?: SubscriptionResolver<ResolversTypes['ID'], "inviteCreated", ParentType, ContextType, RequireFields<SubscriptionInviteCreatedArgs, 'filter'>>;
-  inviteDeleted?: SubscriptionResolver<ResolversTypes['ID'], "inviteDeleted", ParentType, ContextType, RequireFields<SubscriptionInviteDeletedArgs, 'filter'>>;
+  inviteCreated?: SubscriptionResolver<ResolversTypes['ProjectInvite'], "inviteCreated", ParentType, ContextType, RequireFields<SubscriptionInviteCreatedArgs, 'filter'>>;
+  inviteDeleted?: SubscriptionResolver<ResolversTypes['ProjectInvite'], "inviteDeleted", ParentType, ContextType, RequireFields<SubscriptionInviteDeletedArgs, 'filter'>>;
   test?: SubscriptionResolver<Maybe<ResolversTypes['TestSubscriptionPayload']>, "test", ParentType, ContextType, Partial<SubscriptionTestArgs>>;
 };
 

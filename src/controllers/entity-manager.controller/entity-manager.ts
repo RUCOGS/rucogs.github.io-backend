@@ -40,12 +40,15 @@ function getScalars() {
   };
 }
 
-export function getOperationMetadataFromRequest(req: express.Request) {
-  const metadataHeader = req.headers["operation-metadata"] as string;
-  if (!metadataHeader)
-    return undefined;
-  const metadata = JSON.parse(metadataHeader);
-  return metadata;
+export function getOperationMetadataFromRequest(req: any) {
+  if (req.headers) {
+    const metadataHeader = req.headers["operation-metadata"] as string;
+    if (!metadataHeader)
+      return undefined;
+    const metadata = JSON.parse(metadataHeader);
+    return metadata;
+  }
+  return {};
 }
 
 export function createUnsecureEntityManager(db: Db | "mock"): EntityManager {

@@ -57,13 +57,62 @@ export async function startServer(debug: boolean, mock: boolean = false) {
 }
 
 async function startApolloServer(httpServer: http.Server, app: express.Application, mongoDb: Db | "mock", endpointPath: string, unsecureEntityManager: EntityManager, mongoClient: MongoClient, apolloConfig: Config<ExpressContext>) {
+  async function authenticateGetContext(req: any) {
+    const authenticated = await authenticate(req);
+    if (authenticated) {
+      const [authScheme, authPayload] = authenticated;
+      switch (authScheme) {
+        case AuthScheme.BasicRoot: {
+          return {
+            entityManager: unsecureEntityManager,
+            unsecureEntityManager,
+            mongoClient,
+            securityContext: DefaultSecurityContext,
+          };
+        }
+        case AuthScheme.Bearer:
+        default: {
+          const securityContext = await getCompleteSecurityContext(createUnsecureEntityManager(mongoDb), authPayload.userId);
+          const metadata = getOperationMetadataFromRequest(req);
+          const entityManager = createSecureEntityManager(securityContext, mongoDb, metadata);
+          return {
+            entityManager,
+            unsecureEntityManager,
+            securityContext,
+            mongoClient,
+          };
+        }
+      }
+    } else {
+      // Fallback to public api
+      const entityManager = createSecureEntityManager(DefaultSecurityContext, mongoDb);
+      return {
+        entityManager,
+        unsecureEntityManager,
+        securityContext: DefaultSecurityContext,
+        mongoClient,
+      }
+    }
+  }
+  
   // Create websocket server for Apollo GraphQL subscriptions
   const wsServer = new WebSocketServer({
     server: httpServer,
     path: endpointPath
   })
   const serverCleanup = useServer({ 
-    schema: schema 
+    schema: schema,
+    onConnect: async (ctx) => {
+      console.log(`Subscription Connected: ${ctx.subscriptions}`);
+    },
+    onDisconnect(ctx, code, reason) {
+      console.log(`Subscription Disconnected: (${code}) "${reason}"`);
+    },
+    context: async(ctx, msg, args) => {
+      console.log("Context: " + ctx);
+      const context = await authenticateGetContext(ctx.connectionParams);
+      return context;
+    }
   }, wsServer);
 
   const server = new ExpressApolloServer({
@@ -83,41 +132,7 @@ async function startApolloServer(httpServer: http.Server, app: express.Applicati
       }
     ],
     context: async ({ req }): Promise<ApolloResolversContext> => {
-      const authenticated = await authenticate(req);
-      if (authenticated) {
-        const [authScheme, authPayload] = authenticated;
-        switch (authScheme) {
-          case AuthScheme.BasicRoot: {
-            return {
-              entityManager: unsecureEntityManager,
-              unsecureEntityManager,
-              mongoClient,
-              securityContext: DefaultSecurityContext,
-            };
-          }
-          case AuthScheme.Bearer:
-          default: {
-            const securityContext = await getCompleteSecurityContext(createUnsecureEntityManager(mongoDb), authPayload.userId);
-            const metadata = getOperationMetadataFromRequest(req);
-            const entityManager = createSecureEntityManager(securityContext, mongoDb, metadata);
-            return {
-              entityManager,
-              unsecureEntityManager,
-              securityContext,
-              mongoClient,
-            };
-          }
-        }
-      } else {
-        // Fallback to public api
-        const entityManager = createSecureEntityManager(DefaultSecurityContext, mongoDb);
-        return {
-          entityManager,
-          unsecureEntityManager,
-          securityContext: DefaultSecurityContext,
-          mongoClient,
-        }
-      }
+      return await authenticateGetContext(req);
     },
   });
 
