@@ -13,4 +13,6 @@ input UploadWithOperation {
   upload: Upload
   operation: UploadOperation
 }
+
+type Subscription
 `;

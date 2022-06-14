@@ -11,6 +11,7 @@ export const RoleData: {
   [key in RoleCode]: {
     type: RoleType[],
     name: string,
+    inheritPerms?: RoleCode[],
     childRoles?: RoleCode[],
   }
 } = {
@@ -30,6 +31,9 @@ export const RoleData: {
   [RoleCode.Moderator]: {
     type: [RoleType.User],
     name: "🛂 Moderator",
+    inheritPerms: [
+      RoleCode.User,
+    ],
     childRoles: [
       // User Roles
       RoleCode.User,
@@ -50,6 +54,9 @@ export const RoleData: {
   [RoleCode.SuperAdmin]: {
     type: [RoleType.User],
     name: "😎 Super Admin",
+    inheritPerms: [
+      RoleCode.User,
+    ],
     childRoles: [
       RoleCode.Moderator
     ]
@@ -128,11 +135,24 @@ export const RoleData: {
     type: [RoleType.ProjectMember],
     name: "🙂 Project Member"
   },
+  [RoleCode.ProjectOfficer]: {
+    type: [RoleType.ProjectMember],
+    name: "👮 Project Officer",
+    inheritPerms: [
+      RoleCode.ProjectMember,
+    ],
+    childRoles: [
+      RoleCode.ProjectMember
+    ]
+  },
   [RoleCode.ProjectOwner]: {
     type: [RoleType.ProjectMember],
     name: "😇 Project Owner",
+    inheritPerms: [
+      RoleCode.ProjectOfficer,
+    ],
     childRoles: [
-      RoleCode.ProjectMember
+      RoleCode.ProjectOfficer
     ]
   },
 // #endregion // -- PROJECT MEMBER ROLES ----- //
@@ -219,6 +239,7 @@ export function getRolesBelowOrEqualRoles(targetRoles: RoleCode[]) {
   return rolesBelow;
 }
 
+
 function getRolesBelowOrEqualExitEarly(targetRole: RoleCode, checkedRoles: Set<RoleCode>) {
   if (checkedRoles.has(targetRole))
     return [];
@@ -263,4 +284,29 @@ export function isRoleAbove(targetRole: RoleCode, currentRole: RoleCode) {
 
 export function isRoleBelow(targetRole: RoleCode, currentRole: RoleCode) {
   return targetRole !== currentRole && isRoleBelowOrEqual(targetRole, currentRole);
+}
+
+export function getInheritedPermRolesForRoles(targetRoles: RoleCode[]) {
+  let checkedRoles = new Set<RoleCode>();
+  let rolesBelow: RoleCode[] = [];
+  for (const role of targetRoles) {
+    rolesBelow = rolesBelow.concat(getInheritedPermRolesForRolesExitEarly(role, checkedRoles));
+  }
+  return rolesBelow;
+}
+
+
+function getInheritedPermRolesForRolesExitEarly(targetRole: RoleCode, checkedRoles: Set<RoleCode>) {
+  if (checkedRoles.has(targetRole))
+    return [];
+  checkedRoles.add(targetRole);
+  let rolesBelow: RoleCode[] = [];
+  const roleData = RoleData[targetRole];
+  if (roleData && roleData.inheritPerms) {
+    for (const child of roleData.inheritPerms) {
+      rolesBelow = rolesBelow.concat(getRolesBelowOrEqualExitEarly(child, checkedRoles));
+    }
+  }
+  rolesBelow.push(targetRole);
+  return rolesBelow;
 }

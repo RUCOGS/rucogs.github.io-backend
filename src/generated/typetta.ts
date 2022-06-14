@@ -16,6 +16,8 @@ export type ScalarsSpecification = {
   RoleCode: { type: types.RoleCode; isTextual: false; isQuantitative: false }
   SortDirection: { type: types.SortDirection; isTextual: false; isQuantitative: false }
   StringFilterMode: { type: types.StringFilterMode; isTextual: false; isQuantitative: false }
+  Upload: { type: types.Scalars['Upload']; isTextual: false; isQuantitative: false }
+  UploadOperation: { type: types.UploadOperation; isTextual: false; isQuantitative: false }
 }
 
 export type AST = {
@@ -186,6 +188,17 @@ export type AST = {
       rawFilter: () => M.Filter<M.Document>
       rawUpdate: () => M.UpdateFilter<M.Document>
       rawSorts: () => M.Sort
+    }
+  }
+  Subscription: {
+    fields: {
+      subscribeToDeleteInvite: { type: 'scalar'; isList: false; astName: 'ID'; isRequired: true; isListElementRequired: false; isExcluded: false; isId: false; generationStrategy: 'undefined' }
+      subscribeToNewInvite: { type: 'scalar'; isList: false; astName: 'ID'; isRequired: true; isListElementRequired: false; isExcluded: false; isId: false; generationStrategy: 'undefined' }
+    }
+    driverSpecification: {
+      rawFilter: never
+      rawUpdate: never
+      rawSorts: never
     }
   }
   User: {
@@ -1066,6 +1079,20 @@ export class InMemoryProjectMemberRoleDAO<MetadataType, OperationMetadataType> e
       ...params,
       schema: projectMemberRoleSchema(),
     })
+  }
+}
+export function subscriptionSchema(): T.Schema<ScalarsSpecification> {
+  return {
+    subscribeToDeleteInvite: {
+      type: 'scalar',
+      scalar: 'ID',
+      required: true,
+    },
+    subscribeToNewInvite: {
+      type: 'scalar',
+      scalar: 'ID',
+      required: true,
+    },
   }
 }
 export function userSchema(): T.Schema<ScalarsSpecification> {
@@ -1956,6 +1983,8 @@ export class EntityManager<
             'RoleCode',
             'SortDirection',
             'StringFilterMode',
+            'Upload',
+            'UploadOperation',
             'ID',
             'String',
             'Boolean',

@@ -18,6 +18,8 @@ import projectMemberResolvers from './project-member/project-member.resolvers'
 import projectMemberTypedefs from './project-member/project-member.typedefs'
 import eBoardTypedefs from './e-board/e-board.typedefs'
 import eBoardResolvers from './e-board/e-board.resolvers'
+import { makeExecutableSchema } from '@graphql-tools/schema'
+import { GraphQLUpload } from 'graphql-upload'
 
 // CONFIG: Apollo GraphQL typdefs and resolvers
 export const typeDefs = mergeTypeDefs([
@@ -44,7 +46,15 @@ export const resolvers = mergeResolvers([
   projectMemberResolvers,
   projectResolvers,
   eBoardResolvers,
+  {
+    Upload: GraphQLUpload
+  },
 ]);
+
+export const schema = makeExecutableSchema({
+  typeDefs,
+  resolvers
+})
 
 export function mergeResolvers(resolversArr: any[]) {
   let mergedResolvers = { Query: {}, Mutation: {}};

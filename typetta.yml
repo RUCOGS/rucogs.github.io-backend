@@ -1,4 +1,4 @@
-schema: 'src/graphql/schema.typedefs.ts'
+schema: 'src/graphql/**/*.typedefs.ts'
 outputDir: src/generated
 generateGraphQLOperations:
   context: 

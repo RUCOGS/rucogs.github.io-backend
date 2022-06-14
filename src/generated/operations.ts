@@ -65,6 +65,7 @@ export default gql`
 
   scalar Date
   scalar Json
+  scalar Upload
 
   input AccessFilterInput {
     eq: Access
@@ -123,6 +124,26 @@ export default gql`
     ne: RoleCode
     in: [RoleCode!]
     nin: [RoleCode!]
+    exists: Boolean
+    contains: String
+    startsWith: String
+    endsWith: String
+    mode: StringFilterMode
+  }
+
+  input UploadFilterInput {
+    eq: Upload
+    ne: Upload
+    in: [Upload!]
+    nin: [Upload!]
+    exists: Boolean
+  }
+
+  input UploadOperationFilterInput {
+    eq: UploadOperation
+    ne: UploadOperation
+    in: [UploadOperation!]
+    nin: [UploadOperation!]
     exists: Boolean
     contains: String
     startsWith: String
@@ -402,6 +423,21 @@ export default gql`
     relations: ProjectMemberRoleRelationsFilterInput
   }
   ########### ProjectMemberRole ###########
+
+  ########### Subscription ###########
+  input SubscriptionInsertInput {
+    subscribeToDeleteInvite: ID!
+    subscribeToNewInvite: ID!
+  }
+  input SubscriptionUpdateInput {
+    subscribeToDeleteInvite: ID
+    subscribeToNewInvite: ID
+  }
+  input SubscriptionSortInput {
+    subscribeToDeleteInvite: SortDirection
+    subscribeToNewInvite: SortDirection
+  }
+  ########### Subscription ###########
 
   ########### User ###########
   input UserInsertInput {

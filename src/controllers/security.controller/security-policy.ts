@@ -72,8 +72,16 @@ export const SecurityPolicy = {
   },
   eBoardRole: {
     domain: {
-      eboardId: "eboardId",
+      eBoardId: "eBoardId",
     },
     defaultPermissions: PERMISSION.READ_ONLY
   },
+  projectInvite: {
+    domain: {
+      projectInviteId: "id"
+    },
+    permissions: {
+      MANAGE_PROJECT_INVITES: PERMISSION.READ_ONLY,
+    }
+  }
 };

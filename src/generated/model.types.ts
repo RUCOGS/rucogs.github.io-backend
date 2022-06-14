@@ -12,6 +12,7 @@ export type Scalars = {
   Float: number
   Date: any
   Json: any
+  Upload: any
 }
 
 export const Access = {
@@ -206,6 +207,7 @@ export type JsonFilterInput = {
 
 export type Mutation = {
   __typename?: 'Mutation'
+  acceptProjectInvite?: Maybe<Scalars['Boolean']>
   createEBoard: EBoard
   createEBoardRole: EBoardRole
   createProject: Project
@@ -216,26 +218,48 @@ export type Mutation = {
   createUserLoginIdentity: UserLoginIdentity
   createUserRole: UserRole
   createUserSocial: UserSocial
+  deleteEBoard?: Maybe<Scalars['Boolean']>
+  deleteEBoardRole?: Maybe<Scalars['Boolean']>
   deleteEBoardRoles?: Maybe<Scalars['Boolean']>
   deleteEBoards?: Maybe<Scalars['Boolean']>
+  deleteProject?: Maybe<Scalars['Boolean']>
+  deleteProjectInvite?: Maybe<Scalars['Boolean']>
   deleteProjectInvites?: Maybe<Scalars['Boolean']>
+  deleteProjectMember?: Maybe<Scalars['Boolean']>
+  deleteProjectMemberRole?: Maybe<Scalars['Boolean']>
   deleteProjectMemberRoles?: Maybe<Scalars['Boolean']>
   deleteProjectMembers?: Maybe<Scalars['Boolean']>
   deleteProjects?: Maybe<Scalars['Boolean']>
   deleteUserLoginIdentitys?: Maybe<Scalars['Boolean']>
+  deleteUserRole?: Maybe<Scalars['Boolean']>
   deleteUserRoles?: Maybe<Scalars['Boolean']>
   deleteUserSocials?: Maybe<Scalars['Boolean']>
   deleteUsers?: Maybe<Scalars['Boolean']>
+  joinOpenProject?: Maybe<Scalars['Boolean']>
+  newEBoard: Scalars['ID']
+  newEBoardRole: Scalars['ID']
+  newProject: Scalars['ID']
+  newProjectInvite: Scalars['ID']
+  newProjectMemberRole: Scalars['ID']
+  newUserRole: Scalars['ID']
+  updateEBoard?: Maybe<Scalars['Boolean']>
   updateEBoardRoles?: Maybe<Scalars['Boolean']>
   updateEBoards?: Maybe<Scalars['Boolean']>
+  updateProject?: Maybe<Scalars['Boolean']>
   updateProjectInvites?: Maybe<Scalars['Boolean']>
+  updateProjectMember?: Maybe<Scalars['Boolean']>
   updateProjectMemberRoles?: Maybe<Scalars['Boolean']>
   updateProjectMembers?: Maybe<Scalars['Boolean']>
   updateProjects?: Maybe<Scalars['Boolean']>
+  updateUser?: Maybe<Scalars['Boolean']>
   updateUserLoginIdentitys?: Maybe<Scalars['Boolean']>
   updateUserRoles?: Maybe<Scalars['Boolean']>
   updateUserSocials?: Maybe<Scalars['Boolean']>
   updateUsers?: Maybe<Scalars['Boolean']>
+}
+
+export type MutationAcceptProjectInviteArgs = {
+  inviteId: Scalars['ID']
 }
 
 export type MutationCreateEBoardArgs = {
@@ -278,6 +302,14 @@ export type MutationCreateUserSocialArgs = {
   record: UserSocialInsertInput
 }
 
+export type MutationDeleteEBoardArgs = {
+  id: Scalars['ID']
+}
+
+export type MutationDeleteEBoardRoleArgs = {
+  id: Scalars['ID']
+}
+
 export type MutationDeleteEBoardRolesArgs = {
   filter: EBoardRoleFilterInput
 }
@@ -286,8 +318,24 @@ export type MutationDeleteEBoardsArgs = {
   filter: EBoardFilterInput
 }
 
+export type MutationDeleteProjectArgs = {
+  id: Scalars['ID']
+}
+
+export type MutationDeleteProjectInviteArgs = {
+  inviteId: Scalars['ID']
+}
+
 export type MutationDeleteProjectInvitesArgs = {
   filter: ProjectInviteFilterInput
+}
+
+export type MutationDeleteProjectMemberArgs = {
+  id: Scalars['ID']
+}
+
+export type MutationDeleteProjectMemberRoleArgs = {
+  id: Scalars['ID']
 }
 
 export type MutationDeleteProjectMemberRolesArgs = {
@@ -306,6 +354,10 @@ export type MutationDeleteUserLoginIdentitysArgs = {
   filter: UserLoginIdentityFilterInput
 }
 
+export type MutationDeleteUserRoleArgs = {
+  id: Scalars['ID']
+}
+
 export type MutationDeleteUserRolesArgs = {
   filter: UserRoleFilterInput
 }
@@ -318,6 +370,38 @@ export type MutationDeleteUsersArgs = {
   filter: UserFilterInput
 }
 
+export type MutationJoinOpenProjectArgs = {
+  projectId: Scalars['ID']
+}
+
+export type MutationNewEBoardArgs = {
+  input: NewEBoardInput
+}
+
+export type MutationNewEBoardRoleArgs = {
+  input: NewEBoardRoleInput
+}
+
+export type MutationNewProjectArgs = {
+  input: NewProjectInput
+}
+
+export type MutationNewProjectInviteArgs = {
+  input: NewProjectInviteInput
+}
+
+export type MutationNewProjectMemberRoleArgs = {
+  input: NewProjectMemberRoleInput
+}
+
+export type MutationNewUserRoleArgs = {
+  input: NewUserRoleInput
+}
+
+export type MutationUpdateEBoardArgs = {
+  input: UpdateEBoardInput
+}
+
 export type MutationUpdateEBoardRolesArgs = {
   changes: EBoardRoleUpdateInput
   filter: EBoardRoleFilterInput
@@ -328,9 +412,17 @@ export type MutationUpdateEBoardsArgs = {
   filter: EBoardFilterInput
 }
 
+export type MutationUpdateProjectArgs = {
+  input: UpdateProjectInput
+}
+
 export type MutationUpdateProjectInvitesArgs = {
   changes: ProjectInviteUpdateInput
   filter: ProjectInviteFilterInput
+}
+
+export type MutationUpdateProjectMemberArgs = {
+  input: UpdateProjectMemberInput
 }
 
 export type MutationUpdateProjectMemberRolesArgs = {
@@ -346,6 +438,10 @@ export type MutationUpdateProjectMembersArgs = {
 export type MutationUpdateProjectsArgs = {
   changes: ProjectUpdateInput
   filter: ProjectFilterInput
+}
+
+export type MutationUpdateUserArgs = {
+  input: UpdateUserInput
 }
 
 export type MutationUpdateUserLoginIdentitysArgs = {
@@ -368,18 +464,49 @@ export type MutationUpdateUsersArgs = {
   filter: UserFilterInput
 }
 
+export type NewEBoardInput = {
+  userId: Scalars['ID']
+}
+
+export type NewEBoardRoleInput = {
+  eBoardId: Scalars['ID']
+  roleCode: RoleCode
+}
+
+export type NewProjectInput = {
+  access: Access
+  name: Scalars['String']
+  pitch: Scalars['String']
+}
+
+export type NewProjectInviteInput = {
+  projectId: Scalars['ID']
+  type: InviteType
+  userId: Scalars['ID']
+}
+
+export type NewProjectMemberRoleInput = {
+  projectMemberId: Scalars['ID']
+  roleCode: RoleCode
+}
+
+export type NewUserRoleInput = {
+  roleCode: RoleCode
+  userId: Scalars['ID']
+}
+
 export const Permission = {
-  AcceptProjectInvite: 'ACCEPT_PROJECT_INVITE',
   CreateProject: 'CREATE_PROJECT',
   DeleteProject: 'DELETE_PROJECT',
   DeleteUser: 'DELETE_USER',
   ManageEboard: 'MANAGE_EBOARD',
   ManageEboardRoles: 'MANAGE_EBOARD_ROLES',
+  ManageProjectInvites: 'MANAGE_PROJECT_INVITES',
+  ManageProjectMember: 'MANAGE_PROJECT_MEMBER',
   ManageProjectMemberRoles: 'MANAGE_PROJECT_MEMBER_ROLES',
   ManageUserRoles: 'MANAGE_USER_ROLES',
   ReadUserPrivate: 'READ_USER_PRIVATE',
   UpdateProject: 'UPDATE_PROJECT',
-  UpdateProjectMember: 'UPDATE_PROJECT_MEMBER',
   UpdateUser: 'UPDATE_USER',
 } as const
 
@@ -505,6 +632,11 @@ export type ProjectInviteSortInput = {
   projectId?: InputMaybe<SortDirection>
   type?: InputMaybe<SortDirection>
   userId?: InputMaybe<SortDirection>
+}
+
+export type ProjectInviteSubscriptionInput = {
+  projectId?: InputMaybe<Scalars['ID']>
+  userId?: InputMaybe<Scalars['ID']>
 }
 
 export type ProjectInviteUpdateInput = {
@@ -663,10 +795,13 @@ export type Query = {
   __typename?: 'Query'
   eBoardRoles: Array<EBoardRole>
   eBoards: Array<EBoard>
+  isAuthTokenValid?: Maybe<Scalars['Boolean']>
   projectInvites: Array<ProjectInvite>
   projectMemberRoles: Array<ProjectMemberRole>
   projectMembers: Array<ProjectMember>
   projects: Array<Project>
+  securityContext?: Maybe<Scalars['Json']>
+  securityPolicy?: Maybe<Scalars['Json']>
   userLoginIdentitys: Array<UserLoginIdentity>
   userRoles: Array<UserRole>
   userSocials: Array<UserSocial>
@@ -721,6 +856,10 @@ export type QueryProjectsArgs = {
   sorts?: InputMaybe<Array<ProjectSortInput>>
 }
 
+export type QuerySecurityContextArgs = {
+  userId?: InputMaybe<Scalars['ID']>
+}
+
 export type QueryUserLoginIdentitysArgs = {
   filter?: InputMaybe<UserLoginIdentityFilterInput>
   limit?: InputMaybe<Scalars['Int']>
@@ -766,6 +905,7 @@ export const RoleCode = {
   President: 'PRESIDENT',
   Programmer: 'PROGRAMMER',
   ProjectMember: 'PROJECT_MEMBER',
+  ProjectOfficer: 'PROJECT_OFFICER',
   ProjectOwner: 'PROJECT_OWNER',
   SoundDesigner: 'SOUND_DESIGNER',
   SuperAdmin: 'SUPER_ADMIN',
@@ -813,6 +953,107 @@ export const StringFilterMode = {
 } as const
 
 export type StringFilterMode = typeof StringFilterMode[keyof typeof StringFilterMode]
+export type Subscription = {
+  __typename?: 'Subscription'
+  subscribeToDeleteInvite: Scalars['ID']
+  subscribeToNewInvite: Scalars['ID']
+}
+
+export type SubscriptionSubscribeToDeleteInviteArgs = {
+  input: ProjectInviteSubscriptionInput
+}
+
+export type SubscriptionSubscribeToNewInviteArgs = {
+  input: ProjectInviteSubscriptionInput
+}
+
+export type SubscriptionInsertInput = {
+  subscribeToDeleteInvite: Scalars['ID']
+  subscribeToNewInvite: Scalars['ID']
+}
+
+export type SubscriptionSortInput = {
+  subscribeToDeleteInvite?: InputMaybe<SortDirection>
+  subscribeToNewInvite?: InputMaybe<SortDirection>
+}
+
+export type SubscriptionUpdateInput = {
+  subscribeToDeleteInvite?: InputMaybe<Scalars['ID']>
+  subscribeToNewInvite?: InputMaybe<Scalars['ID']>
+}
+
+export type UpdateEBoardInput = {
+  graduatedAt: Scalars['ID']
+  id: Scalars['ID']
+  roles?: InputMaybe<Array<RoleCode>>
+}
+
+export type UpdateProjectInput = {
+  access?: InputMaybe<Access>
+  banner?: InputMaybe<UploadWithOperation>
+  cardImage?: InputMaybe<UploadWithOperation>
+  description?: InputMaybe<Scalars['String']>
+  downloadLinks?: InputMaybe<Array<Scalars['String']>>
+  galleryImageLinks?: InputMaybe<Array<Scalars['String']>>
+  id: Scalars['ID']
+  name?: InputMaybe<Scalars['String']>
+  pitch?: InputMaybe<Scalars['String']>
+  soundcloudEmbedSrc?: InputMaybe<Scalars['String']>
+}
+
+export type UpdateProjectMemberInput = {
+  contributions?: InputMaybe<Scalars['String']>
+  id: Scalars['ID']
+  roles?: InputMaybe<Array<RoleCode>>
+}
+
+export type UpdateUserInput = {
+  avatar?: InputMaybe<UploadWithOperation>
+  banner?: InputMaybe<UploadWithOperation>
+  bio?: InputMaybe<Scalars['String']>
+  displayName?: InputMaybe<Scalars['String']>
+  id: Scalars['ID']
+  roles?: InputMaybe<Array<RoleCode>>
+  socials?: InputMaybe<Array<UpdateUserSocialInput>>
+}
+
+export type UpdateUserSocialInput = {
+  link: Scalars['String']
+  platform: Scalars['String']
+  username: Scalars['String']
+}
+
+export type UploadFilterInput = {
+  eq?: InputMaybe<Scalars['Upload']>
+  exists?: InputMaybe<Scalars['Boolean']>
+  in?: InputMaybe<Array<Scalars['Upload']>>
+  ne?: InputMaybe<Scalars['Upload']>
+  nin?: InputMaybe<Array<Scalars['Upload']>>
+}
+
+export const UploadOperation = {
+  Delete: 'DELETE',
+  Insert: 'INSERT',
+} as const
+
+export type UploadOperation = typeof UploadOperation[keyof typeof UploadOperation]
+export type UploadOperationFilterInput = {
+  contains?: InputMaybe<Scalars['String']>
+  endsWith?: InputMaybe<Scalars['String']>
+  eq?: InputMaybe<UploadOperation>
+  exists?: InputMaybe<Scalars['Boolean']>
+  in?: InputMaybe<Array<UploadOperation>>
+  mode?: InputMaybe<StringFilterMode>
+  ne?: InputMaybe<UploadOperation>
+  nin?: InputMaybe<Array<UploadOperation>>
+  startsWith?: InputMaybe<Scalars['String']>
+}
+
+export type UploadWithOperation = {
+  operation?: InputMaybe<UploadOperation>
+  upload?: InputMaybe<Scalars['Upload']>
+}
+
 export type User = {
   __typename?: 'User'
   avatarLink?: Maybe<Scalars['String']>

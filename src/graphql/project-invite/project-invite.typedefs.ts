@@ -6,6 +6,28 @@ extend type Mutation {
   acceptProjectInvite(inviteId: ID!): Boolean
   deleteProjectInvite(inviteId: ID!): Boolean
   joinOpenProject(projectId: ID!): Boolean
+  test: Boolean
+}
+
+extend type Subscription {
+  test(filter: TestSubscriptionFilter): TestSubscriptionPayload 
+  inviteCreated(filter: ProjectInviteSubscriptionFilter!): ID!
+  inviteDeleted(filter: ProjectInviteSubscriptionFilter!): ID!
+}
+
+input TestSubscriptionFilter {
+  id: String
+  someField: String
+}
+
+type TestSubscriptionPayload {
+  joe: String
+  mama: String
+}
+
+input ProjectInviteSubscriptionFilter {
+  projectId: ID
+  userId: ID
 }
 
 input NewProjectInviteInput {

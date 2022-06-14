@@ -5,6 +5,7 @@ export type SecurityDomainTemplate = {
   projectId: string;
   roleCode: string;
   projectMemberId: string;
+  projectInviteId: string;
 }
 
 /**
@@ -43,7 +44,7 @@ export type OperationSecurityDomain = {
 }
 
 export type BaseSecurityDomain = BaseSecurityDomainFieldSet[] | true;
-export function isBaseSecurityDomain(object: any) {
+export function isBaseSecurityDomain(object: any): object is BaseSecurityDomain {
   return object === true || (Array.isArray(object));
 }
 
@@ -52,7 +53,7 @@ export type ExtendedSecurityDomain = {
   // Extra data for more complex permissions
   extraData: any;
 }
-export function isExtendedSecurityDomain(object: any) {
+export function isExtendedSecurityDomain(object: any): object is ExtendedSecurityDomain {
   return object.baseDomain && isBaseSecurityDomain(object.crudDomain);
 }
 

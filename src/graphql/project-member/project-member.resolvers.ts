@@ -1,4 +1,5 @@
-import { MutationResolvers, Permission, Project, QueryResolvers, RoleCode } from '@src/generated/graphql-endpoint.types';
+import { Permission, Project, ProjectInsertInput, RoleCode } from '@src/generated/model.types';
+import { MutationResolvers, QueryResolvers } from '@src/generated/graphql-endpoint.types';
 import { EntityManager, ProjectDAO, ProjectMemberDAO, UserDAO } from '@src/generated/typetta';
 import { ApolloResolversContext } from '@src/misc/context';
 import { makePermsCalc } from '@src/shared/security';
@@ -57,7 +58,7 @@ export default {
         .withContext(context.securityContext)
         .withDomain({
           projectMemberId: [ args.input.id ]
-        }).assertPermission(Permission.UpdateProjectMember);
+        }).assertPermission(Permission.ManageProjectMember);
       
       const projectMember = await context.unsecureEntityManager.projectMember.findOne({
         filter: { id: args.input.id },
@@ -118,7 +119,7 @@ export default {
         .withContext(context.securityContext)
         .withDomain({
           projectMemberId: [ args.id ]
-        }).assertPermission(Permission.UpdateProjectMember);
+        }).assertPermission(Permission.ManageProjectMember);
       
       const projectMember = await context.unsecureEntityManager.projectMember.findOne({
         filter: { id: args.id },
@@ -145,6 +146,12 @@ export default {
       
       assertProjectHasMember(project as PartialDeep<Project>);
 
+      const error = await startEntityManagerTransaction(context.unsecureEntityManager, context.mongoClient, async (transEntityManager) => {
+        await deleteProjectMember(transEntityManager, args.id);
+      });
+      if (error)
+        throw error;
+
       return true;
     },
 
@@ -153,19 +160,11 @@ export default {
   }
 } as { Query: QueryResolvers, Mutation: MutationResolvers };
 
-async function makeProjectMember(entityManager: EntityManager, userId: string, projectId: string) {
-  const member = await entityManager.projectMember.insertOne({
-    record: {
-      userId: userId,
-      projectId: projectId,
-      createdAt: Date.now()
-    }
-  })
-  await daoInsertRolesBatch({
-    dao: entityManager.projectMemberRole, 
-    roleCodes: [ RoleCode.ProjectMember ], 
-    idKey: "projectMemberId", 
-    id: member.projectId
+export async function deleteProjectMember(entityManager: EntityManager, id: string) {
+  await entityManager.projectMemberRole.deleteAll({
+    filter: { projectMemberId: id }
   });
-  return member;
+  await entityManager.projectMember.deleteOne({
+    filter: { id: id }
+  });
 }

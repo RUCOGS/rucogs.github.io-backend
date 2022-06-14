@@ -1,10 +1,12 @@
 import { MutationResolvers, Permission, QueryResolvers, RoleCode, UploadOperation } from '@src/generated/graphql-endpoint.types';
-import { EntityManager } from '@src/generated/typetta';
+import { EntityManager, ProjectDAO } from '@src/generated/typetta';
 import { ApolloResolversContext } from '@src/misc/context';
 import { makePermsCalc } from '@src/shared/security';
 import { daoInsertRolesBatch, isDefined, startEntityManagerTransaction } from '@src/utils';
 import { HttpError } from '@src/shared/utils';
 import { DataSize, fileUploadPromiseToCdn, tryDeleteFileIfSelfHosted } from '@src/controllers/cdn.controller';
+import { makeProjectMember } from '../project-invite/project-invite.resolvers';
+import { deleteProjectMember } from '../project-member/project-member.resolvers';
 
 export default {
   Mutation: {
@@ -32,13 +34,10 @@ export default {
           }
         });
 
-        const projectOwner = await transEntityManager.projectMember.insertOne({
-          record: {
-            userId,
-            projectId: insertedProject.id,
-            createdAt: Date.now()
-          }
-        })
+        const projectOwner = await makeProjectMember(transEntityManager, {
+          userId, 
+          projectId: insertedProject.id
+        }, [ RoleCode.ProjectOwner ]);
 
         await daoInsertRolesBatch({
           dao: transEntityManager.projectMemberRole, 
@@ -129,23 +128,43 @@ export default {
       }
 
       return true;
-    }
+    },
+
+    deleteProject: async (parent, args, context: ApolloResolversContext, info) => {
+      if (!makePermsCalc()
+          .withContext(context.securityContext)
+          .withDomain({
+            projectId: [ args.id ],
+          })
+          .hasPermission(Permission.DeleteProject)) {
+        throw new HttpError(401, "Not authorized!");
+      }
+
+      const project = await context.unsecureEntityManager.project.findOne({ 
+        filter: { id: args.id },
+        projection: ProjectDAO.projection({
+          members: {
+            id: true
+          }  
+        })  
+      });
+      if (!project)
+        throw new HttpError(400, "Project doesn't exist!");
+      
+      const error = await startEntityManagerTransaction(context.unsecureEntityManager, context.mongoClient, async (transEntityManager) => {
+        for (const member of project.members) {
+          await deleteProjectMember(transEntityManager, member.id);
+        }
+        await transEntityManager.project.deleteOne({
+          filter: { id: args.id }
+        })
+      });
+      
+      if (error) {
+        throw error;
+      }
+
+      return true;
+    }, 
   }
 } as { Query: QueryResolvers, Mutation: MutationResolvers };
-
-async function makeProjectMember(entityManager: EntityManager, userId: string, projectId: string) {
-  const member = await entityManager.projectMember.insertOne({
-    record: {
-      userId: userId,
-      projectId: projectId,
-      createdAt: Date.now()
-    }
-  })
-  await daoInsertRolesBatch({
-    dao: entityManager.projectMemberRole, 
-    roleCodes: [ RoleCode.ProjectMember ], 
-    idKey: "projectMemberId", 
-    id: member.projectId
-  });
-  return member;
-}

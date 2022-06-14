@@ -192,7 +192,7 @@ export async function jwtVerifyAsync(token: string) {
       const payload = decoded as AuthPayload;
 
       if (err || !payload) {
-        return reject(err);
+        return reject(err)
       }
 
       resolve(payload);

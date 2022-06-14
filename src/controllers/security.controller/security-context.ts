@@ -5,7 +5,7 @@ Contains all permissions/roles related code.
  */
 import { AnyEntityManager, TypettaSecurityContext } from '@src/controllers/entity-manager.controller';
 import { RoleCode } from '@src/generated/model.types';
-import { BaseSecurityDomain, DefaultSecurityContext, ExtendedSecurityDomain, isBaseSecurityDomain, isExtendedSecurityDomain, PermissionCode, RoleData, SecurityContext, SecurityDomain, SecurityPermissions } from '@src/shared/security';
+import { BaseSecurityDomain, DefaultSecurityContext, ExtendedSecurityDomain, getInheritedPermRolesForRoles, getRolesBelowOrEqualRoles, isBaseSecurityDomain, isExtendedSecurityDomain, PermissionCode, RoleData, SecurityContext, SecurityDomain, SecurityPermissions } from '@src/shared/security';
 import { PermissionDataDict } from '@src/shared/security/permissions';
 import { isDeepEquals } from '@src/shared/utils';
 import { HttpError } from '@src/shared/utils';
@@ -103,11 +103,10 @@ export async function getUserSecurityPermission(entityManager: AnyEntityManager,
 }
 
 export async function rolesToSecurityPermission(entityManager: AnyEntityManager, roleCodes: RoleCode[], id: string): Promise<SecurityPermissions> {
-  // TODO: We might not need to topological sort role codes
-  const sortedRoles = roleCodes; // getTopologicalSortedRoleCodes(roleCodes);
-  
+  // Get all child roles, because we inherit their permissions
+  roleCodes = getInheritedPermRolesForRoles(roleCodes);
   let securityContext = {};
-  for (const role of sortedRoles) {
+  for (const role of roleCodes) {
     const context = await RoleBackendDataDict[role]?.getSecurityPermissions(entityManager, id);
     if (context)
       securityContext = mergeSecurityPermissions(securityContext, context);

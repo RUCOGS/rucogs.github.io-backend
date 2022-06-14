@@ -1,8 +1,7 @@
 import { AnyEntityManager } from "@src/controllers/entity-manager.controller/entity-manager";
 import { RoleCode } from "@src/generated/model.types";
-import { ProjectDAO, ProjectMemberDAO } from "@src/generated/typetta";
-import { SecurityContext, PermissionCode, SecurityPermissions } from "@src/shared/security";
-import { HttpError } from '@src/shared/utils';
+import { ProjectDAO, ProjectInviteDAO, ProjectMemberDAO } from "@src/generated/typetta";
+import { SecurityPermissions } from "@src/shared/security";
 import { mergeSecurityPermissions } from "./security-context";
 
 export type RoleBackendData = {
@@ -16,10 +15,15 @@ export const RoleBackendDataDict: {
 // #region // ----- USER ROLES ----- //
   [RoleCode.User]: {
     async getSecurityPermissions(entityManager, userId) {
+      // Find all invites that belong to the user
+      const invites = await entityManager.projectInvite.findAll({
+        filter: { userId },
+        projection: { id: true }
+      });
       return {
         READ_USER_PRIVATE: [{ userId: userId }],
         UPDATE_USER: [{ userId: userId }],
-        ACCEPT_PROJECT_INVITE: [{ userId: userId }],
+        MANAGE_PROJECT_INVITES: invites.map(x => ({ projectInviteId: x.id })),
         CREATE_PROJECT: true, 
       };
     },
@@ -31,7 +35,7 @@ export const RoleBackendDataDict: {
         CREATE_PROJECT: true,
         UPDATE_PROJECT: true,
         READ_USER_PRIVATE: true,
-        ACCEPT_PROJECT_INVITE: true,
+        MANAGE_PROJECT_INVITES: true,
       };
     }
   },
@@ -48,6 +52,27 @@ export const RoleBackendDataDict: {
 
 // #region // ----- PROJECT MEMBER ROLES ----- //
   [RoleCode.ProjectOwner]: {
+    async getSecurityPermissions(entityManager, projectMemberId) {
+
+      const projectMember = await entityManager.projectMember.findOne({
+        filter: {
+          id: projectMemberId,
+        },
+        projection: ProjectMemberDAO.projection({
+          projectId: true
+        })
+      });
+
+      if (!projectMember)
+        throw new Error("Expected project member to exist!");
+
+      return {
+        DELETE_PROJECT: [ projectMember.projectId ]
+      };
+    }
+  },
+
+  [RoleCode.ProjectOfficer]: {
     async getSecurityPermissions(entityManager, projectMemberId) {
       const projectMember = await entityManager.projectMember.findOne({
         filter: {
@@ -75,16 +100,24 @@ export const RoleBackendDataDict: {
       if (!project)
         throw new Error("Expected project to exist!");
 
+      const invites = await entityManager.projectInvite.findAll({
+        filter: { projectId: projectMember.projectId },
+        projection: ProjectInviteDAO.projection({
+          id: true
+        })
+      });
+
       let finalPermissions: SecurityPermissions = {
         UPDATE_PROJECT: [{ projectId: projectMember.projectId }],
-        UPDATE_PROJECT_MEMBER: project.members.map(x => ({ projectMemberId: x }))
+        MANAGE_PROJECT_INVITES: invites.map(x => ({ projectInviteId: x.id })),
       };
 
+      // Get all member permissions, so we can edit them
       for (const member of project.members) {
         const permissions = await RoleBackendDataDict[RoleCode.ProjectMember]?.getSecurityPermissions(entityManager, member.id);
 
         if (!permissions)
-          throw new Error("Expected permissions to be defined!");
+          throw new Error("Expected ProjectMember permissions to be defined!");
 
         finalPermissions = mergeSecurityPermissions(finalPermissions, permissions);
       }
@@ -96,7 +129,7 @@ export const RoleBackendDataDict: {
   [RoleCode.ProjectMember]: {
     async getSecurityPermissions(entityManager, projectMemberId) {
       return {
-        UPDATE_PROJECT_MEMBER: [{ projectMemberId: projectMemberId }],
+        MANAGE_PROJECT_MEMBER: [{ projectMemberId: projectMemberId }],
       };
     }
   },

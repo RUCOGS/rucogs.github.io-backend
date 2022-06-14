@@ -1,23 +1,23 @@
-import { MongoClient } from 'mongodb';
-import { EntityManager } from '@src/generated/typetta'
-import { ApolloServer as ExpressApolloServer, ExpressContext } from 'apollo-server-express'
-import { Express } from 'express';
-import { ApolloServerPluginDrainHttpServer, Config } from 'apollo-server-core';
-import express from 'express';
-import cors from 'cors';
-import passport from 'passport';
-import authRouter from '@src/routes/auth.routes';
-import http from 'http';
-import { createSecureEntityManager, createUnsecureEntityManager, getOperationMetadataFromRequest } from '@src/controllers/entity-manager.controller/entity-manager';
-import { authenticate, AuthScheme, configPassport } from '@src/controllers/auth.controller';
-import { getCompleteSecurityContext } from '@src/controllers/security.controller';
-import { Db } from 'mongodb';
 import ServerConfig from '@src/config/server.config.json';
+import { authenticate, AuthScheme, configPassport } from '@src/controllers/auth.controller';
+import { createSecureEntityManager, createUnsecureEntityManager, getOperationMetadataFromRequest } from '@src/controllers/entity-manager.controller/entity-manager';
+import { getCompleteSecurityContext } from '@src/controllers/security.controller';
+import { EntityManager } from '@src/generated/typetta';
+import { schema } from '@src/graphql';
 import { ApolloResolversContext, RequestWithDefaultContext } from '@src/misc/context';
-import { typeDefs, resolvers } from '@src/graphql';
+import authRouter from '@src/routes/auth.routes';
 import { DefaultSecurityContext } from '@src/shared/security';
-import { GraphQLUpload, graphqlUploadExpress } from 'graphql-upload';
-
+import { ApolloServerPluginDrainHttpServer, Config } from 'apollo-server-core';
+import { ApolloServer as ExpressApolloServer, ExpressContext } from 'apollo-server-express';
+import cors from 'cors';
+import express, { Express } from 'express';
+import { GraphQLSchema } from 'graphql';
+import { graphqlUploadExpress } from 'graphql-upload';
+import { useServer } from 'graphql-ws/lib/use/ws';
+import http from 'http';
+import { Db, MongoClient } from 'mongodb';
+import passport from 'passport';
+import { WebSocketServer } from 'ws';
 
 export async function startServer(debug: boolean, mock: boolean = false) {
   const mongoClient = new MongoClient(ServerConfig.mongodbUrl);
@@ -33,6 +33,7 @@ export async function startServer(debug: boolean, mock: boolean = false) {
   const httpServer = http.createServer(app);
 
   startApolloServer(
+    httpServer,
     app, 
     mongoDb, 
     ServerConfig.baseUrl + "/api/graphql", 
@@ -41,12 +42,7 @@ export async function startServer(debug: boolean, mock: boolean = false) {
     {
       debug,
       csrfPrevention: true,
-      typeDefs,
-      resolvers: {
-        Upload: GraphQLUpload,
-        ...resolvers
-      },
-      plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
+      schema,
     }
   );
   // Set port, listen for requests
@@ -60,9 +56,32 @@ export async function startServer(debug: boolean, mock: boolean = false) {
   );  
 }
 
-async function startApolloServer(app: express.Application, mongoDb: Db | "mock", endpointPath: string, unsecureEntityManager: EntityManager, mongoClient: MongoClient, apolloConfig: Config<ExpressContext>) {
+async function startApolloServer(httpServer: http.Server, app: express.Application, mongoDb: Db | "mock", endpointPath: string, unsecureEntityManager: EntityManager, mongoClient: MongoClient, apolloConfig: Config<ExpressContext>) {
+  // Create websocket server for Apollo GraphQL subscriptions
+  const wsServer = new WebSocketServer({
+    server: httpServer,
+    path: endpointPath
+  })
+  const serverCleanup = useServer({ 
+    schema: schema 
+  }, wsServer);
+
   const server = new ExpressApolloServer({
-    ...apolloConfig,
+    ...apolloConfig,    
+    plugins: [
+      // Shutdown for HTTP server.
+      ApolloServerPluginDrainHttpServer({ httpServer }),
+      // Shutdown for subscriptions WebSocket server. 
+      {
+        async serverWillStart() {
+          return {
+            async drainServer() {
+              await serverCleanup.dispose();
+            }
+          }
+        }
+      }
+    ],
     context: async ({ req }): Promise<ApolloResolversContext> => {
       const authenticated = await authenticate(req);
       if (authenticated) {

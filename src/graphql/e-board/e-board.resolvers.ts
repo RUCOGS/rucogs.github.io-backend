@@ -1,5 +1,5 @@
 import { MutationResolvers, QueryResolvers } from '@src/generated/graphql-endpoint.types';
-import { Permission, RoleCode } from '@src/generated/model.types';
+import { EBoardInsertInput, Permission, ProjectInsertInput, RoleCode } from '@src/generated/model.types';
 import { EBoardDAO, EntityManager, UserDAO } from '@src/generated/typetta';
 import { ApolloResolversContext } from '@src/misc/context';
 import { makePermsCalc } from '@src/shared/security';
@@ -59,21 +59,7 @@ export default {
       
       let eBoardId: string = "";
       const error = await startEntityManagerTransaction(context.unsecureEntityManager, context.mongoClient, async (transEntitymanager) => {
-        const eBoard = await transEntitymanager.eBoard.insertOne({
-          record: {
-            userId: args.input.userId,
-            createdAt: Date.now()
-          }
-        })
-
-        await daoInsertRolesBatch({
-          dao: transEntitymanager.eBoardRole, 
-          roleCodes: [RoleCode.Eboard],
-          idKey: "eBoardId",
-          id: eBoard.id
-        });
-
-        eBoardId = eBoard.id;
+        eBoardId = await makeEBoard(transEntitymanager, args.input);
       });
 
       if (error)
@@ -141,12 +127,7 @@ export default {
         }).assertPermission(Permission.ManageEboard);
       
       const error = await startEntityManagerTransaction(context.unsecureEntityManager, context.mongoClient, async (transEntityManager) => {
-        await transEntityManager.eBoardRole.deleteAll({
-          filter: { eBoardId: args.id }
-        })
-        await transEntityManager.eBoard.deleteOne({
-          filter: { id: args.id }
-        })
+        await deleteEBoard(transEntityManager, args.id);
       });
       if (error)
         throw error;
@@ -158,3 +139,29 @@ export default {
     deleteEBoardRole: deleteEntityRoleResolver(roleResolverOptions),
   }
 } as { Query: QueryResolvers, Mutation: MutationResolvers };
+
+export async function makeEBoard(entityManager: EntityManager, record: EBoardInsertInput) {
+  const eBoard = await entityManager.eBoard.insertOne({
+    record: {
+      ...record,
+      createdAt: Date.now()
+    }
+  })
+
+  await daoInsertRolesBatch({
+    dao: entityManager.eBoardRole, 
+    roleCodes: [RoleCode.Eboard],
+    idKey: "eBoardId",
+    id: eBoard.id
+  });
+  return eBoard.id;
+}
+
+export async function deleteEBoard(entityManager: EntityManager, id: string) {
+  await entityManager.eBoardRole.deleteAll({
+    filter: { eBoardId: id }
+  })
+  await entityManager.eBoard.deleteOne({
+    filter: { id: id }
+  })
+}
