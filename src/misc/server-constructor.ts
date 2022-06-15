@@ -11,7 +11,6 @@ import { ApolloServerPluginDrainHttpServer, Config } from 'apollo-server-core';
 import { ApolloServer as ExpressApolloServer, ExpressContext } from 'apollo-server-express';
 import cors from 'cors';
 import express, { Express } from 'express';
-import { GraphQLSchema } from 'graphql';
 import { graphqlUploadExpress } from 'graphql-upload';
 import { useServer } from 'graphql-ws/lib/use/ws';
 import http from 'http';

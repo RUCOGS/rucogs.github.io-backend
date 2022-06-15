@@ -64,7 +64,9 @@ export default {
       
       const projectMember = await context.unsecureEntityManager.projectMember.findOne({
         filter: { id: args.input.id },
-        projection: { projectId: true }
+        projection: { 
+          projectId: true
+        }
       })
       if (!projectMember)
         throw new HttpError(400, "Project member doesn't exist!");
@@ -113,7 +115,10 @@ export default {
       if (error)
         throw error;
 
-      pubsub.publish(PubSubEvents.ProjectMemberUpdated, { projectMemberUpdated: true });
+      const updatedProjectMember = await context.unsecureEntityManager.projectMember.findOne({
+        filter: { id: args.input.id }
+      })
+      pubsub.publish(PubSubEvents.ProjectMemberUpdated, updatedProjectMember);
       return true;
     },
 
@@ -163,30 +168,32 @@ export default {
   },
   
   Subscription: {
-    projectMemberCreated: {
-      subscribe: makeSubscriptionResolver()
-        .pubsub(PubSubEvents.ProjectMemberCreated)
-        .shallowFilter("projectMemberCreated")
-        .build()
-    },
+    projectMemberCreated: makeSubscriptionResolver()
+      .pubsub(PubSubEvents.ProjectMemberCreated)
+      .shallowOneToOneFilter()
+      .mapId('projectMemberCreated')
+      .build(),
     
-    projectMemberUpdated: {
-      subscribe: makeSubscriptionResolver()
-        .pubsub(PubSubEvents.ProjectMemberUpdated)
-        .shallowFilter("projectMemberUpdated")
-        .build()
-    },
+    projectMemberUpdated: makeSubscriptionResolver()
+      .pubsub(PubSubEvents.ProjectMemberUpdated)
+      .shallowOneToOneFilter()
+      .mapId('projectMemberUpdated')
+      .build(),
 
-    projectMemberDeleted: {
-      subscribe: makeSubscriptionResolver()
-        .pubsub(PubSubEvents.ProjectMemberCreated)
-        .shallowFilter("projectMemberDeleted")
-        .build()
-    }
+    projectMemberDeleted: makeSubscriptionResolver()
+      .pubsub(PubSubEvents.ProjectMemberDeleted)
+      .shallowOneToOneFilter()
+      .mapId('projectMemberDeleted')
+      .build(),
   }
 } as { Query: QueryResolvers, Mutation: MutationResolvers, Subscription: SubscriptionResolvers };
 
 export async function deleteProjectMember(entityManager: EntityManager, id: string, emitSubscription: boolean = true) {
+  const member = entityManager.projectMember.findOne({
+    filter: { id: id }
+  });
+  if (!member)
+    throw new HttpError(500, "Project member doesn't exist!");
   await entityManager.projectMemberRole.deleteAll({
     filter: { projectMemberId: id }
   });
@@ -194,5 +201,5 @@ export async function deleteProjectMember(entityManager: EntityManager, id: stri
     filter: { id: id }
   });
   if (emitSubscription)
-    pubsub.publish(PubSubEvents.ProjectMemberDeleted, { projectMemberDeleted: id });
+    pubsub.publish(PubSubEvents.ProjectMemberDeleted, member);
 }

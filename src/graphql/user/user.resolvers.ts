@@ -1,5 +1,5 @@
 import { DataSize, fileUploadPromiseToCdn, tryDeleteFileIfSelfHosted } from '@src/controllers/cdn.controller';
-import { MutationResolvers, Permission, QueryResolvers, RoleCode, SubscriptionResolvers, UpdateUserSocialInput, UploadOperation } from '@src/generated/graphql-endpoint.types';
+import { MutationResolvers, Permission, QueryResolvers, RoleCode, SubscriptionResolvers, UpdateUserSocialInput, UploadOperation, User } from '@src/generated/graphql-endpoint.types';
 import { EntityManager, UserSocialFilter, UserSocialInsert } from '@src/generated/typetta';
 import { ApolloResolversContext } from '@src/misc/context';
 import { makePermsCalc } from '@src/shared/security';
@@ -141,7 +141,10 @@ export default {
       if (error instanceof Error)
         throw error;
       
-      pubsub.publish(PubSubEvents.UserUpdated, { userUpdated: args.input.id });
+      const updatedUser = await context.unsecureEntityManager.user.findOne({
+        filter: { id: args.input.id }
+      })
+      pubsub.publish(PubSubEvents.UserUpdated, updatedUser);
       return true;
     },
     newUserRole: newEntityRoleResolver(roleResolverOptions),
@@ -149,25 +152,22 @@ export default {
   },
 
   Subscription: {
-    userCreated: {
-      subscribe: makeSubscriptionResolver()
-        .pubsub(PubSubEvents.UserCreated)
-        .shallowFilter("userCreated")
-        .build()
-    },
+    userCreated: makeSubscriptionResolver()
+      .pubsub(PubSubEvents.UserCreated)
+      .shallowOneToOneFilter()
+      .mapId('userCreated')
+      .build(),
     
-    userUpdated: {
-      subscribe: makeSubscriptionResolver()
-        .pubsub(PubSubEvents.UserUpdated)
-        .shallowFilter("userUpdated")
-        .build()
-    },
+    userUpdated: makeSubscriptionResolver()
+      .pubsub(PubSubEvents.UserUpdated)
+      .shallowOneToOneFilter()
+      .mapId('userUpdated')
+      .build(),
 
-    userDeleted: {
-      subscribe: makeSubscriptionResolver()
-        .pubsub(PubSubEvents.UserCreated)
-        .shallowFilter("userDeleted")
-        .build()
-    }
+    userDeleted: makeSubscriptionResolver()
+      .pubsub(PubSubEvents.UserDeleted)
+      .shallowOneToOneFilter()
+      .mapId('userDeleted')
+      .build()
   }
 } as { Query: QueryResolvers, Mutation: MutationResolvers, Subscription: SubscriptionResolvers };

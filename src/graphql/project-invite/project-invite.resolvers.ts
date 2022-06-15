@@ -61,7 +61,7 @@ export default {
         }
       });
 
-      pubsub.publish(PubSubEvents.ProjectInviteCreated, { projectInviteCreated: insertedInvite.id });
+      pubsub.publish(PubSubEvents.ProjectInviteCreated, insertedInvite);
       return insertedInvite.id;
     },
 
@@ -101,7 +101,7 @@ export default {
       if (error)
         throw error;
 
-      pubsub.publish(PubSubEvents.ProjectInviteDeleted, { projectInviteDeleted: args.inviteId });
+      pubsub.publish(PubSubEvents.ProjectInviteDeleted, invite);
       return true;
     },
 
@@ -137,7 +137,7 @@ export default {
       if (error)
         throw error;
 
-      pubsub.publish(PubSubEvents.ProjectInviteDeleted, { projectInviteDeleted: invite.id });
+      pubsub.publish(PubSubEvents.ProjectInviteDeleted, invite);
       return true;
     },
 
@@ -178,24 +178,17 @@ export default {
   // TODO NOW: Fix 
   // "ERROR Error: Socket closed with event 4500 Subscription field must return Async Iterable. Received: undefined."
   Subscription: {
-    projectInviteCreated: {
-      subscribe: withFilter(
-        () => pubsub.asyncIterator([PubSubEvents.ProjectInviteCreated]),
-        (payload, variables) => {
-          console.log("running");
-          // Only push an update if the comment is on
-          // the correct repository for this operation
-          return (payload.commentAdded.repository_name === variables.repoFullName);
-        },
-      ) as any,
-    },
+    projectInviteCreated: makeSubscriptionResolver()
+      .pubsub(PubSubEvents.ProjectInviteCreated)
+      .shallowOneToOneFilter()
+      .mapId('projectInviteCreated')
+      .build(),
 
-    projectInviteDeleted: {
-      subscribe: makeSubscriptionResolver()
-        .pubsub(PubSubEvents.ProjectInviteCreated)
-        .shallowFilter("projectInviteDeleted")
-        .build()
-    }
+    projectInviteDeleted: makeSubscriptionResolver()
+      .pubsub(PubSubEvents.ProjectInviteDeleted)
+      .shallowOneToOneFilter()
+      .mapId('projectInviteDeleted')
+      .build()
   }
 } as { Query: QueryResolvers, Mutation: MutationResolvers, Subscription: SubscriptionResolvers };
 
@@ -214,6 +207,6 @@ export async function makeProjectMember(entityManager: EntityManager, record: Pr
   });
 
   if (emitSubscription)
-    pubsub.publish(PubSubEvents.ProjectMemberUpdated, { projectMemberUpdated: member.id });
+    pubsub.publish(PubSubEvents.ProjectMemberCreated, member);
   return member;
 }

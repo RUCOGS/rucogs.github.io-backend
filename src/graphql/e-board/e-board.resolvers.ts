@@ -1,10 +1,11 @@
 import { MutationResolvers, QueryResolvers, SubscriptionResolvers } from '@src/generated/graphql-endpoint.types';
-import { EBoardInsertInput, Permission, RoleCode } from '@src/generated/model.types';
-import { EBoardDAO, EntityManager, UserDAO } from '@src/generated/typetta';
+import { EBoard, EBoardInsertInput, Permission, RoleCode } from '@src/generated/model.types';
+import { EBoardDAO, EBoardPlainModel, EntityManager, UserDAO } from '@src/generated/typetta';
 import { ApolloResolversContext } from '@src/misc/context';
 import { makePermsCalc } from '@src/shared/security';
 import { HttpError } from '@src/shared/utils';
 import { assertRequesterCanManageRoleCodes, daoInsertRolesBatch, deleteEntityRoleResolver, EntityRoleResolverOptions, isDefined, newEntityRoleResolver, startEntityManagerTransaction } from '@src/utils';
+import { PartialDeep } from 'type-fest';
 import pubsub, { PubSubEvents } from '../pubsub';
 import { makeSubscriptionResolver } from '../subscription-resolver-builder';
 
@@ -59,23 +60,25 @@ export default {
       if (exists)
         throw new HttpError(400, "EBoard already exists for this user!");
       
-      let eBoardId: string = "";
+      let eBoard: EBoardPlainModel | undefined;
       const error = await startEntityManagerTransaction(context.unsecureEntityManager, context.mongoClient, async (transEntitymanager) => {
-        eBoardId = await makeEBoard(transEntitymanager, args.input);
+        eBoard = await makeEBoard(transEntitymanager, args.input);
       });
 
       if (error)
         throw error;
       
-      pubsub.publish(PubSubEvents.EBoardCreated, { eBoardCreated: eBoardId });
+      pubsub.publish(PubSubEvents.EBoardCreated, eBoard);
       
-      return eBoardId;
+      return eBoard?.id;
     },
 
     updateEBoard: async (parent, args, context: ApolloResolversContext, info) => {
       const eBoard = await context.unsecureEntityManager.eBoard.findOne({
         filter: { id: args.input.id },
-        projection: { userId: true }
+        projection: {
+          userId: true
+        }
       });
       if (!eBoard)
         throw new HttpError(400, "EBoard doesn't exist!");
@@ -112,16 +115,18 @@ export default {
       });
       if (error)
         throw error;
-        
-      pubsub.publish(PubSubEvents.EBoardUpdated, { eBoardUpdated: args.input.id });
+      
+      const updatedEBoard = await context.unsecureEntityManager.eBoard.findOne({
+        filter: { id: args.input.id }
+      })
+      pubsub.publish(PubSubEvents.EBoardUpdated, updatedEBoard);
 
       return true;
     },
 
     deleteEBoard: async (parent, args, context: ApolloResolversContext, info) => {
       const eBoard = await context.unsecureEntityManager.eBoard.findOne({
-        filter: { id: args.id },
-        projection: { userId: true }
+        filter: { id: args.id }
       });
       if (!eBoard)
         throw new HttpError(400, "EBoard doesn't exist!");
@@ -138,7 +143,7 @@ export default {
       if (error)
         throw error;
       
-      pubsub.publish(PubSubEvents.EBoardDeleted, { eBoardDeleted: args.id });
+      pubsub.publish(PubSubEvents.EBoardDeleted, eBoard);
       
       return true;
     },
@@ -148,26 +153,23 @@ export default {
   },
   
   Subscription: {
-    eBoardCreated: {
-      subscribe: makeSubscriptionResolver()
-        .pubsub(PubSubEvents.EBoardCreated)
-        .shallowFilter("eBoardCreated")
-        .build()
-    },
+    eBoardCreated: makeSubscriptionResolver()
+      .pubsub(PubSubEvents.EBoardCreated)
+      .shallowOneToOneFilter()
+      .mapId('eBoardCreated')
+      .build(),
     
-    eBoardUpdated: {
-      subscribe: makeSubscriptionResolver()
-        .pubsub(PubSubEvents.EBoardUpdated)
-        .shallowFilter("eBoardUpdated")
-        .build()
-    },
+    eBoardUpdated: makeSubscriptionResolver()
+      .pubsub(PubSubEvents.EBoardUpdated)
+      .shallowOneToOneFilter()
+      .mapId('eBoardUpdated')
+      .build(),
 
-    eBoardDeleted: {
-      subscribe: makeSubscriptionResolver()
-        .pubsub(PubSubEvents.EBoardCreated)
-        .shallowFilter("eBoardDeleted")
-        .build()
-    }
+    eBoardDeleted: makeSubscriptionResolver()
+      .pubsub(PubSubEvents.EBoardCreated)
+      .shallowOneToOneFilter()
+      .mapId('eBoardDeleted')
+      .build()
   }
 } as { Query: QueryResolvers, Mutation: MutationResolvers, Subscription: SubscriptionResolvers };
 
@@ -185,7 +187,7 @@ export async function makeEBoard(entityManager: EntityManager, record: EBoardIns
     idKey: "eBoardId",
     id: eBoard.id
   });
-  return eBoard.id;
+  return eBoard;
 }
 
 export async function deleteEBoard(entityManager: EntityManager, id: string) {

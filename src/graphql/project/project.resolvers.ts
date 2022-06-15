@@ -1,6 +1,6 @@
 import { DataSize, fileUploadPromiseToCdn, tryDeleteFileIfSelfHosted } from '@src/controllers/cdn.controller';
 import { MutationResolvers, Permission, QueryResolvers, RoleCode, SubscriptionResolvers, UploadOperation } from '@src/generated/graphql-endpoint.types';
-import { ProjectDAO } from '@src/generated/typetta';
+import { ProjectDAO, ProjectPlainModel } from '@src/generated/typetta';
 import { ApolloResolversContext } from '@src/misc/context';
 import { makePermsCalc } from '@src/shared/security';
 import { HttpError } from '@src/shared/utils';
@@ -24,11 +24,10 @@ export default {
       }
 
       const userId = context.securityContext.userId;
-      let newProjectId = "";
-      
-      let projectId = "";
+
+      let project: ProjectPlainModel | undefined;
       const error = await startEntityManagerTransaction(context.unsecureEntityManager, context.mongoClient, async (transEntityManager) => {
-        const insertedProject = await transEntityManager.project.insertOne({
+        project = await transEntityManager.project.insertOne({
           record: {
             name: args.input.name,
             pitch: args.input.pitch,
@@ -37,11 +36,9 @@ export default {
           }
         });
 
-        projectId = insertedProject.id;
-
         const projectOwner = await makeProjectMember(transEntityManager, {
           userId, 
-          projectId: insertedProject.id
+          projectId: project.id
         }, [ RoleCode.ProjectOwner ]);
 
         await daoInsertRolesBatch({
@@ -50,15 +47,12 @@ export default {
           idKey: "projectMemberId",
           id: projectOwner.id
         });
-
-        newProjectId = insertedProject.id;
       });
       if (error)
         throw new HttpError(400, error.message);
 
-      pubsub.publish(PubSubEvents.ProjectCreated, { projectCreated: projectId });
-
-      return newProjectId;
+      pubsub.publish(PubSubEvents.ProjectCreated, project);
+      return project?.id;
     },
 
     updateProject: async (parent, args, context: ApolloResolversContext, info) => {
@@ -72,9 +66,7 @@ export default {
       }
 
       const project = await context.unsecureEntityManager.project.findOne({
-        filter: {
-          id: args.input.id
-        },
+        filter: { id: args.input.id },
         projection: {
           cardImageLink: true,
           bannerLink: true,
@@ -134,6 +126,10 @@ export default {
         throw error;
       }
 
+      const updatedProject = await context.unsecureEntityManager.project. findOne({
+        filter: { id: args.input.id }
+      })
+      pubsub.publish(PubSubEvents.ProjectUpdated, updatedProject);
       return true;
     },
 
@@ -150,6 +146,7 @@ export default {
       const project = await context.unsecureEntityManager.project.findOne({ 
         filter: { id: args.id },
         projection: ProjectDAO.projection({
+          id: true,
           members: {
             id: true
           }  
@@ -171,29 +168,27 @@ export default {
         throw error;
       }
 
+      pubsub.publish(PubSubEvents.ProjectDeleted, project);
       return true;
     }, 
   },
   Subscription: {
-    projectCreated: {
-      subscribe: makeSubscriptionResolver()
-        .pubsub(PubSubEvents.ProjectCreated)
-        .shallowFilter("projectCreated")
-        .build()
-    },
+    projectCreated: makeSubscriptionResolver()
+      .pubsub(PubSubEvents.ProjectCreated)
+      .shallowOneToOneFilter()
+      .mapId('projectCreated')
+      .build(),
     
-    projectUpdated: {
-      subscribe: makeSubscriptionResolver()
-        .pubsub(PubSubEvents.ProjectUpdated)
-        .shallowFilter("projectUpdated")
-        .build()
-    },
+    projectUpdated: makeSubscriptionResolver()
+      .pubsub(PubSubEvents.ProjectUpdated)
+      .shallowOneToOneFilter()
+      .mapId('projectUpdated')
+      .build(),
 
-    projectDeleted: {
-      subscribe: makeSubscriptionResolver()
-        .pubsub(PubSubEvents.ProjectCreated)
-        .shallowFilter("projectDeleted")
-        .build()
-    }
+    projectDeleted: makeSubscriptionResolver()
+      .pubsub(PubSubEvents.ProjectDeleted)
+      .shallowOneToOneFilter()
+      .mapId('projectDeleted')
+      .build()
   }
 } as { Query: QueryResolvers, Mutation: MutationResolvers, Subscription: SubscriptionResolvers };

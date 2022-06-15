@@ -1,3 +1,4 @@
+import { SubscriptionResolvers } from "@src/generated/graphql-endpoint.types";
 import { ApolloResolversContext } from "@src/misc/context";
 import { FilterFn, withFilter } from "graphql-subscriptions";
 import pubsub, { PubSubEvents } from "./pubsub";
@@ -6,13 +7,14 @@ export function makeSubscriptionResolver() {
   return new SubscriptionResolverBuilder();
 }
 
-export type SubscriptionResolverFunction = (parent: any, args: any, context: ApolloResolversContext, info: any) => AsyncIterator<any> | Promise<AsyncIterator<any>>;
+export type SubscriptionResolverFunction = (parent: any, args: any, context: ApolloResolversContext, info: any) => AsyncIterator<any>;
 export type SecurityFunction = (parent: any, args: any, context: ApolloResolversContext, info: any) => Promise<void>;
 
 export class SubscriptionResolverBuilder {
   private iteratorFn?: () => AsyncIterator<any>;
-  private filterFn?: FilterFn
+  private filterFns: FilterFn[] = []
   private securityFn?: SecurityFunction;
+  private mapFns: ((payload: any, args: any, context: any, info: any) => any)[] = [];
 
   constructor() {
 
@@ -23,20 +25,33 @@ export class SubscriptionResolverBuilder {
     return this;
   }
 
-  shallowFilter(payloadTargetPath: string, filterObjectPath: string = "filter") {
-    this.filterFn = (payload, args) => {
+  mapId(resolver: keyof SubscriptionResolvers) {
+    this.map((payload) => (payload.id))
+    return this;
+  }
+
+  map(mapFn: (payload: any, args: any, context: any, info: any) => any) {
+    this.mapFns.push(mapFn)
+    return this;
+  }
+
+  filter(filter: FilterFn) {
+    this.filterFns.push(filter);
+  }
+
+  shallowOneToOneFilter(payloadTargetPath: string = "", filterObjectPath: string = "filter") {
+    this.filterFns.push((payload, args) => {
       if (Object.keys(args.filter).length === 0)
         return false;
-      
+
+      const payloadTarget = payloadTargetPath ? payload[payloadTargetPath] : payload;
       for (const key in args.filter) {
-        if (args[filterObjectPath][key]) { 
-          if (payload[payloadTargetPath][key] !== args[filterObjectPath][key])
-            return false;
-        }
+        if (payloadTarget[key] !== args[filterObjectPath][key])
+          return false;
       }
 
       return true;
-    }
+    });
     return this;
   }
 
@@ -47,22 +62,41 @@ export class SubscriptionResolverBuilder {
 
   build(): any {
     if (!this.iteratorFn) {
-      throw new Error("Subscription resolver must have async iterator function!");
+      throw new Error("Subscription resolver must have iterator function!");
     }
+    // @ts-ignore
+    // pipe() technically accepts a spread of operations, but TS typings
+    // use generics, which only applies up to 11 operations
     const iteratorFn = this.iteratorFn;
     const securityFn = this.securityFn;
-    let baseFn: SubscriptionResolverFunction = (parent, args, context, info) => iteratorFn();
+    const filterFns = this.filterFns;
+    const mapFns = this.mapFns;
+    let baseFn: SubscriptionResolverFunction = iteratorFn;
     
-    if (this.filterFn)
+    if (filterFns.length > 0)
       baseFn = withFilter(
-        iteratorFn,
-        this.filterFn
+        baseFn,
+        async (payload: any, variables: any) => {
+          for (const filterFn of filterFns)
+            if (!(await filterFn(payload, variables)))
+              return false;
+          return true;
+        }
       );
 
-    return async(parent: any, args: any, context: any, info: any) => {
-      if (securityFn)
-        await securityFn(parent, args, context, info);
-      return baseFn(parent, args, context, info);
-    };
+    return {
+      subscribe: async(parent: any, args: any, context: any, info: any) => {
+        if (securityFn)
+          await securityFn(parent, args, context, info);
+        return baseFn(parent, args, context, info);
+      },
+      resolve: (payload: any, args: any, context: any, info: any) => {
+        let processedPayload = payload;
+        for (const mapFn of mapFns) {
+          processedPayload = mapFn(processedPayload, args, context, info);
+        }
+        return processedPayload;
+      }
+    }
   }
 }

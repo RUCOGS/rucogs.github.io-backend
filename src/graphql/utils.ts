@@ -5,7 +5,7 @@ export function toSubResolverFn(fn: GQLSubscriptionResolverFn) {
 }
 
 export function mergeResolvers(resolversArr: any[]) {
-  let mergedResolvers = { Query: {}, Mutation: {}};
+  let mergedResolvers = { Query: {}, Mutation: {}, Subscription: {}};
   for (const resolvers of resolversArr) {
     // Merge resolver for different types, and then
     // join the query and mutation resolvers together
@@ -19,6 +19,10 @@ export function mergeResolvers(resolversArr: any[]) {
       Mutation: {
         ...mergedResolvers.Mutation,
         ...resolvers.Mutation
+      },
+      Subscription: {
+        ...mergedResolvers.Subscription,
+        ...resolvers.Subscription
       }
     }
   }

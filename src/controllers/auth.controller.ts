@@ -147,6 +147,9 @@ export async function authenticate(req: any): Promise<[authScheme: string, paylo
     args = authHeader.split(' ');
   }
   
+  if (args.length === 0)
+    return undefined;
+    
   const authScheme = args[0].toLowerCase();
   switch (authScheme) {
     case AuthScheme.BasicRoot:
