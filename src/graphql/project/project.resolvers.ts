@@ -1,12 +1,14 @@
-import { MutationResolvers, Permission, QueryResolvers, RoleCode, UploadOperation } from '@src/generated/graphql-endpoint.types';
-import { EntityManager, ProjectDAO } from '@src/generated/typetta';
+import { DataSize, fileUploadPromiseToCdn, tryDeleteFileIfSelfHosted } from '@src/controllers/cdn.controller';
+import { MutationResolvers, Permission, QueryResolvers, RoleCode, SubscriptionResolvers, UploadOperation } from '@src/generated/graphql-endpoint.types';
+import { ProjectDAO } from '@src/generated/typetta';
 import { ApolloResolversContext } from '@src/misc/context';
 import { makePermsCalc } from '@src/shared/security';
-import { daoInsertRolesBatch, isDefined, startEntityManagerTransaction } from '@src/utils';
 import { HttpError } from '@src/shared/utils';
-import { DataSize, fileUploadPromiseToCdn, tryDeleteFileIfSelfHosted } from '@src/controllers/cdn.controller';
+import { daoInsertRolesBatch, isDefined, startEntityManagerTransaction } from '@src/utils';
 import { makeProjectMember } from '../project-invite/project-invite.resolvers';
 import { deleteProjectMember } from '../project-member/project-member.resolvers';
+import pubsub, { PubSubEvents } from '../pubsub';
+import { makeSubscriptionResolver } from '../subscription-resolver-builder';
 
 export default {
   Mutation: {
@@ -24,6 +26,7 @@ export default {
       const userId = context.securityContext.userId;
       let newProjectId = "";
       
+      let projectId = "";
       const error = await startEntityManagerTransaction(context.unsecureEntityManager, context.mongoClient, async (transEntityManager) => {
         const insertedProject = await transEntityManager.project.insertOne({
           record: {
@@ -33,6 +36,8 @@ export default {
             createdAt: Date.now()
           }
         });
+
+        projectId = insertedProject.id;
 
         const projectOwner = await makeProjectMember(transEntityManager, {
           userId, 
@@ -50,6 +55,8 @@ export default {
       });
       if (error)
         throw new HttpError(400, error.message);
+
+      pubsub.publish(PubSubEvents.ProjectCreated, { projectCreated: projectId });
 
       return newProjectId;
     },
@@ -166,5 +173,27 @@ export default {
 
       return true;
     }, 
+  },
+  Subscription: {
+    projectCreated: {
+      subscribe: makeSubscriptionResolver()
+        .pubsub(PubSubEvents.ProjectCreated)
+        .shallowFilter("projectCreated")
+        .build()
+    },
+    
+    projectUpdated: {
+      subscribe: makeSubscriptionResolver()
+        .pubsub(PubSubEvents.ProjectUpdated)
+        .shallowFilter("projectUpdated")
+        .build()
+    },
+
+    projectDeleted: {
+      subscribe: makeSubscriptionResolver()
+        .pubsub(PubSubEvents.ProjectCreated)
+        .shallowFilter("projectDeleted")
+        .build()
+    }
   }
-} as { Query: QueryResolvers, Mutation: MutationResolvers };
+} as { Query: QueryResolvers, Mutation: MutationResolvers, Subscription: SubscriptionResolvers };

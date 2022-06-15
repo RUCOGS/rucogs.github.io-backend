@@ -1,7 +1,6 @@
+import { getCompleteSecurityContext, SecurityPolicy } from '@src/controllers/security.controller';
+import { MutationResolvers, QueryResolvers } from '@src/generated/graphql-endpoint.types';
 import { ApolloResolversContext } from '@src/misc/context';
-import { getCompleteSecurityContext } from '@src/controllers/security.controller';
-import { QueryResolvers, MutationResolvers } from '@src/generated/graphql-endpoint.types';
-import { SecurityPolicy } from '@src/controllers/security.controller';
 
 export default {
   Query: {

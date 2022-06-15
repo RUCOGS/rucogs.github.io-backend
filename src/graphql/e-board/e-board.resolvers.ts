@@ -1,10 +1,12 @@
-import { MutationResolvers, QueryResolvers } from '@src/generated/graphql-endpoint.types';
-import { EBoardInsertInput, Permission, ProjectInsertInput, RoleCode } from '@src/generated/model.types';
+import { MutationResolvers, QueryResolvers, SubscriptionResolvers } from '@src/generated/graphql-endpoint.types';
+import { EBoardInsertInput, Permission, RoleCode } from '@src/generated/model.types';
 import { EBoardDAO, EntityManager, UserDAO } from '@src/generated/typetta';
 import { ApolloResolversContext } from '@src/misc/context';
 import { makePermsCalc } from '@src/shared/security';
 import { HttpError } from '@src/shared/utils';
-import { assertRequesterCanManageRoleCodes, daoInsertRolesBatch, deleteEntityRoleResolver, EntityRoleResolverOptions, getEntityRoleCodes, getRoleCodes, isDefined, newEntityRoleResolver, startEntityManagerTransaction } from '@src/utils';
+import { assertRequesterCanManageRoleCodes, daoInsertRolesBatch, deleteEntityRoleResolver, EntityRoleResolverOptions, isDefined, newEntityRoleResolver, startEntityManagerTransaction } from '@src/utils';
+import pubsub, { PubSubEvents } from '../pubsub';
+import { makeSubscriptionResolver } from '../subscription-resolver-builder';
 
 const roleResolverOptions = <EntityRoleResolverOptions>{
   entityCamelCaseName: "eBoard",
@@ -65,6 +67,8 @@ export default {
       if (error)
         throw error;
       
+      pubsub.publish(PubSubEvents.EBoardCreated, { eBoardCreated: eBoardId });
+      
       return eBoardId;
     },
 
@@ -108,6 +112,8 @@ export default {
       });
       if (error)
         throw error;
+        
+      pubsub.publish(PubSubEvents.EBoardUpdated, { eBoardUpdated: args.input.id });
 
       return true;
     },
@@ -132,13 +138,38 @@ export default {
       if (error)
         throw error;
       
+      pubsub.publish(PubSubEvents.EBoardDeleted, { eBoardDeleted: args.id });
+      
       return true;
     },
 
     newEBoardRole: newEntityRoleResolver(roleResolverOptions),
     deleteEBoardRole: deleteEntityRoleResolver(roleResolverOptions),
+  },
+  
+  Subscription: {
+    eBoardCreated: {
+      subscribe: makeSubscriptionResolver()
+        .pubsub(PubSubEvents.EBoardCreated)
+        .shallowFilter("eBoardCreated")
+        .build()
+    },
+    
+    eBoardUpdated: {
+      subscribe: makeSubscriptionResolver()
+        .pubsub(PubSubEvents.EBoardUpdated)
+        .shallowFilter("eBoardUpdated")
+        .build()
+    },
+
+    eBoardDeleted: {
+      subscribe: makeSubscriptionResolver()
+        .pubsub(PubSubEvents.EBoardCreated)
+        .shallowFilter("eBoardDeleted")
+        .build()
+    }
   }
-} as { Query: QueryResolvers, Mutation: MutationResolvers };
+} as { Query: QueryResolvers, Mutation: MutationResolvers, Subscription: SubscriptionResolvers };
 
 export async function makeEBoard(entityManager: EntityManager, record: EBoardInsertInput) {
   const eBoard = await entityManager.eBoard.insertOne({

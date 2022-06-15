@@ -1,11 +1,13 @@
 import { DataSize, fileUploadPromiseToCdn, tryDeleteFileIfSelfHosted } from '@src/controllers/cdn.controller';
-import { MutationResolvers, Permission, QueryResolvers, RoleCode, UpdateUserSocialInput, UploadOperation } from '@src/generated/graphql-endpoint.types';
+import { MutationResolvers, Permission, QueryResolvers, RoleCode, SubscriptionResolvers, UpdateUserSocialInput, UploadOperation } from '@src/generated/graphql-endpoint.types';
 import { EntityManager, UserSocialFilter, UserSocialInsert } from '@src/generated/typetta';
 import { ApolloResolversContext } from '@src/misc/context';
 import { makePermsCalc } from '@src/shared/security';
 import { assertNoDuplicates } from '@src/shared/validation';
 import { assertRequesterCanDeleteRoleCodes, assertRequesterCanManageRoleCodes, daoInsertBatch, daoInsertRolesBatch, deleteEntityRoleResolver, EntityRoleResolverOptions, getEntityRoleCodes, getRoleCodes, isDefined, newEntityRoleResolver, startEntityManagerTransaction } from '@src/utils';
 import { HttpError } from '@src/shared/utils';
+import { makeSubscriptionResolver } from '../subscription-resolver-builder';
+import pubsub, { PubSubEvents } from '../pubsub';
 
 const roleResolverOptions = <EntityRoleResolverOptions>{
   entityCamelCaseName: "user",
@@ -17,30 +19,29 @@ const roleResolverOptions = <EntityRoleResolverOptions>{
 export default {
   Mutation: {
     updateUser: async (parent, args, context: ApolloResolversContext, info) => {
+      makePermsCalc()
+        .withContext(context.securityContext)
+        .withDomain({
+          userId: [ args.input.id ]
+        })
+        .assertPermission(Permission.UpdateUser);
+
+      const user = await context.unsecureEntityManager.user.findOne({
+        filter: {
+          id: args.input.id
+        },
+        projection: {
+          avatarLink: true,
+          bannerLink: true,
+        }
+      });
+      if (!user) {
+        throw new HttpError(401, "Invalid userId!");
+      }
+
       const error = await startEntityManagerTransaction(context.unsecureEntityManager, context.mongoClient, async (transEntityManager) => {
         if (!context.securityContext.userId)
           throw new HttpError(400, "Expected context.securityContext.userId!");
-
-        makePermsCalc()
-          .withContext(context.securityContext)
-          .withDomain({
-            userId: [ args.input.id ]
-          })
-          .assertPermission(Permission.UpdateUser);
-
-        const user = await context.unsecureEntityManager.user.findOne({
-          filter: {
-            id: args.input.id
-          },
-          projection: {
-            id: true,
-            avatarLink: true,
-            bannerLink: true,
-          }
-        });
-        if (!user) {
-          throw new HttpError(401, "Invalid userId!");
-        }
 
         if (isDefined(args.input.displayName)) {
           if (args.input.displayName === "")
@@ -56,7 +57,7 @@ export default {
             dao: transEntityManager.userRole,
             roleCodes: args.input.roles,
             idKey: "userId",
-            id: user.id
+            id: args.input.id
           });
         }
 
@@ -75,7 +76,7 @@ export default {
             deleteFilter: {
               $and: [
                 { 
-                  userId: user.id, 
+                  userId: args.input.id, 
                 },
                 { 
                   $nor: args.input.socials.map(x => ({ 
@@ -86,13 +87,13 @@ export default {
               ]
             },
             elementToUpdateFilter: (social: UpdateUserSocialInput): UserSocialFilter => ({
-              userId: user.id,
+              userId: args.input.id,
               platform: social.platform,
               username: social.username
             }),
             elementToRecord: (social: UpdateUserSocialInput): UserSocialInsert => ({
               ...social,
-              userId: user.id
+              userId: args.input.id
             })
           });
         }
@@ -127,7 +128,7 @@ export default {
 
       await transEntityManager.user.updateOne({
         filter: {
-          id: user.id
+          id: args.input.id
         },
         changes: {
           ...(isDefined(args.input.displayName) && { displayName: args.input.displayName }),
@@ -139,9 +140,34 @@ export default {
       });
       if (error instanceof Error)
         throw error;
+      
+      pubsub.publish(PubSubEvents.UserUpdated, { userUpdated: args.input.id });
       return true;
     },
     newUserRole: newEntityRoleResolver(roleResolverOptions),
     deleteUserRole: deleteEntityRoleResolver(roleResolverOptions)
+  },
+
+  Subscription: {
+    userCreated: {
+      subscribe: makeSubscriptionResolver()
+        .pubsub(PubSubEvents.UserCreated)
+        .shallowFilter("userCreated")
+        .build()
+    },
+    
+    userUpdated: {
+      subscribe: makeSubscriptionResolver()
+        .pubsub(PubSubEvents.UserUpdated)
+        .shallowFilter("userUpdated")
+        .build()
+    },
+
+    userDeleted: {
+      subscribe: makeSubscriptionResolver()
+        .pubsub(PubSubEvents.UserCreated)
+        .shallowFilter("userDeleted")
+        .build()
+    }
   }
-} as { Query: QueryResolvers, Mutation: MutationResolvers };
+} as { Query: QueryResolvers, Mutation: MutationResolvers, Subscription: SubscriptionResolvers };

@@ -10,6 +10,16 @@ extend type Mutation {
   deleteEBoardRole(id: ID!): Boolean
 }
 
+extend type Subscription {
+  eBoardCreated(filter: EBoardSubscriptionFilter!): ID
+  eBoardUpdated(filter: EBoardSubscriptionFilter!): ID
+  eBoardDeleted(filter: EBoardSubscriptionFilter!): ID
+}
+
+input EBoardSubscriptionFilter {
+  userId: ID
+}
+
 input NewEBoardRoleInput {
   eBoardId: ID!
   roleCode: RoleCode!

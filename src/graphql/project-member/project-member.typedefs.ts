@@ -9,6 +9,23 @@ extend type Mutation {
   deleteProjectMemberRole(id: ID!): Boolean
 }
 
+extend type Subscription {
+  projectMemberCreated(filter: ProjectMemberSubscriptionFilter!): ID
+  projectMemberUpdated(filter: ProjectMemberSubscriptionFilter!): ID
+  projectMemberDeleted(filter: ProjectMemberSubscriptionFilter!): ID
+}
+
+input ProjectMemberSubscriptionFilter {
+  projectId: ID
+  userId: ID
+}
+
+input NewProjectInviteInput {
+  type: InviteType!
+  userId: ID!
+  projectId: ID!
+}
+
 input NewProjectMemberRoleInput {
   projectMemberId: ID!
   roleCode: RoleCode!

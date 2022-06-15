@@ -7,6 +7,16 @@ extend type Mutation {
   deleteProject(id: ID!): Boolean
 }
 
+extend type Subscription {
+  projectCreated(filter: ProjectSubscriptionFilter!): ID
+  projectUpdated(filter: ProjectSubscriptionFilter!): ID
+  projectDeleted(filter: ProjectSubscriptionFilter!): ID
+}
+
+input ProjectSubscriptionFilter {
+  projectId: ID
+}
+
 input UpdateProjectInput {
   id: ID!
   name: String

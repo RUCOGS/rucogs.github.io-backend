@@ -13,12 +13,6 @@ import { HttpError } from '@src/shared/utils';
 import { getCompleteSecurityContext } from '@src/controllers/security.controller/security-context';
 
 // #region // ----- AUTHENTICATION ----- //
-export const Permissions = {
-  EDIT_PROJECT: "EDIT_PROJECT",
-  CREATE_PROJECT: "EDIT_PROJECT",
-  DELETE_PROJECT: "DELETE_PROJECT"
-}
-
 export interface OAuthStrategyConfig {
   provider: string;
   module: string;

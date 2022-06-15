@@ -1,13 +1,13 @@
-import { InviteType, MutationResolvers, Permission, ProjectInvite, QueryResolvers, RoleCode, SubscriptionInviteCreatedArgs, SubscriptionResolvers, SubscriptionTestArgs, TestSubscriptionFilter, TestSubscriptionPayload } from '@src/generated/graphql-endpoint.types';
+import { InviteType, MutationResolvers, Permission, QueryResolvers, RoleCode, SubscriptionResolvers } from '@src/generated/graphql-endpoint.types';
 import { Access, ProjectMemberInsertInput } from '@src/generated/model.types';
-import { EntityManager, ProjectDAO, ProjectInviteDAO } from '@src/generated/typetta';
-import pubsub, { GraphQLEvents } from '@src/graphql/pubsub';
+import { EntityManager, ProjectDAO } from '@src/generated/typetta';
+import pubsub, { PubSubEvents } from '@src/graphql/pubsub';
 import { ApolloResolversContext } from '@src/misc/context';
 import { makePermsCalc } from '@src/shared/security';
 import { HttpError } from '@src/shared/utils';
 import { daoInsertRolesBatch, startEntityManagerTransaction } from '@src/utils';
 import { withFilter } from 'graphql-subscriptions';
-import { toSubResolverFn } from '../utils';
+import { makeSubscriptionResolver } from '../subscription-resolver-builder';
 
 export default {
   Mutation: {
@@ -61,17 +61,13 @@ export default {
         }
       });
 
+      pubsub.publish(PubSubEvents.ProjectInviteCreated, { projectInviteCreated: insertedInvite.id });
       return insertedInvite.id;
     },
 
     acceptProjectInvite: async (parent, args, context: ApolloResolversContext, info) => {
       const invite = await context.unsecureEntityManager.projectInvite.findOne({
-        filter: { id: args.inviteId },
-        projection: ProjectInviteDAO.projection({
-          type: true,
-          projectId: true,
-          userId: true
-        })
+        filter: { id: args.inviteId }
       })
 
       if (!invite)
@@ -105,6 +101,7 @@ export default {
       if (error)
         throw error;
 
+      pubsub.publish(PubSubEvents.ProjectInviteDeleted, { projectInviteDeleted: args.inviteId });
       return true;
     },
 
@@ -140,6 +137,7 @@ export default {
       if (error)
         throw error;
 
+      pubsub.publish(PubSubEvents.ProjectInviteDeleted, { projectInviteDeleted: invite.id });
       return true;
     },
 
@@ -175,56 +173,33 @@ export default {
 
       return true;
     },
-
-    test: async (parent, args, context: ApolloResolversContext, info) => {
-      pubsub.publish(GraphQLEvents.Test, { test: {
-        joe: "joes", 
-        mama: "xd"
-      }});
-      return true;
-    },
   },
+
+  // TODO NOW: Fix 
+  // "ERROR Error: Socket closed with event 4500 Subscription field must return Async Iterable. Received: undefined."
   Subscription: {
-    test: {
-      subscribe: toSubResolverFn(withFilter(
-        () => pubsub.asyncIterator([GraphQLEvents.Test]),
-        (payload: { test: TestSubscriptionPayload }, args: SubscriptionTestArgs) => {
-          return (payload.test.joe === args.filter!.id);
-        }
-      ))
+    projectInviteCreated: {
+      subscribe: withFilter(
+        () => pubsub.asyncIterator([PubSubEvents.ProjectInviteCreated]),
+        (payload, variables) => {
+          console.log("running");
+          // Only push an update if the comment is on
+          // the correct repository for this operation
+          return (payload.commentAdded.repository_name === variables.repoFullName);
+        },
+      ) as any,
     },
 
-    inviteCreated: {
-      subscribe: toSubResolverFn(withFilter(
-        () => pubsub.asyncIterator([GraphQLEvents.InviteCreated]),
-        (payload: { inviteCreated: ProjectInvite }, args: SubscriptionInviteCreatedArgs) => {
-          let matched = false;
-          if (args.filter.projectId)
-            matched = matched && payload.inviteCreated.projectId === args.filter.projectId;
-          if (args.filter.userId)
-            matched = matched && payload.inviteCreated.userId === args.filter.userId;
-          return matched;
-        }
-      ))
-    },
-
-    inviteDeleted: {
-      subscribe: toSubResolverFn(withFilter(
-        () => pubsub.asyncIterator([GraphQLEvents.InviteDeleted]),
-        (payload: { inviteDeleted: ProjectInvite }, args: SubscriptionInviteCreatedArgs) => {
-          let matched = false;
-          if (args.filter.projectId)
-            matched = matched && payload.inviteDeleted.projectId === args.filter.projectId;
-          if (args.filter.userId)
-            matched = matched && payload.inviteDeleted.userId === args.filter.userId;
-          return matched;
-        }
-      ))
+    projectInviteDeleted: {
+      subscribe: makeSubscriptionResolver()
+        .pubsub(PubSubEvents.ProjectInviteCreated)
+        .shallowFilter("projectInviteDeleted")
+        .build()
     }
   }
 } as { Query: QueryResolvers, Mutation: MutationResolvers, Subscription: SubscriptionResolvers };
 
-export async function makeProjectMember(entityManager: EntityManager, record: ProjectMemberInsertInput, additionalRoles: RoleCode[] = []) {
+export async function makeProjectMember(entityManager: EntityManager, record: ProjectMemberInsertInput, additionalRoles: RoleCode[] = [], emitSubscription: boolean = true) {
   const member = await entityManager.projectMember.insertOne({
     record: {
       ...record,
@@ -237,5 +212,8 @@ export async function makeProjectMember(entityManager: EntityManager, record: Pr
     idKey: "projectMemberId", 
     id: member.id
   });
+
+  if (emitSubscription)
+    pubsub.publish(PubSubEvents.ProjectMemberUpdated, { projectMemberUpdated: member.id });
   return member;
 }

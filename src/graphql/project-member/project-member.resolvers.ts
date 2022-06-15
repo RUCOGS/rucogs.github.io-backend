@@ -1,5 +1,5 @@
-import { Permission, Project, ProjectInsertInput, RoleCode } from '@src/generated/model.types';
-import { MutationResolvers, QueryResolvers } from '@src/generated/graphql-endpoint.types';
+import { MutationResolvers, QueryResolvers, SubscriptionResolvers } from '@src/generated/graphql-endpoint.types';
+import { Permission, Project, RoleCode } from '@src/generated/model.types';
 import { EntityManager, ProjectDAO, ProjectMemberDAO, UserDAO } from '@src/generated/typetta';
 import { ApolloResolversContext } from '@src/misc/context';
 import { makePermsCalc } from '@src/shared/security';
@@ -7,6 +7,8 @@ import { HttpError } from '@src/shared/utils';
 import { assertProjectHasMember, assertProjectHasOwner } from '@src/shared/validation';
 import { assertRequesterCanManageRoleCodes, daoInsertRolesBatch, EntityRoleResolverOptions, isDefined, newEntityRoleResolver, startEntityManagerTransaction } from '@src/utils';
 import { PartialDeep } from 'type-fest';
+import pubsub, { PubSubEvents } from '../pubsub';
+import { makeSubscriptionResolver } from '../subscription-resolver-builder';
 
 const roleResolverOptions = <EntityRoleResolverOptions>{
   entityCamelCaseName: "projectMember",
@@ -111,6 +113,7 @@ export default {
       if (error)
         throw error;
 
+      pubsub.publish(PubSubEvents.ProjectMemberUpdated, { projectMemberUpdated: true });
       return true;
     },
 
@@ -157,14 +160,39 @@ export default {
 
     newProjectMemberRole: newEntityRoleResolver(roleResolverOptions),
     deleteProjectMemberRole: newEntityRoleResolver(roleResolverOptions),
-  }
-} as { Query: QueryResolvers, Mutation: MutationResolvers };
+  },
+  
+  Subscription: {
+    projectMemberCreated: {
+      subscribe: makeSubscriptionResolver()
+        .pubsub(PubSubEvents.ProjectMemberCreated)
+        .shallowFilter("projectMemberCreated")
+        .build()
+    },
+    
+    projectMemberUpdated: {
+      subscribe: makeSubscriptionResolver()
+        .pubsub(PubSubEvents.ProjectMemberUpdated)
+        .shallowFilter("projectMemberUpdated")
+        .build()
+    },
 
-export async function deleteProjectMember(entityManager: EntityManager, id: string) {
+    projectMemberDeleted: {
+      subscribe: makeSubscriptionResolver()
+        .pubsub(PubSubEvents.ProjectMemberCreated)
+        .shallowFilter("projectMemberDeleted")
+        .build()
+    }
+  }
+} as { Query: QueryResolvers, Mutation: MutationResolvers, Subscription: SubscriptionResolvers };
+
+export async function deleteProjectMember(entityManager: EntityManager, id: string, emitSubscription: boolean = true) {
   await entityManager.projectMemberRole.deleteAll({
     filter: { projectMemberId: id }
   });
   await entityManager.projectMember.deleteOne({
     filter: { id: id }
   });
+  if (emitSubscription)
+    pubsub.publish(PubSubEvents.ProjectMemberDeleted, { projectMemberDeleted: id });
 }
