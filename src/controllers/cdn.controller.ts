@@ -8,7 +8,7 @@ import { finished } from 'stream/promises';
 import { FileUpload } from "graphql-upload";
 import { Transform, TransformCallback } from 'stream';
 
-export const UPLOAD_DIRECTORY = "src/uploads";
+export const UPLOAD_DIRECTORY = "uploads";
 export const SELF_HOSTED_PREFIX = "cdn://";
 
 export function tryDeleteFileIfSelfHosted(filePath: string | null | undefined) {

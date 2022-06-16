@@ -1,5 +1,6 @@
 import ServerConfig from '@src/config/server.config.json';
 import { authenticate, AuthScheme, configPassport } from '@src/controllers/auth.controller';
+import { UPLOAD_DIRECTORY } from '@src/controllers/cdn.controller';
 import { createSecureEntityManager, createUnsecureEntityManager, getOperationMetadataFromRequest } from '@src/controllers/entity-manager.controller/entity-manager';
 import { getCompleteSecurityContext } from '@src/controllers/security.controller';
 import { EntityManager } from '@src/generated/typetta';
@@ -179,7 +180,7 @@ function configExpress(app: Express, entityManager: EntityManager, mongoClient: 
 
   const router = express.Router();
   router.use('/auth', authRouter);
-  router.use('/cdn/', express.static("src/uploads"))
+  router.use('/cdn/', express.static(UPLOAD_DIRECTORY))
 
   router.get('/', (req, res) => {
     res.json({ message: 'Welcome to the RUCOGS backend API!' });
