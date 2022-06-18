@@ -5,6 +5,7 @@ extend type Mutation {
   newProject(input: NewProjectInput!): ID!
   updateProject(input: UpdateProjectInput!): Boolean
   deleteProject(id: ID!): Boolean
+  transferProjectOwnership(projectId: ID!, memberId: ID!): Boolean
 }
 
 extend type Subscription {
@@ -26,7 +27,7 @@ input UpdateProjectInput {
   banner: UploadWithOperation
   cardImage: UploadWithOperation
   tags: [String!]
-  galleryImageLinks: [String!]
+  galleryImages: [UploadOrSource!]
   soundcloudEmbedSrc: String
   downloadLinks: [String!]
 }

@@ -45,6 +45,7 @@ export const RoleBackendDataDict: {
         DELETE_USER: true,
         DELETE_PROJECT: true,
         MANAGE_EBOARD: true,
+        TRANSFER_PROJECT_OWNERSHIP: true
       }
     }
   },
@@ -67,7 +68,9 @@ export const RoleBackendDataDict: {
         throw new Error("Expected project member to exist!");
 
       return {
-        DELETE_PROJECT: [ projectMember.projectId ]
+        // Only admins can delete projects for now
+        // DELETE_PROJECT: [ projectMember.projectId ]
+        TRANSFER_PROJECT_OWNERSHIP: [ projectMember.projectId ]
       };
     }
   },

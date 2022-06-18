@@ -14,5 +14,10 @@ input UploadWithOperation {
   operation: UploadOperation
 }
 
+input UploadOrSource {
+  upload: Upload
+  source: String
+}
+
 type Subscription
 `;

@@ -1,4 +1,4 @@
-import { DataSize, fileUploadPromiseToCdn, tryDeleteFileIfSelfHosted } from '@src/controllers/cdn.controller';
+import { DataSize, fileUploadPromiseToCdn, isSelfHostedFile, tryDeleteFileIfSelfHosted } from '@src/controllers/cdn.controller';
 import { MutationResolvers, Permission, QueryResolvers, RoleCode, SubscriptionResolvers, UploadOperation } from '@src/generated/graphql-endpoint.types';
 import { ProjectDAO, ProjectPlainModel } from '@src/generated/typetta';
 import { ApolloResolversContext } from '@src/misc/context';
@@ -70,6 +70,7 @@ export default {
         projection: {
           cardImageLink: true,
           bannerLink: true,
+          galleryImageLinks: true,
         }
       });
       if (!project) {
@@ -105,6 +106,31 @@ export default {
           }
         }
 
+        let galleryImageLinks: string[] = [];
+        if (isDefined(args.input.galleryImages)) {
+          // Delete files that weren't found in the new galleryImages but existed in the old galleryImages
+          if (project.galleryImageLinks) {
+            for (const oldLink of project.galleryImageLinks) {
+              if (!args.input.galleryImages.some(x => x.source === oldLink)) {
+                // Delete this
+                if (isSelfHostedFile(oldLink))
+                  tryDeleteFileIfSelfHosted(oldLink);
+              }
+            }
+          }
+
+          // Upload the new files, and build the list of links to those files
+          for (const image of args.input.galleryImages) {
+            let relativePath = image.source ?? "";
+            if (image.upload) {
+              relativePath = await fileUploadPromiseToCdn({
+                fileUploadPromise: image.upload,
+                maxSizeBytes: 10 * DataSize.MB
+              });
+            }
+            galleryImageLinks.push(relativePath);
+          }
+        }
         await transEntityManager.project.updateOne({
           filter: {
             id: args.input.id
@@ -115,7 +141,7 @@ export default {
             ...(isDefined(args.input.name) && { name: args.input.name }),
             ...(isDefined(args.input.pitch) && { pitch: args.input.pitch }),
             ...(isDefined(args.input.description) && { description: args.input.description }),
-            ...(isDefined(args.input.galleryImageLinks) && { galleryImageLinks: args.input.galleryImageLinks }),
+            ...(isDefined(args.input.galleryImages) && { galleryImageLinks }),
             ...(isDefined(args.input.soundcloudEmbedSrc) && { soundcloudEmbedSrc: args.input.soundcloudEmbedSrc }),
             ...(isDefined(args.input.downloadLinks) && { downloadLinks: args.input.downloadLinks }),
             ...(isDefined(args.input.cardImage) && { cardImageLink: cardImageSelfHostedFilePath}),
@@ -170,6 +196,69 @@ export default {
       }
 
       pubsub.publish(PubSubEvents.ProjectDeleted, project);
+      return true;
+    }, 
+
+    transferProjectOwnership: async (parent, args, context: ApolloResolversContext, info) => {
+      if (!makePermsCalc()
+          .withContext(context.securityContext)
+          .withDomain({
+            projectId: [ args.projectId ],
+          })
+          .hasPermission(Permission.TransferProjectOwnership)) {
+        throw new HttpError(401, "Not authorized!");
+      }
+
+      const project = await context.unsecureEntityManager.project.findOne({ 
+        filter: { 
+          id: args.projectId
+        },
+        projection: {
+          members: {
+            id: true,
+            roles: {
+              id: true,
+              roleCode: true,
+            }
+          }
+        }
+      });
+      if (!project)
+        throw new HttpError(400, "Project doesn't exist!");
+      
+      const member = project.members.find(x => x.id === args.memberId);
+      if (!member)
+        throw new HttpError(400, "Member isn't a part of this project!");
+      
+      const currentOwner = project.members.find(x => x.roles.some(x => x.roleCode === RoleCode.ProjectOwner));
+      if (!currentOwner)
+        throw new HttpError(200, "Project doesn't have an owner!");
+      
+      if (currentOwner.id === member.id)
+        throw new HttpError(400, "Cannot transfer ownership to the owner!");
+
+      const error = await startEntityManagerTransaction(context.unsecureEntityManager, context.mongoClient, async (transEntityManager) => {
+        await transEntityManager.projectMemberRole.deleteOne({
+          filter: {
+            projectMemberId: currentOwner.id,
+            roleCode: RoleCode.ProjectOwner 
+          }
+        });
+        
+        await transEntityManager.projectMemberRole.insertOne({
+          record: {
+            projectMemberId: member.id,
+            roleCode: RoleCode.ProjectOwner
+          }
+        });
+      });
+      
+      if (error) {
+        throw error;
+      }
+
+      pubsub.publish(PubSubEvents.ProjectMemberUpdated, member);
+      pubsub.publish(PubSubEvents.ProjectMemberUpdated, currentOwner);
       return true;
     }, 
   },

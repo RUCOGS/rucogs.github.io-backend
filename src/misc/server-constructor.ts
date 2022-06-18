@@ -138,9 +138,14 @@ async function startApolloServer(httpServer: http.Server, app: express.Applicati
 
   await server.start();
 
-  app.use(graphqlUploadExpress({ maxFileSize: 1000000 * 20, maxFiles: 10 }));
-
-  server.applyMiddleware({ app, path: endpointPath });
+  app.use(graphqlUploadExpress({ 
+    maxFileSize: 1_000_000 * 100, // 100mb
+    maxFiles: 10 
+  }));
+  server.applyMiddleware({ 
+    app, 
+    path: endpointPath
+  });
 
   console.log(
     `\
@@ -151,13 +156,13 @@ async function startApolloServer(httpServer: http.Server, app: express.Applicati
 function configExpress(app: Express, entityManager: EntityManager, mongoClient: MongoClient) {
   // ----- CORS ----- //
   // Enable CORS for a specific origin
-  // app.use(cors({
-  //   origin: "http://localhost:8081"
-  // }));
+  app.use(cors({
+    origin: "https://cogs.club"
+  }));
 
   // TODO: Remove in production builds
   // Enable CORS for any origin
-  app.use(cors());
+  // app.use(cors());
 
   // ----- PASSPORT ----- //
   configPassport(passport, entityManager);

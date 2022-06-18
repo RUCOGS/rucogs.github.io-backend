@@ -246,6 +246,7 @@ export type Mutation = {
   newProjectInvite: Scalars['ID']
   newProjectMemberRole: Scalars['ID']
   newUserRole: Scalars['ID']
+  transferProjectOwnership?: Maybe<Scalars['Boolean']>
   updateEBoard?: Maybe<Scalars['Boolean']>
   updateEBoardRoles?: Maybe<Scalars['Boolean']>
   updateEBoards?: Maybe<Scalars['Boolean']>
@@ -402,6 +403,11 @@ export type MutationNewUserRoleArgs = {
   input: NewUserRoleInput
 }
 
+export type MutationTransferProjectOwnershipArgs = {
+  memberId: Scalars['ID']
+  projectId: Scalars['ID']
+}
+
 export type MutationUpdateEBoardArgs = {
   input: UpdateEBoardInput
 }
@@ -510,6 +516,7 @@ export const Permission = {
   ManageProjectMemberRoles: 'MANAGE_PROJECT_MEMBER_ROLES',
   ManageUserRoles: 'MANAGE_USER_ROLES',
   ReadUserPrivate: 'READ_USER_PRIVATE',
+  TransferProjectOwnership: 'TRANSFER_PROJECT_OWNERSHIP',
   UpdateProject: 'UPDATE_PROJECT',
   UpdateUser: 'UPDATE_USER',
 } as const
@@ -1108,11 +1115,12 @@ export type UpdateProjectInput = {
   cardImage?: InputMaybe<UploadWithOperation>
   description?: InputMaybe<Scalars['String']>
   downloadLinks?: InputMaybe<Array<Scalars['String']>>
-  galleryImageLinks?: InputMaybe<Array<Scalars['String']>>
+  galleryImages?: InputMaybe<Array<UploadOrSource>>
   id: Scalars['ID']
   name?: InputMaybe<Scalars['String']>
   pitch?: InputMaybe<Scalars['String']>
   soundcloudEmbedSrc?: InputMaybe<Scalars['String']>
+  tags?: InputMaybe<Array<Scalars['String']>>
 }
 
 export type UpdateProjectMemberInput = {
@@ -1161,6 +1169,11 @@ export type UploadOperationFilterInput = {
   ne?: InputMaybe<UploadOperation>
   nin?: InputMaybe<Array<UploadOperation>>
   startsWith?: InputMaybe<Scalars['String']>
+}
+
+export type UploadOrSource = {
+  source?: InputMaybe<Scalars['String']>
+  upload?: InputMaybe<Scalars['Upload']>
 }
 
 export type UploadWithOperation = {

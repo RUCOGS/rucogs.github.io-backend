@@ -69,6 +69,7 @@ export type Mutation = {
   newProjectInvite: Scalars['ID'];
   newProjectMemberRole: Scalars['ID'];
   newUserRole: Scalars['ID'];
+  transferProjectOwnership?: Maybe<Scalars['Boolean']>;
   updateEBoard?: Maybe<Scalars['Boolean']>;
   updateProject?: Maybe<Scalars['Boolean']>;
   updateProjectMember?: Maybe<Scalars['Boolean']>;
@@ -151,6 +152,12 @@ export type MutationNewUserRoleArgs = {
 };
 
 
+export type MutationTransferProjectOwnershipArgs = {
+  memberId: Scalars['ID'];
+  projectId: Scalars['ID'];
+};
+
+
 export type MutationUpdateEBoardArgs = {
   input: UpdateEBoardInput;
 };
@@ -212,6 +219,7 @@ export const Permission = {
   ManageProjectMemberRoles: 'MANAGE_PROJECT_MEMBER_ROLES',
   ManageUserRoles: 'MANAGE_USER_ROLES',
   ReadUserPrivate: 'READ_USER_PRIVATE',
+  TransferProjectOwnership: 'TRANSFER_PROJECT_OWNERSHIP',
   UpdateProject: 'UPDATE_PROJECT',
   UpdateUser: 'UPDATE_USER'
 } as const;
@@ -420,7 +428,7 @@ export type UpdateProjectInput = {
   cardImage?: InputMaybe<UploadWithOperation>;
   description?: InputMaybe<Scalars['String']>;
   downloadLinks?: InputMaybe<Array<Scalars['String']>>;
-  galleryImageLinks?: InputMaybe<Array<Scalars['String']>>;
+  galleryImages?: InputMaybe<Array<UploadOrSource>>;
   id: Scalars['ID'];
   name?: InputMaybe<Scalars['String']>;
   pitch?: InputMaybe<Scalars['String']>;
@@ -456,6 +464,11 @@ export const UploadOperation = {
 } as const;
 
 export type UploadOperation = typeof UploadOperation[keyof typeof UploadOperation];
+export type UploadOrSource = {
+  source?: InputMaybe<Scalars['String']>;
+  upload?: InputMaybe<Scalars['Upload']>;
+};
+
 export type UploadWithOperation = {
   operation?: InputMaybe<UploadOperation>;
   upload?: InputMaybe<Scalars['Upload']>;
@@ -616,6 +629,7 @@ export type ResolversTypes = {
   UpdateUserSocialInput: UpdateUserSocialInput;
   Upload: ResolverTypeWrapper<Scalars['Upload']>;
   UploadOperation: UploadOperation;
+  UploadOrSource: UploadOrSource;
   UploadWithOperation: UploadWithOperation;
   User: ResolverTypeWrapper<User>;
   UserLoginIdentity: ResolverTypeWrapper<UserLoginIdentity>;
@@ -656,6 +670,7 @@ export type ResolversParentTypes = {
   UpdateUserInput: UpdateUserInput;
   UpdateUserSocialInput: UpdateUserSocialInput;
   Upload: Scalars['Upload'];
+  UploadOrSource: UploadOrSource;
   UploadWithOperation: UploadWithOperation;
   User: User;
   UserLoginIdentity: UserLoginIdentity;
@@ -706,6 +721,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   newProjectInvite?: Resolver<ResolversTypes['ID'], ParentType, ContextType, RequireFields<MutationNewProjectInviteArgs, 'input'>>;
   newProjectMemberRole?: Resolver<ResolversTypes['ID'], ParentType, ContextType, RequireFields<MutationNewProjectMemberRoleArgs, 'input'>>;
   newUserRole?: Resolver<ResolversTypes['ID'], ParentType, ContextType, RequireFields<MutationNewUserRoleArgs, 'input'>>;
+  transferProjectOwnership?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationTransferProjectOwnershipArgs, 'memberId' | 'projectId'>>;
   updateEBoard?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationUpdateEBoardArgs, 'input'>>;
   updateProject?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationUpdateProjectArgs, 'input'>>;
   updateProjectMember?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationUpdateProjectMemberArgs, 'input'>>;

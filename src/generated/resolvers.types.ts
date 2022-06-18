@@ -146,6 +146,7 @@ export type ResolversTypes = {
   UploadFilterInput: types.UploadFilterInput
   UploadOperation: types.UploadOperation
   UploadOperationFilterInput: types.UploadOperationFilterInput
+  UploadOrSource: types.UploadOrSource
   UploadWithOperation: types.UploadWithOperation
   User: ResolverTypeWrapper<types.User>
   UserFilterInput: types.UserFilterInput
@@ -264,6 +265,7 @@ export type ResolversParentTypes = {
   Upload: types.Scalars['Upload']
   UploadFilterInput: types.UploadFilterInput
   UploadOperationFilterInput: types.UploadOperationFilterInput
+  UploadOrSource: types.UploadOrSource
   UploadWithOperation: types.UploadWithOperation
   User: types.User
   UserFilterInput: types.UserFilterInput
@@ -358,6 +360,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   newProjectInvite?: Resolver<ResolversTypes['ID'], ParentType, ContextType, RequireFields<types.MutationNewProjectInviteArgs, 'input'>>
   newProjectMemberRole?: Resolver<ResolversTypes['ID'], ParentType, ContextType, RequireFields<types.MutationNewProjectMemberRoleArgs, 'input'>>
   newUserRole?: Resolver<ResolversTypes['ID'], ParentType, ContextType, RequireFields<types.MutationNewUserRoleArgs, 'input'>>
+  transferProjectOwnership?: Resolver<types.Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<types.MutationTransferProjectOwnershipArgs, 'memberId' | 'projectId'>>
   updateEBoard?: Resolver<types.Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<types.MutationUpdateEBoardArgs, 'input'>>
   updateEBoardRoles?: Resolver<types.Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<types.MutationUpdateEBoardRolesArgs, 'changes' | 'filter'>>
   updateEBoards?: Resolver<types.Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<types.MutationUpdateEBoardsArgs, 'changes' | 'filter'>>
