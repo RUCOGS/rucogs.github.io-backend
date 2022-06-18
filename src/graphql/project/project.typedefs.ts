@@ -25,6 +25,7 @@ input UpdateProjectInput {
   description: String
   banner: UploadWithOperation
   cardImage: UploadWithOperation
+  tags: [String!]
   galleryImageLinks: [String!]
   soundcloudEmbedSrc: String
   downloadLinks: [String!]

@@ -110,6 +110,7 @@ export default {
             id: args.input.id
           },
           changes: {
+            ...(isDefined(args.input.tags) && { tags: args.input.tags }),
             ...(isDefined(args.input.access) && { access: args.input.access }),
             ...(isDefined(args.input.name) && { name: args.input.name }),
             ...(isDefined(args.input.pitch) && { pitch: args.input.pitch }),
@@ -176,19 +177,19 @@ export default {
     projectCreated: makeSubscriptionResolver()
       .pubsub(PubSubEvents.ProjectCreated)
       .shallowOneToOneFilter()
-      .mapId('projectCreated')
+      .mapId()
       .build(),
     
     projectUpdated: makeSubscriptionResolver()
       .pubsub(PubSubEvents.ProjectUpdated)
       .shallowOneToOneFilter()
-      .mapId('projectUpdated')
+      .mapId()
       .build(),
 
     projectDeleted: makeSubscriptionResolver()
       .pubsub(PubSubEvents.ProjectDeleted)
       .shallowOneToOneFilter()
-      .mapId('projectDeleted')
+      .mapId()
       .build()
   }
 } as { Query: QueryResolvers, Mutation: MutationResolvers, Subscription: SubscriptionResolvers };

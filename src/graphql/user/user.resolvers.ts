@@ -155,19 +155,19 @@ export default {
     userCreated: makeSubscriptionResolver()
       .pubsub(PubSubEvents.UserCreated)
       .shallowOneToOneFilter()
-      .mapId('userCreated')
+      .mapId()
       .build(),
     
     userUpdated: makeSubscriptionResolver()
       .pubsub(PubSubEvents.UserUpdated)
       .shallowOneToOneFilter()
-      .mapId('userUpdated')
+      .mapId()
       .build(),
 
     userDeleted: makeSubscriptionResolver()
       .pubsub(PubSubEvents.UserDeleted)
       .shallowOneToOneFilter()
-      .mapId('userDeleted')
+      .mapId()
       .build()
   }
 } as { Query: QueryResolvers, Mutation: MutationResolvers, Subscription: SubscriptionResolvers };

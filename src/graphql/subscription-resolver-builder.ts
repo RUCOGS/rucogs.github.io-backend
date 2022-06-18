@@ -25,7 +25,7 @@ export class SubscriptionResolverBuilder {
     return this;
   }
 
-  mapId(resolver: keyof SubscriptionResolvers) {
+  mapId() {
     this.map((payload) => (payload.id))
     return this;
   }

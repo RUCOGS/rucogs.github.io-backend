@@ -156,19 +156,19 @@ export default {
     eBoardCreated: makeSubscriptionResolver()
       .pubsub(PubSubEvents.EBoardCreated)
       .shallowOneToOneFilter()
-      .mapId('eBoardCreated')
+      .mapId()
       .build(),
     
     eBoardUpdated: makeSubscriptionResolver()
       .pubsub(PubSubEvents.EBoardUpdated)
       .shallowOneToOneFilter()
-      .mapId('eBoardUpdated')
+      .mapId()
       .build(),
 
     eBoardDeleted: makeSubscriptionResolver()
       .pubsub(PubSubEvents.EBoardCreated)
       .shallowOneToOneFilter()
-      .mapId('eBoardDeleted')
+      .mapId()
       .build()
   }
 } as { Query: QueryResolvers, Mutation: MutationResolvers, Subscription: SubscriptionResolvers };

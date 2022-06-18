@@ -171,25 +171,25 @@ export default {
     projectMemberCreated: makeSubscriptionResolver()
       .pubsub(PubSubEvents.ProjectMemberCreated)
       .shallowOneToOneFilter()
-      .mapId('projectMemberCreated')
+      .mapId()
       .build(),
     
     projectMemberUpdated: makeSubscriptionResolver()
       .pubsub(PubSubEvents.ProjectMemberUpdated)
       .shallowOneToOneFilter()
-      .mapId('projectMemberUpdated')
+      .mapId()
       .build(),
 
     projectMemberDeleted: makeSubscriptionResolver()
       .pubsub(PubSubEvents.ProjectMemberDeleted)
       .shallowOneToOneFilter()
-      .mapId('projectMemberDeleted')
+      .mapId()
       .build(),
   }
 } as { Query: QueryResolvers, Mutation: MutationResolvers, Subscription: SubscriptionResolvers };
 
 export async function deleteProjectMember(entityManager: EntityManager, id: string, emitSubscription: boolean = true) {
-  const member = entityManager.projectMember.findOne({
+  const member = await entityManager.projectMember.findOne({
     filter: { id: id }
   });
   if (!member)

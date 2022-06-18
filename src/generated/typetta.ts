@@ -95,6 +95,7 @@ export type AST = {
       name: { type: 'scalar'; isList: false; astName: 'String'; isRequired: true; isListElementRequired: false; isExcluded: false; isId: false; generationStrategy: 'undefined' }
       pitch: { type: 'scalar'; isList: false; astName: 'String'; isRequired: true; isListElementRequired: false; isExcluded: false; isId: false; generationStrategy: 'undefined' }
       soundcloudEmbedSrc: { type: 'scalar'; isList: false; astName: 'String'; isRequired: false; isListElementRequired: false; isExcluded: false; isId: false; generationStrategy: 'undefined' }
+      tags: { type: 'scalar'; isList: true; astName: 'String'; isRequired: false; isListElementRequired: true; isExcluded: false; isId: false; generationStrategy: 'undefined' }
       updatedAt: { type: 'scalar'; isList: false; astName: 'Date'; isRequired: false; isListElementRequired: false; isExcluded: false; isId: false; generationStrategy: 'undefined' }
     }
     driverSpecification: {
@@ -192,8 +193,20 @@ export type AST = {
   }
   Subscription: {
     fields: {
-      subscribeToDeleteInvite: { type: 'scalar'; isList: false; astName: 'ID'; isRequired: true; isListElementRequired: false; isExcluded: false; isId: false; generationStrategy: 'undefined' }
-      subscribeToNewInvite: { type: 'scalar'; isList: false; astName: 'ID'; isRequired: true; isListElementRequired: false; isExcluded: false; isId: false; generationStrategy: 'undefined' }
+      eBoardCreated: { type: 'scalar'; isList: false; astName: 'ID'; isRequired: false; isListElementRequired: false; isExcluded: false; isId: false; generationStrategy: 'undefined' }
+      eBoardDeleted: { type: 'scalar'; isList: false; astName: 'ID'; isRequired: false; isListElementRequired: false; isExcluded: false; isId: false; generationStrategy: 'undefined' }
+      eBoardUpdated: { type: 'scalar'; isList: false; astName: 'ID'; isRequired: false; isListElementRequired: false; isExcluded: false; isId: false; generationStrategy: 'undefined' }
+      projectCreated: { type: 'scalar'; isList: false; astName: 'ID'; isRequired: false; isListElementRequired: false; isExcluded: false; isId: false; generationStrategy: 'undefined' }
+      projectDeleted: { type: 'scalar'; isList: false; astName: 'ID'; isRequired: false; isListElementRequired: false; isExcluded: false; isId: false; generationStrategy: 'undefined' }
+      projectInviteCreated: { type: 'scalar'; isList: false; astName: 'ID'; isRequired: false; isListElementRequired: false; isExcluded: false; isId: false; generationStrategy: 'undefined' }
+      projectInviteDeleted: { type: 'scalar'; isList: false; astName: 'ID'; isRequired: false; isListElementRequired: false; isExcluded: false; isId: false; generationStrategy: 'undefined' }
+      projectMemberCreated: { type: 'scalar'; isList: false; astName: 'ID'; isRequired: false; isListElementRequired: false; isExcluded: false; isId: false; generationStrategy: 'undefined' }
+      projectMemberDeleted: { type: 'scalar'; isList: false; astName: 'ID'; isRequired: false; isListElementRequired: false; isExcluded: false; isId: false; generationStrategy: 'undefined' }
+      projectMemberUpdated: { type: 'scalar'; isList: false; astName: 'ID'; isRequired: false; isListElementRequired: false; isExcluded: false; isId: false; generationStrategy: 'undefined' }
+      projectUpdated: { type: 'scalar'; isList: false; astName: 'ID'; isRequired: false; isListElementRequired: false; isExcluded: false; isId: false; generationStrategy: 'undefined' }
+      userCreated: { type: 'scalar'; isList: false; astName: 'ID'; isRequired: false; isListElementRequired: false; isExcluded: false; isId: false; generationStrategy: 'undefined' }
+      userDeleted: { type: 'scalar'; isList: false; astName: 'ID'; isRequired: false; isListElementRequired: false; isExcluded: false; isId: false; generationStrategy: 'undefined' }
+      userUpdated: { type: 'scalar'; isList: false; astName: 'ID'; isRequired: false; isListElementRequired: false; isExcluded: false; isId: false; generationStrategy: 'undefined' }
     }
     driverSpecification: {
       rawFilter: never
@@ -623,6 +636,12 @@ export function projectSchema(): T.Schema<ScalarsSpecification> {
     soundcloudEmbedSrc: {
       type: 'scalar',
       scalar: 'String',
+    },
+    tags: {
+      type: 'scalar',
+      scalar: 'String',
+      isListElementRequired: true,
+      isList: true,
     },
     updatedAt: {
       type: 'scalar',
@@ -1083,15 +1102,61 @@ export class InMemoryProjectMemberRoleDAO<MetadataType, OperationMetadataType> e
 }
 export function subscriptionSchema(): T.Schema<ScalarsSpecification> {
   return {
-    subscribeToDeleteInvite: {
+    eBoardCreated: {
       type: 'scalar',
       scalar: 'ID',
-      required: true,
     },
-    subscribeToNewInvite: {
+    eBoardDeleted: {
       type: 'scalar',
       scalar: 'ID',
-      required: true,
+    },
+    eBoardUpdated: {
+      type: 'scalar',
+      scalar: 'ID',
+    },
+    projectCreated: {
+      type: 'scalar',
+      scalar: 'ID',
+    },
+    projectDeleted: {
+      type: 'scalar',
+      scalar: 'ID',
+    },
+    projectInviteCreated: {
+      type: 'scalar',
+      scalar: 'ID',
+    },
+    projectInviteDeleted: {
+      type: 'scalar',
+      scalar: 'ID',
+    },
+    projectMemberCreated: {
+      type: 'scalar',
+      scalar: 'ID',
+    },
+    projectMemberDeleted: {
+      type: 'scalar',
+      scalar: 'ID',
+    },
+    projectMemberUpdated: {
+      type: 'scalar',
+      scalar: 'ID',
+    },
+    projectUpdated: {
+      type: 'scalar',
+      scalar: 'ID',
+    },
+    userCreated: {
+      type: 'scalar',
+      scalar: 'ID',
+    },
+    userDeleted: {
+      type: 'scalar',
+      scalar: 'ID',
+    },
+    userUpdated: {
+      type: 'scalar',
+      scalar: 'ID',
     },
   }
 }

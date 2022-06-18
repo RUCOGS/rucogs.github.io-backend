@@ -162,8 +162,15 @@ Minecraft is a 3-D computer game where players can build anything. The game whic
         bannerLink: "https://img.redbull.com/images/redbullcom/2020/4/28/bjoyslzjb3uxqyg82uz2/minecraft0400w",
         cardImageLink: "https://cdn.vox-cdn.com/thumbor/l9a45cx4ZfppNgzhQ5H3EX6glvs=/1400x1050/filters:format(jpeg)/cdn.vox-cdn.com/uploads/chorus_asset/file/19355555/jbareham_191158_ply0958_decade_minecraft.jpg",
         downloadLinks: [ `https://fake${randId(4)}.com` ],
-        galleryImageLinks: [],
+        galleryImageLinks: [ 
+          "https://scontent-lga3-2.xx.fbcdn.net/v/t39.30808-6/281692677_5169199979782116_2845997978136777337_n.jpg?_nc_cat=103&ccb=1-7&_nc_sid=e3f864&_nc_ohc=bRq74Gl3L_oAX9vFAyF&_nc_ht=scontent-lga3-2.xx&oh=00_AT-3DeBaGSqhU_pE5CP1CZXpnAhhhqfCQQTYCW4t6_i6wg&oe=62B0AF7E",
+          "https://s.yimg.com/uu/api/res/1.2/7tc4vobHWOLCBT2jd7dsdw--~B/Zmk9ZmlsbDtoPTQyMjt3PTY3NTthcHBpZD15dGFjaHlvbg--/https://s.yimg.com/os/creatr-uploaded-images/2021-10/ddcb2660-2e81-11ec-bffd-d8075a925d79.cf.webp",
+          "https://cdn.mos.cms.futurecdn.net/A7zC3bvSNxWGyaP8jSuz2W-970-80.jpg.webp",
+          "https://www.minecraft.net/content/dam/games/minecraft/screenshots/RayTracing-MineCraft-PMP-Always-Something-New.jpg",
+        ],
+        tags: [ "Open world", "RPG", "Action", "Retro" ],
         createdAt,
+        soundcloudEmbedSrc: "https%3A//api.soundcloud.com/playlists/225126829",
         completedAt: randInst.range(1) ? completedAt : undefined,
         updatedAt
       }
@@ -187,7 +194,9 @@ Minecraft is a 3-D computer game where players can build anything. The game whic
         pitch: paragraph(randInst.range(2) + 1),
         description: paragraph(randInst.range(5) + 3),
         downloadLinks: [ `https://fake${randId(4)}.com` ],
-        galleryImageLinks: [],
+        galleryImageLinks: getRandomSubarray(banners, randInst.range(4) + 3),
+        soundcloudEmbedSrc: "https%3A//api.soundcloud.com/playlists/225126829",
+        tags: getRandomSubarray(words, randInst.range(3) + 4),
         createdAt,
         completedAt: randInst.range(1) ? completedAt : undefined,
         updatedAt

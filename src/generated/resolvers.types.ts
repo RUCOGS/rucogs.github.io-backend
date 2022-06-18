@@ -74,6 +74,7 @@ export type ResolversTypes = {
   EBoardRoleSortInput: types.EBoardRoleSortInput
   EBoardRoleUpdateInput: types.EBoardRoleUpdateInput
   EBoardSortInput: types.EBoardSortInput
+  EBoardSubscriptionFilter: types.EBoardSubscriptionFilter
   EBoardUpdateInput: types.EBoardUpdateInput
   Float: ResolverTypeWrapper<types.Scalars['Float']>
   FloatFilterInput: types.FloatFilterInput
@@ -104,7 +105,7 @@ export type ResolversTypes = {
   ProjectInviteInsertInput: types.ProjectInviteInsertInput
   ProjectInviteRelationsFilterInput: types.ProjectInviteRelationsFilterInput
   ProjectInviteSortInput: types.ProjectInviteSortInput
-  ProjectInviteSubscriptionInput: types.ProjectInviteSubscriptionInput
+  ProjectInviteSubscriptionFilter: types.ProjectInviteSubscriptionFilter
   ProjectInviteUpdateInput: types.ProjectInviteUpdateInput
   ProjectMember: ResolverTypeWrapper<types.ProjectMember>
   ProjectMemberFilterInput: types.ProjectMemberFilterInput
@@ -119,9 +120,11 @@ export type ResolversTypes = {
   ProjectMemberRoleSortInput: types.ProjectMemberRoleSortInput
   ProjectMemberRoleUpdateInput: types.ProjectMemberRoleUpdateInput
   ProjectMemberSortInput: types.ProjectMemberSortInput
+  ProjectMemberSubscriptionFilter: types.ProjectMemberSubscriptionFilter
   ProjectMemberUpdateInput: types.ProjectMemberUpdateInput
   ProjectRelationsFilterInput: types.ProjectRelationsFilterInput
   ProjectSortInput: types.ProjectSortInput
+  ProjectSubscriptionFilter: types.ProjectSubscriptionFilter
   ProjectUpdateInput: types.ProjectUpdateInput
   Query: ResolverTypeWrapper<{}>
   RoleCode: types.RoleCode
@@ -171,6 +174,7 @@ export type ResolversTypes = {
   UserSocialSortInput: types.UserSocialSortInput
   UserSocialUpdateInput: types.UserSocialUpdateInput
   UserSortInput: types.UserSortInput
+  UserSubscriptionFilter: types.UserSubscriptionFilter
   UserUpdateInput: types.UserUpdateInput
 }
 
@@ -194,6 +198,7 @@ export type ResolversParentTypes = {
   EBoardRoleSortInput: types.EBoardRoleSortInput
   EBoardRoleUpdateInput: types.EBoardRoleUpdateInput
   EBoardSortInput: types.EBoardSortInput
+  EBoardSubscriptionFilter: types.EBoardSubscriptionFilter
   EBoardUpdateInput: types.EBoardUpdateInput
   Float: types.Scalars['Float']
   FloatFilterInput: types.FloatFilterInput
@@ -222,7 +227,7 @@ export type ResolversParentTypes = {
   ProjectInviteInsertInput: types.ProjectInviteInsertInput
   ProjectInviteRelationsFilterInput: types.ProjectInviteRelationsFilterInput
   ProjectInviteSortInput: types.ProjectInviteSortInput
-  ProjectInviteSubscriptionInput: types.ProjectInviteSubscriptionInput
+  ProjectInviteSubscriptionFilter: types.ProjectInviteSubscriptionFilter
   ProjectInviteUpdateInput: types.ProjectInviteUpdateInput
   ProjectMember: types.ProjectMember
   ProjectMemberFilterInput: types.ProjectMemberFilterInput
@@ -237,9 +242,11 @@ export type ResolversParentTypes = {
   ProjectMemberRoleSortInput: types.ProjectMemberRoleSortInput
   ProjectMemberRoleUpdateInput: types.ProjectMemberRoleUpdateInput
   ProjectMemberSortInput: types.ProjectMemberSortInput
+  ProjectMemberSubscriptionFilter: types.ProjectMemberSubscriptionFilter
   ProjectMemberUpdateInput: types.ProjectMemberUpdateInput
   ProjectRelationsFilterInput: types.ProjectRelationsFilterInput
   ProjectSortInput: types.ProjectSortInput
+  ProjectSubscriptionFilter: types.ProjectSubscriptionFilter
   ProjectUpdateInput: types.ProjectUpdateInput
   Query: {}
   RoleCodeFilterInput: types.RoleCodeFilterInput
@@ -285,6 +292,7 @@ export type ResolversParentTypes = {
   UserSocialSortInput: types.UserSocialSortInput
   UserSocialUpdateInput: types.UserSocialUpdateInput
   UserSortInput: types.UserSortInput
+  UserSubscriptionFilter: types.UserSubscriptionFilter
   UserUpdateInput: types.UserUpdateInput
 }
 
@@ -381,6 +389,7 @@ export type ProjectResolvers<ContextType = any, ParentType extends ResolversPare
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>
   pitch?: Resolver<ResolversTypes['String'], ParentType, ContextType>
   soundcloudEmbedSrc?: Resolver<types.Maybe<ResolversTypes['String']>, ParentType, ContextType>
+  tags?: Resolver<types.Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>
   updatedAt?: Resolver<types.Maybe<ResolversTypes['Date']>, ParentType, ContextType>
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>
 }
@@ -434,8 +443,20 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
 }
 
 export type SubscriptionResolvers<ContextType = any, ParentType extends ResolversParentTypes['Subscription'] = ResolversParentTypes['Subscription']> = {
-  subscribeToDeleteInvite?: SubscriptionResolver<ResolversTypes['ID'], 'subscribeToDeleteInvite', ParentType, ContextType, RequireFields<types.SubscriptionSubscribeToDeleteInviteArgs, 'input'>>
-  subscribeToNewInvite?: SubscriptionResolver<ResolversTypes['ID'], 'subscribeToNewInvite', ParentType, ContextType, RequireFields<types.SubscriptionSubscribeToNewInviteArgs, 'input'>>
+  eBoardCreated?: SubscriptionResolver<types.Maybe<ResolversTypes['ID']>, 'eBoardCreated', ParentType, ContextType, RequireFields<types.SubscriptionEBoardCreatedArgs, 'filter'>>
+  eBoardDeleted?: SubscriptionResolver<types.Maybe<ResolversTypes['ID']>, 'eBoardDeleted', ParentType, ContextType, RequireFields<types.SubscriptionEBoardDeletedArgs, 'filter'>>
+  eBoardUpdated?: SubscriptionResolver<types.Maybe<ResolversTypes['ID']>, 'eBoardUpdated', ParentType, ContextType, RequireFields<types.SubscriptionEBoardUpdatedArgs, 'filter'>>
+  projectCreated?: SubscriptionResolver<types.Maybe<ResolversTypes['ID']>, 'projectCreated', ParentType, ContextType, RequireFields<types.SubscriptionProjectCreatedArgs, 'filter'>>
+  projectDeleted?: SubscriptionResolver<types.Maybe<ResolversTypes['ID']>, 'projectDeleted', ParentType, ContextType, RequireFields<types.SubscriptionProjectDeletedArgs, 'filter'>>
+  projectInviteCreated?: SubscriptionResolver<types.Maybe<ResolversTypes['ID']>, 'projectInviteCreated', ParentType, ContextType, RequireFields<types.SubscriptionProjectInviteCreatedArgs, 'filter'>>
+  projectInviteDeleted?: SubscriptionResolver<types.Maybe<ResolversTypes['ID']>, 'projectInviteDeleted', ParentType, ContextType, RequireFields<types.SubscriptionProjectInviteDeletedArgs, 'filter'>>
+  projectMemberCreated?: SubscriptionResolver<types.Maybe<ResolversTypes['ID']>, 'projectMemberCreated', ParentType, ContextType, RequireFields<types.SubscriptionProjectMemberCreatedArgs, 'filter'>>
+  projectMemberDeleted?: SubscriptionResolver<types.Maybe<ResolversTypes['ID']>, 'projectMemberDeleted', ParentType, ContextType, RequireFields<types.SubscriptionProjectMemberDeletedArgs, 'filter'>>
+  projectMemberUpdated?: SubscriptionResolver<types.Maybe<ResolversTypes['ID']>, 'projectMemberUpdated', ParentType, ContextType, RequireFields<types.SubscriptionProjectMemberUpdatedArgs, 'filter'>>
+  projectUpdated?: SubscriptionResolver<types.Maybe<ResolversTypes['ID']>, 'projectUpdated', ParentType, ContextType, RequireFields<types.SubscriptionProjectUpdatedArgs, 'filter'>>
+  userCreated?: SubscriptionResolver<types.Maybe<ResolversTypes['ID']>, 'userCreated', ParentType, ContextType, RequireFields<types.SubscriptionUserCreatedArgs, 'filter'>>
+  userDeleted?: SubscriptionResolver<types.Maybe<ResolversTypes['ID']>, 'userDeleted', ParentType, ContextType, RequireFields<types.SubscriptionUserDeletedArgs, 'filter'>>
+  userUpdated?: SubscriptionResolver<types.Maybe<ResolversTypes['ID']>, 'userUpdated', ParentType, ContextType, RequireFields<types.SubscriptionUserUpdatedArgs, 'filter'>>
 }
 
 export interface UploadScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['Upload'], any> {

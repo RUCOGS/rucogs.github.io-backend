@@ -181,13 +181,13 @@ export default {
     projectInviteCreated: makeSubscriptionResolver()
       .pubsub(PubSubEvents.ProjectInviteCreated)
       .shallowOneToOneFilter()
-      .mapId('projectInviteCreated')
+      .mapId()
       .build(),
 
     projectInviteDeleted: makeSubscriptionResolver()
       .pubsub(PubSubEvents.ProjectInviteDeleted)
       .shallowOneToOneFilter()
-      .mapId('projectInviteDeleted')
+      .mapId()
       .build()
   }
 } as { Query: QueryResolvers, Mutation: MutationResolvers, Subscription: SubscriptionResolvers };

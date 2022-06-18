@@ -233,6 +233,7 @@ export type Project = {
   name: Scalars['String'];
   pitch: Scalars['String'];
   soundcloudEmbedSrc?: Maybe<Scalars['String']>;
+  tags?: Maybe<Array<Scalars['String']>>;
   updatedAt?: Maybe<Scalars['Date']>;
 };
 
@@ -424,6 +425,7 @@ export type UpdateProjectInput = {
   name?: InputMaybe<Scalars['String']>;
   pitch?: InputMaybe<Scalars['String']>;
   soundcloudEmbedSrc?: InputMaybe<Scalars['String']>;
+  tags?: InputMaybe<Array<Scalars['String']>>;
 };
 
 export type UpdateProjectMemberInput = {
@@ -725,6 +727,7 @@ export type ProjectResolvers<ContextType = any, ParentType extends ResolversPare
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   pitch?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   soundcloudEmbedSrc?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  tags?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
   updatedAt?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };

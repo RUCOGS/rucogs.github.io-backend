@@ -141,6 +141,10 @@ export type EBoardSortInput = {
   userId?: InputMaybe<SortDirection>
 }
 
+export type EBoardSubscriptionFilter = {
+  userId?: InputMaybe<Scalars['ID']>
+}
+
 export type EBoardUpdateInput = {
   createdAt?: InputMaybe<Scalars['Date']>
   graduatedAt?: InputMaybe<Scalars['Date']>
@@ -539,6 +543,7 @@ export type Project = {
   name: Scalars['String']
   pitch: Scalars['String']
   soundcloudEmbedSrc?: Maybe<Scalars['String']>
+  tags?: Maybe<Array<Scalars['String']>>
   updatedAt?: Maybe<Scalars['Date']>
 }
 
@@ -558,6 +563,7 @@ export type ProjectFilterInput = {
   or_?: InputMaybe<Array<ProjectFilterInput>>
   pitch?: InputMaybe<StringFilterInput>
   soundcloudEmbedSrc?: InputMaybe<StringFilterInput>
+  tags?: InputMaybe<StringFilterInput>
   updatedAt?: InputMaybe<DateFilterInput>
 }
 
@@ -581,6 +587,7 @@ export type ProjectInsertInput = {
   name: Scalars['String']
   pitch: Scalars['String']
   soundcloudEmbedSrc?: InputMaybe<Scalars['String']>
+  tags?: InputMaybe<Array<Scalars['String']>>
   updatedAt?: InputMaybe<Scalars['Date']>
 }
 
@@ -634,7 +641,7 @@ export type ProjectInviteSortInput = {
   userId?: InputMaybe<SortDirection>
 }
 
-export type ProjectInviteSubscriptionInput = {
+export type ProjectInviteSubscriptionFilter = {
   projectId?: InputMaybe<Scalars['ID']>
   userId?: InputMaybe<Scalars['ID']>
 }
@@ -747,6 +754,11 @@ export type ProjectMemberSortInput = {
   userId?: InputMaybe<SortDirection>
 }
 
+export type ProjectMemberSubscriptionFilter = {
+  projectId?: InputMaybe<Scalars['ID']>
+  userId?: InputMaybe<Scalars['ID']>
+}
+
 export type ProjectMemberUpdateInput = {
   contributions?: InputMaybe<Scalars['String']>
   createdAt?: InputMaybe<Scalars['Date']>
@@ -773,7 +785,12 @@ export type ProjectSortInput = {
   name?: InputMaybe<SortDirection>
   pitch?: InputMaybe<SortDirection>
   soundcloudEmbedSrc?: InputMaybe<SortDirection>
+  tags?: InputMaybe<SortDirection>
   updatedAt?: InputMaybe<SortDirection>
+}
+
+export type ProjectSubscriptionFilter = {
+  projectId?: InputMaybe<Scalars['ID']>
 }
 
 export type ProjectUpdateInput = {
@@ -788,6 +805,7 @@ export type ProjectUpdateInput = {
   name?: InputMaybe<Scalars['String']>
   pitch?: InputMaybe<Scalars['String']>
   soundcloudEmbedSrc?: InputMaybe<Scalars['String']>
+  tags?: InputMaybe<Array<Scalars['String']>>
   updatedAt?: InputMaybe<Scalars['Date']>
 }
 
@@ -955,31 +973,127 @@ export const StringFilterMode = {
 export type StringFilterMode = typeof StringFilterMode[keyof typeof StringFilterMode]
 export type Subscription = {
   __typename?: 'Subscription'
-  subscribeToDeleteInvite: Scalars['ID']
-  subscribeToNewInvite: Scalars['ID']
+  eBoardCreated?: Maybe<Scalars['ID']>
+  eBoardDeleted?: Maybe<Scalars['ID']>
+  eBoardUpdated?: Maybe<Scalars['ID']>
+  projectCreated?: Maybe<Scalars['ID']>
+  projectDeleted?: Maybe<Scalars['ID']>
+  projectInviteCreated?: Maybe<Scalars['ID']>
+  projectInviteDeleted?: Maybe<Scalars['ID']>
+  projectMemberCreated?: Maybe<Scalars['ID']>
+  projectMemberDeleted?: Maybe<Scalars['ID']>
+  projectMemberUpdated?: Maybe<Scalars['ID']>
+  projectUpdated?: Maybe<Scalars['ID']>
+  userCreated?: Maybe<Scalars['ID']>
+  userDeleted?: Maybe<Scalars['ID']>
+  userUpdated?: Maybe<Scalars['ID']>
 }
 
-export type SubscriptionSubscribeToDeleteInviteArgs = {
-  input: ProjectInviteSubscriptionInput
+export type SubscriptionEBoardCreatedArgs = {
+  filter: EBoardSubscriptionFilter
 }
 
-export type SubscriptionSubscribeToNewInviteArgs = {
-  input: ProjectInviteSubscriptionInput
+export type SubscriptionEBoardDeletedArgs = {
+  filter: EBoardSubscriptionFilter
+}
+
+export type SubscriptionEBoardUpdatedArgs = {
+  filter: EBoardSubscriptionFilter
+}
+
+export type SubscriptionProjectCreatedArgs = {
+  filter: ProjectSubscriptionFilter
+}
+
+export type SubscriptionProjectDeletedArgs = {
+  filter: ProjectSubscriptionFilter
+}
+
+export type SubscriptionProjectInviteCreatedArgs = {
+  filter: ProjectInviteSubscriptionFilter
+}
+
+export type SubscriptionProjectInviteDeletedArgs = {
+  filter: ProjectInviteSubscriptionFilter
+}
+
+export type SubscriptionProjectMemberCreatedArgs = {
+  filter: ProjectMemberSubscriptionFilter
+}
+
+export type SubscriptionProjectMemberDeletedArgs = {
+  filter: ProjectMemberSubscriptionFilter
+}
+
+export type SubscriptionProjectMemberUpdatedArgs = {
+  filter: ProjectMemberSubscriptionFilter
+}
+
+export type SubscriptionProjectUpdatedArgs = {
+  filter: ProjectSubscriptionFilter
+}
+
+export type SubscriptionUserCreatedArgs = {
+  filter: UserSubscriptionFilter
+}
+
+export type SubscriptionUserDeletedArgs = {
+  filter: UserSubscriptionFilter
+}
+
+export type SubscriptionUserUpdatedArgs = {
+  filter: UserSubscriptionFilter
 }
 
 export type SubscriptionInsertInput = {
-  subscribeToDeleteInvite: Scalars['ID']
-  subscribeToNewInvite: Scalars['ID']
+  eBoardCreated?: InputMaybe<Scalars['ID']>
+  eBoardDeleted?: InputMaybe<Scalars['ID']>
+  eBoardUpdated?: InputMaybe<Scalars['ID']>
+  projectCreated?: InputMaybe<Scalars['ID']>
+  projectDeleted?: InputMaybe<Scalars['ID']>
+  projectInviteCreated?: InputMaybe<Scalars['ID']>
+  projectInviteDeleted?: InputMaybe<Scalars['ID']>
+  projectMemberCreated?: InputMaybe<Scalars['ID']>
+  projectMemberDeleted?: InputMaybe<Scalars['ID']>
+  projectMemberUpdated?: InputMaybe<Scalars['ID']>
+  projectUpdated?: InputMaybe<Scalars['ID']>
+  userCreated?: InputMaybe<Scalars['ID']>
+  userDeleted?: InputMaybe<Scalars['ID']>
+  userUpdated?: InputMaybe<Scalars['ID']>
 }
 
 export type SubscriptionSortInput = {
-  subscribeToDeleteInvite?: InputMaybe<SortDirection>
-  subscribeToNewInvite?: InputMaybe<SortDirection>
+  eBoardCreated?: InputMaybe<SortDirection>
+  eBoardDeleted?: InputMaybe<SortDirection>
+  eBoardUpdated?: InputMaybe<SortDirection>
+  projectCreated?: InputMaybe<SortDirection>
+  projectDeleted?: InputMaybe<SortDirection>
+  projectInviteCreated?: InputMaybe<SortDirection>
+  projectInviteDeleted?: InputMaybe<SortDirection>
+  projectMemberCreated?: InputMaybe<SortDirection>
+  projectMemberDeleted?: InputMaybe<SortDirection>
+  projectMemberUpdated?: InputMaybe<SortDirection>
+  projectUpdated?: InputMaybe<SortDirection>
+  userCreated?: InputMaybe<SortDirection>
+  userDeleted?: InputMaybe<SortDirection>
+  userUpdated?: InputMaybe<SortDirection>
 }
 
 export type SubscriptionUpdateInput = {
-  subscribeToDeleteInvite?: InputMaybe<Scalars['ID']>
-  subscribeToNewInvite?: InputMaybe<Scalars['ID']>
+  eBoardCreated?: InputMaybe<Scalars['ID']>
+  eBoardDeleted?: InputMaybe<Scalars['ID']>
+  eBoardUpdated?: InputMaybe<Scalars['ID']>
+  projectCreated?: InputMaybe<Scalars['ID']>
+  projectDeleted?: InputMaybe<Scalars['ID']>
+  projectInviteCreated?: InputMaybe<Scalars['ID']>
+  projectInviteDeleted?: InputMaybe<Scalars['ID']>
+  projectMemberCreated?: InputMaybe<Scalars['ID']>
+  projectMemberDeleted?: InputMaybe<Scalars['ID']>
+  projectMemberUpdated?: InputMaybe<Scalars['ID']>
+  projectUpdated?: InputMaybe<Scalars['ID']>
+  userCreated?: InputMaybe<Scalars['ID']>
+  userDeleted?: InputMaybe<Scalars['ID']>
+  userUpdated?: InputMaybe<Scalars['ID']>
 }
 
 export type UpdateEBoardInput = {
@@ -1281,6 +1395,10 @@ export type UserSortInput = {
   id?: InputMaybe<SortDirection>
   updatedAt?: InputMaybe<SortDirection>
   username?: InputMaybe<SortDirection>
+}
+
+export type UserSubscriptionFilter = {
+  userId?: InputMaybe<Scalars['ID']>
 }
 
 export type UserUpdateInput = {

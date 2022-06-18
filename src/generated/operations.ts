@@ -237,6 +237,7 @@ export default gql`
     name: String!
     pitch: String!
     soundcloudEmbedSrc: String
+    tags: [String!]
     updatedAt: Date
   }
   input ProjectUpdateInput {
@@ -251,6 +252,7 @@ export default gql`
     name: String
     pitch: String
     soundcloudEmbedSrc: String
+    tags: [String!]
     updatedAt: Date
   }
   input ProjectSortInput {
@@ -266,6 +268,7 @@ export default gql`
     name: SortDirection
     pitch: SortDirection
     soundcloudEmbedSrc: SortDirection
+    tags: SortDirection
     updatedAt: SortDirection
   }
   input ProjectFilterInput {
@@ -281,6 +284,7 @@ export default gql`
     name: StringFilterInput
     pitch: StringFilterInput
     soundcloudEmbedSrc: StringFilterInput
+    tags: StringFilterInput
     updatedAt: DateFilterInput
     and_: [ProjectFilterInput!]
     or_: [ProjectFilterInput!]
@@ -426,16 +430,52 @@ export default gql`
 
   ########### Subscription ###########
   input SubscriptionInsertInput {
-    subscribeToDeleteInvite: ID!
-    subscribeToNewInvite: ID!
+    eBoardCreated: ID
+    eBoardDeleted: ID
+    eBoardUpdated: ID
+    projectCreated: ID
+    projectDeleted: ID
+    projectInviteCreated: ID
+    projectInviteDeleted: ID
+    projectMemberCreated: ID
+    projectMemberDeleted: ID
+    projectMemberUpdated: ID
+    projectUpdated: ID
+    userCreated: ID
+    userDeleted: ID
+    userUpdated: ID
   }
   input SubscriptionUpdateInput {
-    subscribeToDeleteInvite: ID
-    subscribeToNewInvite: ID
+    eBoardCreated: ID
+    eBoardDeleted: ID
+    eBoardUpdated: ID
+    projectCreated: ID
+    projectDeleted: ID
+    projectInviteCreated: ID
+    projectInviteDeleted: ID
+    projectMemberCreated: ID
+    projectMemberDeleted: ID
+    projectMemberUpdated: ID
+    projectUpdated: ID
+    userCreated: ID
+    userDeleted: ID
+    userUpdated: ID
   }
   input SubscriptionSortInput {
-    subscribeToDeleteInvite: SortDirection
-    subscribeToNewInvite: SortDirection
+    eBoardCreated: SortDirection
+    eBoardDeleted: SortDirection
+    eBoardUpdated: SortDirection
+    projectCreated: SortDirection
+    projectDeleted: SortDirection
+    projectInviteCreated: SortDirection
+    projectInviteDeleted: SortDirection
+    projectMemberCreated: SortDirection
+    projectMemberDeleted: SortDirection
+    projectMemberUpdated: SortDirection
+    projectUpdated: SortDirection
+    userCreated: SortDirection
+    userDeleted: SortDirection
+    userUpdated: SortDirection
   }
   ########### Subscription ###########
 

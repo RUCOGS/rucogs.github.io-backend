@@ -136,6 +136,7 @@ type Project @entity @mongodb {
   description: String
   cardImageLink: String
   bannerLink: String
+  tags: [String!]
   galleryImageLinks: [String!]
   soundcloudEmbedSrc: String
   downloadLinks: [String!]
