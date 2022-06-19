@@ -36,7 +36,7 @@ export async function startServer(debug: boolean, mock: boolean = false) {
     httpServer,
     app, 
     mongoDb, 
-    ServerConfig.baseUrl + "/api/graphql", 
+    ServerConfig.baseUrl + "/graphql", 
     unsecuredEntityManager,
     mongoClient,
     {
