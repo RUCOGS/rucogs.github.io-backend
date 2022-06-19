@@ -15,6 +15,7 @@ import express, { Express } from 'express';
 import { graphqlUploadExpress } from 'graphql-upload';
 import { useServer } from 'graphql-ws/lib/use/ws';
 import http from 'http';
+import https from 'https';
 import { Db, MongoClient } from 'mongodb';
 import passport from 'passport';
 import { WebSocketServer } from 'ws';
@@ -30,7 +31,7 @@ export async function startServer(debug: boolean, mock: boolean = false) {
   const app = express();
   configExpress(app, unsecuredEntityManager, mongoClient);
 
-  const httpServer = http.createServer(app);
+  const httpServer = debug ? http.createServer(app) : https.createServer(app);
 
   startApolloServer(
     httpServer,
@@ -56,7 +57,7 @@ export async function startServer(debug: boolean, mock: boolean = false) {
   );  
 }
 
-async function startApolloServer(httpServer: http.Server, app: express.Application, mongoDb: Db | "mock", endpointPath: string, unsecureEntityManager: EntityManager, mongoClient: MongoClient, apolloConfig: Config<ExpressContext>) {
+async function startApolloServer(httpServer: http.Server | https.Server, app: express.Application, mongoDb: Db | "mock", endpointPath: string, unsecureEntityManager: EntityManager, mongoClient: MongoClient, apolloConfig: Config<ExpressContext>) {
   async function authenticateGetContext(req: any) {
     const authenticated = await authenticate(req);
     if (authenticated) {
