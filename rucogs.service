@@ -1,0 +1,15 @@
+[Unit]
+Description=rucogs
+Documentation=https://github.com/rucogs/rucogs.github.io-backend
+After=network.target
+
+[Service]
+Type=simple
+User=root
+ExecStart=/usr/bin/node /root/rucogs.github.io-backend/dist/server.js
+Environment=NODE_ENV=production
+WorkingDirectory=/root/rucogs.github.io-backend
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
