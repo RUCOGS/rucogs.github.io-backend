@@ -157,7 +157,7 @@ function configExpress(app: Express, entityManager: EntityManager, mongoClient: 
   // ----- CORS ----- //
   // Enable CORS for a specific origin
   app.use(cors({
-    origin: "https://cogs.club"
+    origin: ["https://cogs.club", "https://atlinx.net"]
   }));
 
   // TODO: Remove in production builds

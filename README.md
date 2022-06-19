@@ -34,3 +34,5 @@ To recompile the typescript files and run the backend, without regenerating Type
 1. [Installing apache on Linode](https://www.linode.com/content/apache-basics-tutorial-how-to-install-and-configure-apache2/)
 2. [Installing apache to serve nodejs](https://blog.logrocket.com/configuring-apache-for-node-js/)
 3. [Getting https cert with apache on ubuntu)](https://www.linode.com/docs/guides/enabling-https-using-certbot-with-apache-on-ubuntu/)
+4. [Using git to manage a website](https://gist.github.com/Nilpo/8ed5e44be00d6cf21f22#ctl)
+5. [Making nodejs app into linux service](https://blog.r0b.io/post/running-node-js-as-a-systemd-service/)
