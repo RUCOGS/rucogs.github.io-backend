@@ -29,3 +29,8 @@ To recompile the typescript files and run the backend, without regenerating Type
 
 4. Set up the configuration files. These files contain sensitive information, therefore they're omitted from the git repository. To make your own configuration files, you must copy the config templates inside the config folder and remove the `.template` part from the file such that your config files have a `.config.json` file ending.
 
+## Backend Hosting (Linode)
+
+1. [Installing apache on Linode](https://www.linode.com/content/apache-basics-tutorial-how-to-install-and-configure-apache2/)
+2. [Installing apache to serve nodejs](https://blog.logrocket.com/configuring-apache-for-node-js/)
+3. [Getting https cert with apache on ubuntu)](https://www.linode.com/docs/guides/enabling-https-using-certbot-with-apache-on-ubuntu/)
