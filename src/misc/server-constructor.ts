@@ -52,7 +52,7 @@ export async function startServer(debug: boolean, mock: boolean = false) {
   
   console.log(
     `\
-🚀 Server ready at: ${debug ? 'http' : 'https' }://localhost:${port}`,
+🚀 Server ready at: http://localhost:${port}`,
   );  
 }
 
