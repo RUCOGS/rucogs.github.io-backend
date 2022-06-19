@@ -78,12 +78,12 @@ export default {
                 { 
                   userId: args.input.id, 
                 },
-                { 
+                ...(args.input.socials.length > 0 ? [{ 
                   $nor: args.input.socials.map(x => ({ 
                     username: x.username,
                     platform: x.platform,
                   }))
-                }
+                }] : [])
               ]
             },
             elementToUpdateFilter: (social: UpdateUserSocialInput): UserSocialFilter => ({
