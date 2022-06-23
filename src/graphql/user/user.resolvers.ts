@@ -1,13 +1,14 @@
 import { DataSize, fileUploadPromiseToCdn, tryDeleteFileIfSelfHosted } from '@src/controllers/cdn.controller';
-import { MutationResolvers, Permission, QueryResolvers, RoleCode, SubscriptionResolvers, UpdateUserSocialInput, UploadOperation, User } from '@src/generated/graphql-endpoint.types';
+import { MutationResolvers, Permission, QueryResolvers, RoleCode, SubscriptionResolvers, UpdateUserSocialInput, UploadOperation } from '@src/generated/graphql-endpoint.types';
 import { EntityManager, UserSocialFilter, UserSocialInsert } from '@src/generated/typetta';
+import { deleteProjectInvites } from '@src/graphql/project-invite/project-invite.resolvers';
+import pubsub, { PubSubEvents } from '@src/graphql/pubsub';
+import { makeSubscriptionResolver } from '@src/graphql/subscription-resolver-builder';
 import { ApolloResolversContext } from '@src/misc/context';
 import { makePermsCalc } from '@src/shared/security';
-import { assertNoDuplicates } from '@src/shared/validation';
-import { assertRequesterCanDeleteRoleCodes, assertRequesterCanManageRoleCodes, daoInsertBatch, daoInsertRolesBatch, deleteEntityRoleResolver, EntityRoleResolverOptions, getEntityRoleCodes, getRoleCodes, isDefined, newEntityRoleResolver, startEntityManagerTransaction } from '@src/utils';
 import { HttpError } from '@src/shared/utils';
-import { makeSubscriptionResolver } from '../subscription-resolver-builder';
-import pubsub, { PubSubEvents } from '../pubsub';
+import { assertNoDuplicates } from '@src/shared/validation';
+import { assertRequesterCanManageRoleCodes, daoInsertBatch, daoInsertRolesBatch, deleteEntityRoleResolver, EntityRoleResolverOptions, getEntityRoleCodes, isDefined, newEntityRoleResolver, startEntityManagerTransaction } from '@src/utils';
 
 const roleResolverOptions = <EntityRoleResolverOptions>{
   entityCamelCaseName: "user",
@@ -145,6 +146,66 @@ export default {
         filter: { id: args.input.id }
       })
       pubsub.publish(PubSubEvents.UserUpdated, updatedUser);
+      return true;
+    },
+    deleteUser: async (parent, args, context: ApolloResolversContext, info) => {
+      makePermsCalc()
+        .withContext(context.securityContext)
+        .withDomain({
+          userId: [ args.id ]
+        })
+        .assertPermission(Permission.DeleteUser);
+
+      const user = await context.unsecureEntityManager.user.findOne({
+        filter: {
+          id: args.id
+        }
+      });
+      if (!user) {
+        throw new HttpError(401, "Invalid userId!");
+      }
+
+      const userProjectMemberExists = await context.unsecureEntityManager.projectMember.exists({
+        filter: {
+          userId: args.id
+        }
+      });
+      if (userProjectMemberExists)
+        throw new HttpError(401, "Cannot delete user that is in a project!");
+
+      const error = await startEntityManagerTransaction(context.unsecureEntityManager, context.mongoClient, async (transEntityManager) => {
+        await transEntityManager.userRole.deleteAll({
+          filter: {
+            userId: args.id
+          }
+        });
+
+        await transEntityManager.eBoard.deleteAll({
+          filter: {
+            userId: args.id
+          }
+        });
+
+        await transEntityManager.userLoginIdentity.deleteAll({
+          filter: {
+            userId: args.id
+          }
+        })
+
+        await deleteProjectInvites(transEntityManager, {
+          userId: args.id
+        });
+
+        await transEntityManager.user.deleteOne({
+          filter: {
+            id: args.id
+          }
+        });
+      });
+      if (error instanceof Error)
+        throw error;
+      
+      pubsub.publish(PubSubEvents.UserDeleted, user);
       return true;
     },
     newUserRole: newEntityRoleResolver(roleResolverOptions),

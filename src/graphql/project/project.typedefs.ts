@@ -30,6 +30,7 @@ input UpdateProjectInput {
   galleryImages: [UploadOrSource!]
   soundcloudEmbedSrc: String
   downloadLinks: [String!]
+  completed: Boolean
 }
 
 input NewProjectInput {

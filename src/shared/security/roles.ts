@@ -55,7 +55,7 @@ export const RoleData: {
     type: [RoleType.User],
     name: "😎 Super Admin",
     inheritPerms: [
-      RoleCode.User,
+      RoleCode.Moderator,
     ],
     childRoles: [
       RoleCode.Moderator
@@ -304,7 +304,7 @@ function getInheritedPermRolesForRolesExitEarly(targetRole: RoleCode, checkedRol
   const roleData = RoleData[targetRole];
   if (roleData && roleData.inheritPerms) {
     for (const child of roleData.inheritPerms) {
-      rolesBelow = rolesBelow.concat(getRolesBelowOrEqualExitEarly(child, checkedRoles));
+      rolesBelow = rolesBelow.concat(getInheritedPermRolesForRolesExitEarly(child, checkedRoles));
     }
   }
   rolesBelow.push(targetRole);

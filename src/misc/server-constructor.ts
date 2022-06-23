@@ -28,7 +28,7 @@ export async function startServer(debug: boolean, mock: boolean = false) {
   const unsecuredEntityManager = createUnsecureEntityManager(mongoDb);
   
   const app = express();
-  configExpress(app, unsecuredEntityManager, mongoClient);
+  configExpress(app, unsecuredEntityManager, mongoClient, debug);
 
   const httpServer = http.createServer(app);
 
@@ -153,16 +153,16 @@ async function startApolloServer(httpServer: http.Server, app: express.Applicati
   );  
 }
 
-function configExpress(app: Express, entityManager: EntityManager, mongoClient: MongoClient) {
+function configExpress(app: Express, entityManager: EntityManager, mongoClient: MongoClient, debug: boolean) {
   // ----- CORS ----- //
   // Enable CORS for a specific origin
-  app.use(cors({
-    origin: ["https://cogs.club", "https://atlinx.net"]
-  }));
-
-  // TODO: Remove in production builds
-  // Enable CORS for any origin
-  // app.use(cors());
+  if (debug) {
+    app.use(cors());
+  } else {
+    app.use(cors({
+      origin: ["https://cogs.club", "https://atlinx.net"]
+    }));
+  }
 
   // ----- PASSPORT ----- //
   configPassport(passport, entityManager);

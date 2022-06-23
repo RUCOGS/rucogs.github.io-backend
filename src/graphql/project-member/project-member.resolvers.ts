@@ -1,6 +1,6 @@
 import { MutationResolvers, QueryResolvers, SubscriptionResolvers } from '@src/generated/graphql-endpoint.types';
 import { Permission, Project, RoleCode } from '@src/generated/model.types';
-import { EntityManager, ProjectDAO, ProjectMemberDAO, UserDAO } from '@src/generated/typetta';
+import { EntityManager, ProjectDAO, ProjectMemberDAO, ProjectMemberFilter, UserDAO } from '@src/generated/typetta';
 import { ApolloResolversContext } from '@src/misc/context';
 import { makePermsCalc } from '@src/shared/security';
 import { HttpError } from '@src/shared/utils';
@@ -155,7 +155,9 @@ export default {
       assertProjectHasMember(project as PartialDeep<Project>);
 
       const error = await startEntityManagerTransaction(context.unsecureEntityManager, context.mongoClient, async (transEntityManager) => {
-        await deleteProjectMember(transEntityManager, args.id);
+        await deleteProjectMembers(transEntityManager, {
+          id: args.id
+        });
       });
       if (error)
         throw error;
@@ -188,18 +190,24 @@ export default {
   }
 } as { Query: QueryResolvers, Mutation: MutationResolvers, Subscription: SubscriptionResolvers };
 
-export async function deleteProjectMember(entityManager: EntityManager, id: string, emitSubscription: boolean = true) {
-  const member = await entityManager.projectMember.findOne({
-    filter: { id: id }
+export async function deleteProjectMembers(entityManager: EntityManager, filter: ProjectMemberFilter, emitSubscription: boolean = true) {
+  const members = await entityManager.projectMember.findAll({
+    filter
   });
-  if (!member)
+
+  if (!members)
     throw new HttpError(500, "Project member doesn't exist!");
+
   await entityManager.projectMemberRole.deleteAll({
-    filter: { projectMemberId: id }
+    filter: { projectMemberId: { in: members.map(x => x.id) } }
   });
-  await entityManager.projectMember.deleteOne({
-    filter: { id: id }
+
+  await entityManager.projectMember.deleteAll({
+    filter
   });
-  if (emitSubscription)
-    pubsub.publish(PubSubEvents.ProjectMemberDeleted, member);
+
+  if (emitSubscription) {
+    for (const member of members)
+      pubsub.publish(PubSubEvents.ProjectMemberDeleted, member);
+  }
 }

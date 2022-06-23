@@ -3,6 +3,7 @@ import { gql } from "apollo-server";
 export default gql`
 extend type Mutation {
   updateUser(input: UpdateUserInput!): Boolean
+  deleteUser(id: ID!): Boolean
 
   newUserRole(input: NewUserRoleInput!): ID!
   deleteUserRole(id: ID!): Boolean

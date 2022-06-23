@@ -303,26 +303,13 @@ async function generateUsers(unsecure: EntityManager, count: number) {
     })
   }
 
-  let validRoles: RoleCode[] = [];
-  for (const roleCodeKey in RoleCode) {
-    const roleCode = (<any>RoleCode)[roleCodeKey] as RoleCode;
-    if (roleCode === RoleCode.User)
-      continue;
-    validRoles.push(roleCode);
-  }
+  let validRoles: RoleCode[] = RoleDataList.filter(x => x.type.includes(RoleType.User) && x.roleCode !== RoleCode.SuperAdmin).map(x => x.roleCode);
 
   // Populate fake data
   for (const user of users) {
     const result = await unsecure.user.insertOne({
       record: user
     });
-    
-    await unsecure.userRole.insertOne({
-      record: {
-        userId: result.id,
-        roleCode: RoleCode.User
-      }
-    })
 
     const randomRoleCodes = getRandomSubarray(validRoles, randInst.range(validRoles.length)).concat(RoleCode.User);
 

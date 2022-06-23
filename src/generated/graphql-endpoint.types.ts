@@ -61,6 +61,7 @@ export type Mutation = {
   deleteProjectInvite?: Maybe<Scalars['Boolean']>;
   deleteProjectMember?: Maybe<Scalars['Boolean']>;
   deleteProjectMemberRole?: Maybe<Scalars['Boolean']>;
+  deleteUser?: Maybe<Scalars['Boolean']>;
   deleteUserRole?: Maybe<Scalars['Boolean']>;
   joinOpenProject?: Maybe<Scalars['Boolean']>;
   newEBoard: Scalars['ID'];
@@ -108,6 +109,11 @@ export type MutationDeleteProjectMemberArgs = {
 
 
 export type MutationDeleteProjectMemberRoleArgs = {
+  id: Scalars['ID'];
+};
+
+
+export type MutationDeleteUserArgs = {
   id: Scalars['ID'];
 };
 
@@ -426,6 +432,7 @@ export type UpdateProjectInput = {
   access?: InputMaybe<Access>;
   banner?: InputMaybe<UploadWithOperation>;
   cardImage?: InputMaybe<UploadWithOperation>;
+  completed?: InputMaybe<Scalars['Boolean']>;
   description?: InputMaybe<Scalars['String']>;
   downloadLinks?: InputMaybe<Array<Scalars['String']>>;
   galleryImages?: InputMaybe<Array<UploadOrSource>>;
@@ -713,6 +720,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   deleteProjectInvite?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationDeleteProjectInviteArgs, 'inviteId'>>;
   deleteProjectMember?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationDeleteProjectMemberArgs, 'id'>>;
   deleteProjectMemberRole?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationDeleteProjectMemberRoleArgs, 'id'>>;
+  deleteUser?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationDeleteUserArgs, 'id'>>;
   deleteUserRole?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationDeleteUserRoleArgs, 'id'>>;
   joinOpenProject?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationJoinOpenProjectArgs, 'projectId'>>;
   newEBoard?: Resolver<ResolversTypes['ID'], ParentType, ContextType, RequireFields<MutationNewEBoardArgs, 'input'>>;

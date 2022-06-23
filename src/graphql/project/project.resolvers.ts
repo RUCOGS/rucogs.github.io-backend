@@ -5,8 +5,8 @@ import { ApolloResolversContext } from '@src/misc/context';
 import { makePermsCalc } from '@src/shared/security';
 import { HttpError } from '@src/shared/utils';
 import { daoInsertRolesBatch, isDefined, startEntityManagerTransaction } from '@src/utils';
-import { makeProjectMember } from '../project-invite/project-invite.resolvers';
-import { deleteProjectMember } from '../project-member/project-member.resolvers';
+import { deleteProjectInvites, makeProjectMember } from '../project-invite/project-invite.resolvers';
+import { deleteProjectMembers } from '../project-member/project-member.resolvers';
 import pubsub, { PubSubEvents } from '../pubsub';
 import { makeSubscriptionResolver } from '../subscription-resolver-builder';
 
@@ -136,6 +136,7 @@ export default {
             id: args.input.id
           },
           changes: {
+            ...(isDefined(args.input.completed) && {completedAt: args.input.completed ? Date.now() : null }),
             ...(isDefined(args.input.tags) && { tags: args.input.tags }),
             ...(isDefined(args.input.access) && { access: args.input.access }),
             ...(isDefined(args.input.name) && { name: args.input.name }),
@@ -182,10 +183,19 @@ export default {
       if (!project)
         throw new HttpError(400, "Project doesn't exist!");
       
+      const invites = await context.unsecureEntityManager.projectInvite.findAll({
+        filter: { projectId: args.id }
+      });
+
       const error = await startEntityManagerTransaction(context.unsecureEntityManager, context.mongoClient, async (transEntityManager) => {
-        for (const member of project.members) {
-          await deleteProjectMember(transEntityManager, member.id);
-        }
+        await deleteProjectMembers(transEntityManager, {
+          projectId: args.id
+        });
+        
+        await deleteProjectInvites(transEntityManager, {
+          projectId: args.id
+        }, true);
+
         await transEntityManager.project.deleteOne({
           filter: { id: args.id }
         })
@@ -195,6 +205,8 @@ export default {
         throw error;
       }
 
+      for (const invite of invites)
+        pubsub.publish(PubSubEvents.ProjectInviteDeleted, invite);
       pubsub.publish(PubSubEvents.ProjectDeleted, project);
       return true;
     }, 

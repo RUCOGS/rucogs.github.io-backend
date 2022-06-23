@@ -1,6 +1,6 @@
 import { InviteType, MutationResolvers, Permission, QueryResolvers, RoleCode, SubscriptionResolvers } from '@src/generated/graphql-endpoint.types';
-import { Access, ProjectMemberInsertInput } from '@src/generated/model.types';
-import { EntityManager, ProjectDAO } from '@src/generated/typetta';
+import { Access, ProjectInviteFilterInput, ProjectMemberInsertInput } from '@src/generated/model.types';
+import { EntityManager, ProjectDAO, ProjectInviteFilter, ProjectMemberInsert } from '@src/generated/typetta';
 import pubsub, { PubSubEvents } from '@src/graphql/pubsub';
 import { ApolloResolversContext } from '@src/misc/context';
 import { makePermsCalc } from '@src/shared/security';
@@ -128,8 +128,8 @@ export default {
         context.unsecureEntityManager, 
         context.mongoClient,
         async (transEntitymanager) => {
-          await transEntitymanager.projectInvite.deleteOne({
-            filter: { id: args.inviteId }
+          await deleteProjectInvites(transEntitymanager, {
+            id: args.inviteId
           });
         }
       );
@@ -192,7 +192,25 @@ export default {
   }
 } as { Query: QueryResolvers, Mutation: MutationResolvers, Subscription: SubscriptionResolvers };
 
-export async function makeProjectMember(entityManager: EntityManager, record: ProjectMemberInsertInput, additionalRoles: RoleCode[] = [], emitSubscription: boolean = true) {
+export async function deleteProjectInvites(entityManager: EntityManager, filter: ProjectInviteFilter, emitSubscription: boolean = true) {
+  let invites;
+  if (emitSubscription) {
+    invites = await entityManager.projectInvite.findAll({
+      filter
+    });
+  }
+
+  await entityManager.projectInvite.deleteAll({
+    filter
+  });
+  
+  if (invites && emitSubscription) {
+    for (const invite of invites)
+      pubsub.publish(PubSubEvents.ProjectInviteDeleted, invite);
+  }
+}
+
+export async function makeProjectMember(entityManager: EntityManager, record: ProjectMemberInsert, additionalRoles: RoleCode[] = [], emitSubscription: boolean = true) {
   const member = await entityManager.projectMember.insertOne({
     record: {
       ...record,
