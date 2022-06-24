@@ -10,49 +10,45 @@ import { PartialDeep } from 'type-fest';
 import pubsub, { PubSubEvents } from '../pubsub';
 import { makeSubscriptionResolver } from '../subscription-resolver-builder';
 
-const roleResolverOptions = <EntityRoleResolverOptions>{
-  entityCamelCaseName: "projectMember",
-  permission: Permission.ManageProjectMemberRoles,
-  async getRequesterRoles(unsecureEntityManager: EntityManager, requesterUserId: string, roleEntityId: string) {
-    const requesterUser = await unsecureEntityManager.user.findOne({
-      filter: {
-        id: requesterUserId
-      },
-      projection: UserDAO.projection({
-        roles: {
-          roleCode: true
-        }
-      })
+async function getRequesterRoles(unsecureEntityManager: EntityManager, requesterUserId: string, roleEntityId: string) {
+  const requesterUser = await unsecureEntityManager.user.findOne({
+    filter: {
+      id: requesterUserId
+    },
+    projection: UserDAO.projection({
+      roles: {
+        roleCode: true
+      }
     })
-    if (!requesterUser)
-      throw new Error("Expected user to exist!");
-    let requesterRoles: RoleCode[] = requesterUser.roles.map(x => x.roleCode);
+  })
+  if (!requesterUser)
+    throw new Error("Expected user to exist!");
+  let requesterRoles: RoleCode[] = requesterUser.roles.map(x => x.roleCode);
 
-    const projectMember = await unsecureEntityManager.projectMember.findOne({
-      filter: { id: roleEntityId },
-      projection: ProjectMemberDAO.projection({
-        project: {
-          id: true
-        }
-      })
+  const projectMember = await unsecureEntityManager.projectMember.findOne({
+    filter: { id: roleEntityId },
+    projection: ProjectMemberDAO.projection({
+      project: {
+        id: true
+      }
     })
-    const requesterProjectMember = await unsecureEntityManager.projectMember.findOne({
-      filter: { 
-        projectId: projectMember?.project.id,
-        userId: requesterUserId 
-      },
-      projection: ProjectMemberDAO.projection({
-        roles: {
-          roleCode: true
-        }
-      })
+  })
+  const requesterProjectMember = await unsecureEntityManager.projectMember.findOne({
+    filter: { 
+      projectId: projectMember?.project.id,
+      userId: requesterUserId 
+    },
+    projection: ProjectMemberDAO.projection({
+      roles: {
+        roleCode: true
+      }
     })
-    if (requesterProjectMember)
-      requesterRoles = requesterRoles.concat(requesterProjectMember.roles.map(x => x.roleCode));
-    
-    return requesterRoles;
-  }
-};
+  })
+  if (requesterProjectMember)
+    requesterRoles = requesterRoles.concat(requesterProjectMember.roles.map(x => x.roleCode));
+  
+  return requesterRoles;
+}
 
 export default {
   Mutation: {
@@ -80,7 +76,7 @@ export default {
         
         if (isDefined(args.input.roles)) {
           permCalc.assertPermission(Permission.ManageProjectMemberRoles);
-          const requesterRoleCodes = await roleResolverOptions.getRequesterRoles(transEntityManager, context.securityContext.userId, args.input.id);
+          const requesterRoleCodes = await getRequesterRoles(transEntityManager, context.securityContext.userId, args.input.id);
           if (!args.input.roles.some(x => x === RoleCode.ProjectMember))
             throw new HttpError(400, "Project Member must have Project Member role!");
           assertRolesAreOfType(args.input.roles, RoleType.ProjectMember);
@@ -166,9 +162,6 @@ export default {
 
       return true;
     },
-
-    newProjectMemberRole: newEntityRoleResolver(roleResolverOptions),
-    deleteProjectMemberRole: newEntityRoleResolver(roleResolverOptions),
   },
   
   Subscription: {

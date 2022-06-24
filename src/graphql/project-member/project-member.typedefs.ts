@@ -4,9 +4,6 @@ export default gql`
 extend type Mutation {
   updateProjectMember(input: UpdateProjectMemberInput!): Boolean
   deleteProjectMember(id: ID!): Boolean
-  
-  newProjectMemberRole(input: NewProjectMemberRoleInput!): ID!
-  deleteProjectMemberRole(id: ID!): Boolean
 }
 
 extend type Subscription {

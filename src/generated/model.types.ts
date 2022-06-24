@@ -293,13 +293,11 @@ export type Mutation = {
   deleteProjectInvite?: Maybe<Scalars['Boolean']>
   deleteProjectInvites?: Maybe<Scalars['Boolean']>
   deleteProjectMember?: Maybe<Scalars['Boolean']>
-  deleteProjectMemberRole?: Maybe<Scalars['Boolean']>
   deleteProjectMemberRoles?: Maybe<Scalars['Boolean']>
   deleteProjectMembers?: Maybe<Scalars['Boolean']>
   deleteProjects?: Maybe<Scalars['Boolean']>
   deleteUser?: Maybe<Scalars['Boolean']>
   deleteUserLoginIdentitys?: Maybe<Scalars['Boolean']>
-  deleteUserRole?: Maybe<Scalars['Boolean']>
   deleteUserRoles?: Maybe<Scalars['Boolean']>
   deleteUserSocials?: Maybe<Scalars['Boolean']>
   deleteUsers?: Maybe<Scalars['Boolean']>
@@ -308,8 +306,6 @@ export type Mutation = {
   newEBoardTerm: Scalars['ID']
   newProject: Scalars['ID']
   newProjectInvite: Scalars['ID']
-  newProjectMemberRole: Scalars['ID']
-  newUserRole: Scalars['ID']
   transferProjectOwnership?: Maybe<Scalars['Boolean']>
   updateEBoard?: Maybe<Scalars['Boolean']>
   updateEBoardTerm?: Maybe<Scalars['Boolean']>
@@ -413,10 +409,6 @@ export type MutationDeleteProjectMemberArgs = {
   id: Scalars['ID']
 }
 
-export type MutationDeleteProjectMemberRoleArgs = {
-  id: Scalars['ID']
-}
-
 export type MutationDeleteProjectMemberRolesArgs = {
   filter: ProjectMemberRoleFilterInput
 }
@@ -435,10 +427,6 @@ export type MutationDeleteUserArgs = {
 
 export type MutationDeleteUserLoginIdentitysArgs = {
   filter: UserLoginIdentityFilterInput
-}
-
-export type MutationDeleteUserRoleArgs = {
-  id: Scalars['ID']
 }
 
 export type MutationDeleteUserRolesArgs = {
@@ -471,14 +459,6 @@ export type MutationNewProjectArgs = {
 
 export type MutationNewProjectInviteArgs = {
   input: NewProjectInviteInput
-}
-
-export type MutationNewProjectMemberRoleArgs = {
-  input: NewProjectMemberRoleInput
-}
-
-export type MutationNewUserRoleArgs = {
-  input: NewUserRoleInput
 }
 
 export type MutationTransferProjectOwnershipArgs = {

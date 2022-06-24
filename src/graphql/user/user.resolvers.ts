@@ -10,13 +10,9 @@ import { HttpError } from '@src/shared/utils';
 import { assertNoDuplicates } from '@src/shared/validation';
 import { assertRequesterCanManageRoleCodes, assertRolesAreOfType, daoInsertBatch, daoInsertRolesBatch, deleteEntityRoleResolver, EntityRoleResolverOptions, getEntityRoleCodes, isDefined, newEntityRoleResolver, startEntityManagerTransaction } from '@src/utils';
 
-const roleResolverOptions = <EntityRoleResolverOptions>{
-  entityCamelCaseName: "user",
-  permission: Permission.ManageUserRoles,
-  async getRequesterRoles(unsecureEntityManager: EntityManager, requesterUserId: string, roleEntityId: string) {
-    return getEntityRoleCodes(unsecureEntityManager.userRole, "userId", requesterUserId);
-  }
-};
+async function getRequesterRoles(unsecureEntityManager: EntityManager, requesterUserId: string, roleEntityId: string) {
+  return getEntityRoleCodes(unsecureEntityManager.userRole, "userId", requesterUserId);
+}
 
 export default {
   Mutation: {
@@ -53,7 +49,7 @@ export default {
 
         if (isDefined(args.input.roles)) {
           permCalc.assertPermission(Permission.ManageUserRoles);
-          const requesterRoleCodes = await roleResolverOptions.getRequesterRoles(transEntityManager, context.securityContext.userId, context.securityContext.userId);
+          const requesterRoleCodes = await getRequesterRoles(transEntityManager, context.securityContext.userId, context.securityContext.userId);
           if (!args.input.roles.some(x => x === RoleCode.User))
             throw new HttpError(400, "User must have User role!");
           assertRolesAreOfType(args.input.roles, RoleType.User);
@@ -211,9 +207,7 @@ export default {
       
       pubsub.publish(PubSubEvents.UserDeleted, user);
       return true;
-    },
-    newUserRole: newEntityRoleResolver(roleResolverOptions),
-    deleteUserRole: deleteEntityRoleResolver(roleResolverOptions)
+    }
   },
 
   Subscription: {
