@@ -54,7 +54,7 @@ export type ExtendedSecurityDomain = {
   extraData: any;
 }
 export function isExtendedSecurityDomain(object: any): object is ExtendedSecurityDomain {
-  return object.baseDomain && isBaseSecurityDomain(object.crudDomain);
+  return object && object.baseDomain && isBaseSecurityDomain(object.crudDomain);
 }
 
 export type CustomSecurityDomain = any;

@@ -12,6 +12,7 @@ import { makeSubscriptionResolver } from '../subscription-resolver-builder';
 
 const roleResolverOptions = <EntityRoleResolverOptions>{
   entityCamelCaseName: "projectMember",
+  permission: Permission.ManageProjectMemberRoles,
   async getRequesterRoles(unsecureEntityManager: EntityManager, requesterUserId: string, roleEntityId: string) {
     const requesterUser = await unsecureEntityManager.user.findOne({
       filter: {
@@ -56,12 +57,17 @@ const roleResolverOptions = <EntityRoleResolverOptions>{
 export default {
   Mutation: {
     updateProjectMember: async (parent, args, context: ApolloResolversContext, info) => {
-      makePermsCalc()
+      const permCalc = makePermsCalc()
         .withContext(context.securityContext)
         .withDomain({
           projectMemberId: [ args.input.id ]
-        }).assertPermission(Permission.ManageProjectMember);
+        });
       
+      permCalc.assertPermission(Permission.ManageProjectMember);
+      
+      if (isDefined(args.input.roles))
+        permCalc.assertPermission(Permission.ManageProjectMemberRoles);
+
       const projectMember = await context.unsecureEntityManager.projectMember.findOne({
         filter: { id: args.input.id },
         projection: { 

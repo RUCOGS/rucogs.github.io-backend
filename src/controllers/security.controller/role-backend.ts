@@ -21,8 +21,10 @@ export const RoleBackendDataDict: {
         projection: { id: true }
       });
       return {
-        READ_USER_PRIVATE: [{ userId: userId }],
-        UPDATE_USER: [{ userId: userId }],
+        READ_USER_PRIVATE: [{ userId }],
+        UPDATE_USER: [{ userId }],
+        MANAGE_USER_ROLES: [{ userId }],
+        MANAGE_EBOARD_ROLES: [{ userId }],
         MANAGE_PROJECT_INVITES: invites.map(x => ({ projectInviteId: x.id })),
         CREATE_PROJECT: true, 
       };
@@ -36,6 +38,10 @@ export const RoleBackendDataDict: {
         UPDATE_PROJECT: true,
         READ_USER_PRIVATE: true,
         MANAGE_PROJECT_INVITES: true,
+        MANAGE_PROJECT_MEMBER: true,
+        MANAGE_USER_ROLES: true,
+        MANAGE_PROJECT_MEMBER_ROLES: true,
+        MANAGE_EBOARD_ROLES: true
       };
     }
   },
@@ -132,7 +138,8 @@ export const RoleBackendDataDict: {
   [RoleCode.ProjectMember]: {
     async getSecurityPermissions(entityManager, projectMemberId) {
       return {
-        MANAGE_PROJECT_MEMBER: [{ projectMemberId: projectMemberId }],
+        MANAGE_PROJECT_MEMBER: [{ projectMemberId }],
+        MANAGE_PROJECT_MEMBER_ROLES: [{ projectMemberId }]
       };
     }
   },

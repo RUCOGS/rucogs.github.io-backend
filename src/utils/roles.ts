@@ -11,7 +11,7 @@ export type EntityRoleResolverOptions = {
   roleDao?: string
   entityName?: string
   entityIdKey?: string
-  permission?: string
+  permission?: Permission
   getRequesterRoles: (unsecureEntityManager: EntityManager, requesterUserId: string, roleEntityId: string) => Promise<RoleCode[]>
 };
 
@@ -65,7 +65,7 @@ export function deleteEntityRoleResolver(options: EntityRoleResolverOptions) {
       .withDomain({
         [concreteOptions.entityIdKey]: [ args.input[concreteOptions.entityIdKey] ]
       })
-      .hasPermission(Permission.ManageUserRoles))
+      .hasPermission(options.permission!))
       throw new HttpError(403, `Forbidden from changing this ${concreteOptions.entityName}'s roles!`);
     
     const role = await (<any>context.unsecureEntityManager)[concreteOptions.roleDao].findOne({
@@ -98,7 +98,7 @@ function getEntityRoleResolverConcreteOptions(options: EntityRoleResolverOptions
     if (!options.entityIdKey)
       options.entityIdKey = options.entityCamelCaseName + "Id";
     if (!options.permission)
-      options.permission = `MANAGE_${camelCaseToSnakeCase(options.entityCamelCaseName).toUpperCase()}_ROLES`;
+      options.permission = `UPDATE_${camelCaseToSnakeCase(options.entityCamelCaseName).toUpperCase()}` as Permission;
     if (!Object.values(Permission).includes(options.permission as Permission))
       throw new Error(`Permission ${options.permission} doesn't exist! Maybe the auto generation was wrong?`);
   } else if (!options.entityName || !options.roleDao || !options.entityIdKey || !options.permission) {

@@ -25,7 +25,8 @@ export const RoleData: {
       RoleCode.Artist, 
       RoleCode.Musician, 
       RoleCode.SoundDesigner, 
-      RoleCode.Programmer
+      RoleCode.Programmer,
+      RoleCode.Writer
     ]
   },
   [RoleCode.Moderator]: {

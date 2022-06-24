@@ -82,13 +82,6 @@ function getOAuthStrategyPassportCallback<TProfile extends passport.Profile>(ent
       });
 
       if (userLoginIdentity) {
-        // await entityManager.user.updateOne({
-        //   filter: {
-        //     id: { eq: userLoginIdentity.userId }
-        //   },
-        //   changes: await profileToNewUser(profile)
-        // })
-
         const user = await entityManager.user.findOne({ 
           filter: {
             id: { eq: userLoginIdentity.userId }
@@ -107,6 +100,17 @@ function getOAuthStrategyPassportCallback<TProfile extends passport.Profile>(ent
           userId: newUser.id,
         }
       });
+
+      // TODO NOW: Delete this after finishing debugging
+      if (newUser.username === "atlinx") {
+        console.log("Promoting atlinx to superadmin")
+        await entityManager.userRole.insertOne({
+          record: {
+            roleCode: 'SUPER_ADMIN',
+            userId: newUser.id,
+          }
+        });
+      }
 
       await entityManager.userLoginIdentity.insertOne({
         record: {

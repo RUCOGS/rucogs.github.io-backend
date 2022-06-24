@@ -83,12 +83,17 @@ export default {
       if (!eBoard)
         throw new HttpError(400, "EBoard doesn't exist!");
 
-      makePermsCalc()
+      const permCalc = makePermsCalc()
         .withContext(context.securityContext)
         .withDomain({
           userId: [ eBoard.userId ]
-        }).assertPermission(Permission.ManageEboard);
+        });
       
+      permCalc.assertPermission(Permission.ManageEboard);
+      
+      if (isDefined(args.input.roles))
+        permCalc.assertPermission(Permission.ManageEboardRoles);
+
       const error = await startEntityManagerTransaction(context.unsecureEntityManager, context.mongoClient, async (transEntityManager) => {
         if (!context.securityContext.userId)
           throw new HttpError(400, "Expected context.securityContext.userId!");

@@ -12,6 +12,7 @@ import { assertRequesterCanManageRoleCodes, daoInsertBatch, daoInsertRolesBatch,
 
 const roleResolverOptions = <EntityRoleResolverOptions>{
   entityCamelCaseName: "user",
+  permission: Permission.ManageUserRoles,
   async getRequesterRoles(unsecureEntityManager: EntityManager, requesterUserId: string, roleEntityId: string) {
     return getEntityRoleCodes(unsecureEntityManager.userRole, "userId", requesterUserId);
   }
@@ -20,12 +21,16 @@ const roleResolverOptions = <EntityRoleResolverOptions>{
 export default {
   Mutation: {
     updateUser: async (parent, args, context: ApolloResolversContext, info) => {
-      makePermsCalc()
+      const permCalc = makePermsCalc()
         .withContext(context.securityContext)
         .withDomain({
           userId: [ args.input.id ]
-        })
-        .assertPermission(Permission.UpdateUser);
+        });
+      
+      permCalc.assertPermission(Permission.UpdateUser);
+
+      if (isDefined(args.input.roles))
+        permCalc.assertPermission(Permission.ManageUserRoles);
 
       const user = await context.unsecureEntityManager.user.findOne({
         filter: {
