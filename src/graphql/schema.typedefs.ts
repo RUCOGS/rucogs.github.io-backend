@@ -88,23 +88,33 @@ type EBoard @entity @mongodb {
   id: ID! @id(from: "db") @alias(value: "_id")
   user: User! @innerRef
   userId: ID!
-  createdAt: Date! @default(from: "generator")
-  graduatedAt: Date
-  roles: [EBoardRole!]! @foreignRef(refFrom: "eBoardId")
+  createdAt: Date @schema(metadata: [{ key: "createdAt", value: true }])
+  updatedAt: Date @schema(metadata: [{ key: "updatedAt", value: true }])
+  bio: String
+  avatarLink: String
+  terms: [EBoardTerm!]!  @foreignRef(refFrom: "eBoardId")
 }
 
-type EBoardRole @entity @mongodb {
+type EBoardTerm @entity @mongodb {
   id: ID! @id(from: "db") @alias(value: "_id")
-  roleCode: RoleCode!
   eBoard: EBoard! @innerRef
   eBoardId: ID!
+  year: Int!
+  roles: [EBoardTermRole!]! @foreignRef(refFrom: "termId")
+}
+
+type EBoardTermRole @entity @mongodb {
+  id: ID! @id(from: "db") @alias(value: "_id")
+  roleCode: RoleCode!
+  term: EBoardTerm! @innerRef
+  termId: ID!
 }
 
 type UserRole @entity @mongodb {
   id: ID! @id(from: "db") @alias(value: "_id")
-  roleCode: RoleCode! @schema(metadata: [{unique: 0}])
+  roleCode: RoleCode! @schema(metadata: [{ key: "unique", value: true }])
   user: User! @innerRef
-  userId: ID! @schema(metadata: [{unique: 0}])
+  userId: ID! @schema(metadata: [{ key: "unique", value: true }])
 }
 
 type UserSocial @entity @mongodb {
@@ -118,7 +128,7 @@ type UserSocial @entity @mongodb {
 
 type UserLoginIdentity @entity @mongodb {
   id: ID! @id(from: "db") @alias(value: "_id")
-  name: String! @schema(metadata: [{unique: 0}])
+  name: String! @schema(metadata: [{ key: "unique", value: true }])
   identityId: String!
   data: Json
   user: User! @innerRef 
@@ -155,12 +165,12 @@ type ProjectMember @entity @mongodb {
   project: Project! @innerRef
   projectId: ID!
   user: User! @innerRef
-  userId: ID! @schema(metadata: [{unique: 0}])
+  userId: ID! @schema(metadata: [{ key: "unique", value: true }])
 }
 
 type ProjectMemberRole @entity @mongodb {
   id: ID! @id(from: "db") @alias(value: "_id")
-  roleCode: RoleCode! @schema(metadata: [{unique: 0}])
+  roleCode: RoleCode! @schema(metadata: [{ key: "unique", value: true }])
   projectMember: ProjectMember! @innerRef
   projectMemberId: ID!
 }
@@ -170,8 +180,8 @@ type ProjectInvite @entity @mongodb {
   createdAt: Date @schema(metadata: [{ key: "createdAt", value: true }])
   type: InviteType!
   user: User! @innerRef
-  userId: ID! @schema(metadata: [{unique: 0}])
+  userId: ID! @schema(metadata: [{ key: "unique", value: true }])
   project: Project! @innerRef
-  projectId: ID! @schema(metadata: [{unique: 0}])
+  projectId: ID! @schema(metadata: [{ key: "unique", value: true }])
 }
 `;

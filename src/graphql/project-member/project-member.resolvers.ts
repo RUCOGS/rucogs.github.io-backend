@@ -2,10 +2,10 @@ import { MutationResolvers, QueryResolvers, SubscriptionResolvers } from '@src/g
 import { Permission, Project, RoleCode } from '@src/generated/model.types';
 import { EntityManager, ProjectDAO, ProjectMemberDAO, ProjectMemberFilter, UserDAO } from '@src/generated/typetta';
 import { ApolloResolversContext } from '@src/misc/context';
-import { makePermsCalc } from '@src/shared/security';
+import { makePermsCalc, RoleType } from '@src/shared/security';
 import { HttpError } from '@src/shared/utils';
 import { assertProjectHasMember, assertProjectHasOwner } from '@src/shared/validation';
-import { assertRequesterCanManageRoleCodes, daoInsertRolesBatch, EntityRoleResolverOptions, isDefined, newEntityRoleResolver, startEntityManagerTransaction } from '@src/utils';
+import { assertRequesterCanManageRoleCodes, assertRolesAreOfType, daoInsertRolesBatch, EntityRoleResolverOptions, isDefined, newEntityRoleResolver, startEntityManagerTransaction } from '@src/utils';
 import { PartialDeep } from 'type-fest';
 import pubsub, { PubSubEvents } from '../pubsub';
 import { makeSubscriptionResolver } from '../subscription-resolver-builder';
@@ -64,9 +64,6 @@ export default {
         });
       
       permCalc.assertPermission(Permission.ManageProjectMember);
-      
-      if (isDefined(args.input.roles))
-        permCalc.assertPermission(Permission.ManageProjectMemberRoles);
 
       const projectMember = await context.unsecureEntityManager.projectMember.findOne({
         filter: { id: args.input.id },
@@ -82,11 +79,12 @@ export default {
           throw new HttpError(400, "Expected context.securityContext.userId!");
         
         if (isDefined(args.input.roles)) {
+          permCalc.assertPermission(Permission.ManageProjectMemberRoles);
           const requesterRoleCodes = await roleResolverOptions.getRequesterRoles(transEntityManager, context.securityContext.userId, args.input.id);
           if (!args.input.roles.some(x => x === RoleCode.ProjectMember))
             throw new HttpError(400, "Project Member must have Project Member role!");
+          assertRolesAreOfType(args.input.roles, RoleType.ProjectMember);
           assertRequesterCanManageRoleCodes(requesterRoleCodes, args.input.roles);
-          
           const project = await transEntityManager.project.findOne({ 
             filter: { id: projectMember.projectId },
             projection: ProjectDAO.projection({
@@ -161,9 +159,7 @@ export default {
       assertProjectHasMember(project as PartialDeep<Project>);
 
       const error = await startEntityManagerTransaction(context.unsecureEntityManager, context.mongoClient, async (transEntityManager) => {
-        await deleteProjectMembers(transEntityManager, {
-          id: args.id
-        });
+        await deleteProjectMembers(transEntityManager, { id: args.id });
       });
       if (error)
         throw error;

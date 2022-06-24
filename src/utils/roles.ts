@@ -1,7 +1,7 @@
 import { Permission, RoleCode } from "@src/generated/graphql-endpoint.types";
 import { EntityManager } from "@src/generated/typetta";
 import { ApolloResolversContext } from "@src/misc/context";
-import { getHighestRoles, isRoleBelow, isRoleBelowOrEqual, makePermsCalc } from "@src/shared/security";
+import { getHighestRoles, isRoleBelow, isRoleBelowOrEqual, makePermsCalc, RoleData, RoleType } from "@src/shared/security";
 import { HttpError } from '@src/shared/utils';
 import { AbstractDAO } from "@twinlogix/typetta";
 import { camelCaseToSnakeCase, camelCaseToSpace, capitalizeFirstLetter } from "./string";
@@ -148,5 +148,12 @@ export function assertRequesterCanManageRoleCodes(requesterRoleCodes: RoleCode[]
     if (!isBelowAHighestRole) {
       throw new HttpError(403, "Can only add roles below your current role!");
     }
+  }
+}
+
+export function assertRolesAreOfType(roles: RoleCode[], type: RoleType) {
+  for (const role of roles) {
+    if (!RoleData[role].type.includes(type))
+      throw new HttpError(400, `Expected roles to be of type "${RoleType[type]}"`)
   }
 }

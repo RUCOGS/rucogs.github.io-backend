@@ -31,8 +31,7 @@ export default {
           record: {
             name: args.input.name,
             pitch: args.input.pitch,
-            access: args.input.access,
-            createdAt: Date.now()
+            access: args.input.access
           }
         });
 
@@ -78,7 +77,7 @@ export default {
       }
   
       const error = await startEntityManagerTransaction(context.unsecureEntityManager, context.mongoClient, async (transEntityManager) => {
-        let cardImageSelfHostedFilePath = "";
+        let cardImageSelfHostedFilePath = null;
         if (isDefined(args.input.cardImage)) {
           if (args.input.cardImage.operation === UploadOperation.Insert ||
             args.input.cardImage.operation === UploadOperation.Delete)
@@ -92,7 +91,7 @@ export default {
           }
         }
 
-        let bannerSelfHostedFilePath = "";
+        let bannerSelfHostedFilePath = null;
         if (isDefined(args.input.banner)) {
           if (args.input.banner.operation === UploadOperation.Insert ||
             args.input.banner.operation === UploadOperation.Delete)

@@ -1,15 +1,11 @@
-import { Permission, Scalars } from "@src/generated/model.types";
+import { securityContextToTypettaSecurityContext, SecurityPolicy } from "@src/controllers/security.controller";
+import { Permission } from "@src/generated/model.types";
 import { EntityManager } from "@src/generated/typetta";
-import { PERMISSION, UserInputDriverDataTypeAdapterMap } from "@twinlogix/typetta";
-import { Db, ObjectId } from 'mongodb';
-import { EntityManagerMetadata, BaseSecurityDomainFieldSet, SecurityContext } from "@src/shared/security";
-import { roleValidation } from "@src/controllers/security.controller";
-import express from 'express';
-import { HttpError } from '@src/shared/utils';
-import { validationMiddleware } from "@src/middlewares/validation.middleware";
-import { securityContextToTypettaSecurityContext } from "@src/controllers/security.controller";
-import { SecurityPolicy } from "@src/controllers/security.controller";
 import { dateMetadataMiddleware } from "@src/middlewares/dateMetadata.middleware";
+import { BaseSecurityDomainFieldSet, EntityManagerMetadata, SecurityContext } from "@src/shared/security";
+import { HttpError } from '@src/shared/utils';
+import { PERMISSION } from "@twinlogix/typetta";
+import { Db, ObjectId } from 'mongodb';
 
 export type TypettaSecurityContext = {
   permissions: TypettaSecurityContextPerms;
@@ -58,7 +54,6 @@ export function createUnsecureEntityManager(db: Db | "mock"): EntityManager {
     },
     middlewares: [
       dateMetadataMiddleware(getScalars().Date.generate),
-      validationMiddleware()
     ],
     scalars: getScalars(),
   });
@@ -74,13 +69,6 @@ export function createSecureEntityManager(securityContext: SecurityContext, db: 
     log: true,
     middlewares: [
       dateMetadataMiddleware(getScalars().Date.generate),
-      validationMiddleware(
-        roleValidation(
-          unsecureEntityManager, 
-          securityContext, 
-          overrideOperationMetadata?.securityDomain
-        ),
-      )
     ],
     scalars: getScalars(),    
     security: {

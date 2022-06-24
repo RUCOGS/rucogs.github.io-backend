@@ -4,7 +4,11 @@ export const PubSubEvents = {
   EBoardCreated: "EBOARD_CREATED",
   EBoardUpdated: "EBOARD_UPDATED",
   EBoardDeleted: "EBOARD_DELETED",
-  
+
+  EBoardTermCreated: "EBOARD_TERM_CREATED",
+  EBoardTermUpdated: "EBOARD_TERM_UPDATED",
+  EBoardTermDeleted: "EBOARD_TERM_DELETED",
+
   ProjectCreated: "PROJECT_CREATED",
   ProjectUpdated: "PROJECT_UPDATED",
   ProjectDeleted: "PROJECT_DELETED",

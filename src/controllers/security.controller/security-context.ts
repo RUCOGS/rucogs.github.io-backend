@@ -38,20 +38,9 @@ export async function getCompleteSecurityPermissions(entityManager: AnyEntityMan
 // Each user can only have at most one eboard user, therefore we can identify it using
 // the user's id.
 export async function getEBoardSecurityPermissions(entityManager: AnyEntityManager, userId: string) {
-  const eboard = await entityManager.eBoard.findOne({
-    filter: {
-      userId: userId
-    },
-    projection: {
-      id: true,
-      roles: {
-        roleCode: true
-      }
-    }
-  });
-  if (!eboard)
-    return {};
-  return rolesToSecurityPermission(entityManager, eboard.roles.map(x => x.roleCode), eboard.id);
+  // E-board roles are purely cosmetic and mean nothing
+  // They are attached to terms to indicate an eboard member's roles during that term.
+  return {};
 }
 
 // Uses all the project members of a user to build a single security context

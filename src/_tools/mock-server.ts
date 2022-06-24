@@ -30,6 +30,12 @@ async function startMockServer() {
 }
 
 async function generateEBoard(unsecure: EntityManager, userIds: string[], count: number) {
+  const portraits = [
+    "https://img.freepik.com/free-photo/portrait-white-man-isolated_53876-40306.jpg",
+    "https://i.pinimg.com/236x/a3/ac/1e/a3ac1ed5abaedffd9947face7901e14c.jpg",
+    "https://www.peerspace.com/resources/wp-content/uploads/best-vancouver-portrait-photographers-754x600.png"
+  ]
+
   const validEBoardRoles = getRolesOfType(RoleType.EBoard).filter(x => x.roleCode !== RoleCode.Eboard).map(x => x.roleCode);
 
   let eBoardIds: string[] = [];
@@ -43,25 +49,36 @@ async function generateEBoard(unsecure: EntityManager, userIds: string[], count:
         username: "eboard_" + user?.username
       }
     });
-    const eBoardResult = await unsecure.eBoard.insertOne({
+    const eBoard = await unsecure.eBoard.insertOne({
       record: {
+        bio: paragraph(3),
         userId: user.id,
-        createdAt: Date.now(),
-        ...(randInst.range(2) && { graduatedAt: Date.now() - randDuration(0.25) })
+        avatarLink: getRandElem(portraits)
       }
     });
-    eBoardIds.push(eBoardResult.id);
+    eBoardIds.push(eBoard.id);
 
-    const roleCodes = randInst.range(2) ? getRandomSubarray(validEBoardRoles, validEBoardRoles.length) : [];
-    roleCodes.push(RoleCode.Eboard);
-
-    for (const roleCode of roleCodes) {
-      await unsecure.eBoardRole.insertOne({
+    // Generate eboard terms
+    const randTerms = randInst.range(4) + 1;
+    for (let i = 0; i < randTerms; i++) {
+      const term = await unsecure.eBoardTerm.insertOne({
         record: {
-          eBoardId: eBoardResult.id,
-          roleCode
+          eBoardId: eBoard.id,
+          year: new Date().getFullYear() - i
         }
-      });
+      })
+
+      const roleCodes = randInst.range(2) ? getRandomSubarray(validEBoardRoles, randInst.range(3) + 1) : [];
+      roleCodes.push(RoleCode.Eboard);
+
+      for (const roleCode of roleCodes) {
+        await unsecure.eBoardTermRole.insertOne({
+          record: {
+            termId: term.id,
+            roleCode
+          }
+        });
+      }
     }
   }
   return eBoardIds;

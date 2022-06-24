@@ -15,6 +15,7 @@ export const SecurityPolicy = {
         avatarLink: true,
         bannerLink: true,
         createdAt: true,
+        updatedAt: true,
         id: true,
         username: true,
         displayName: true,
@@ -22,6 +23,7 @@ export const SecurityPolicy = {
         roles: true,
         socials: true,
         bio: true,
+        eBoard: true,
         
         email: false,
         loginIdentities: false,
@@ -69,6 +71,12 @@ export const SecurityPolicy = {
       userId: "userId"
     },
     defaultPermissions: PERMISSION.READ_ONLY 
+  },
+  eBoardTerm: {
+    domain: {
+      userId: "userId"
+    },
+    defaultPermissions: PERMISSION.READ_ONLY,
   },
   eBoardRole: {
     domain: {

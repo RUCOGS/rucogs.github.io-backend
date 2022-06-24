@@ -52,21 +52,25 @@ export type DateFilterInput = {
 
 export type EBoard = {
   __typename?: 'EBoard'
-  createdAt: Scalars['Date']
-  graduatedAt?: Maybe<Scalars['Date']>
+  avatarLink?: Maybe<Scalars['String']>
+  bio?: Maybe<Scalars['String']>
+  createdAt?: Maybe<Scalars['Date']>
   id: Scalars['ID']
-  roles: Array<EBoardRole>
+  terms: Array<EBoardTerm>
+  updatedAt?: Maybe<Scalars['Date']>
   user: User
   userId: Scalars['ID']
 }
 
 export type EBoardFilterInput = {
   and_?: InputMaybe<Array<EBoardFilterInput>>
+  avatarLink?: InputMaybe<StringFilterInput>
+  bio?: InputMaybe<StringFilterInput>
   createdAt?: InputMaybe<DateFilterInput>
-  graduatedAt?: InputMaybe<DateFilterInput>
   id?: InputMaybe<IdFilterInput>
   nor_?: InputMaybe<Array<EBoardFilterInput>>
   or_?: InputMaybe<Array<EBoardFilterInput>>
+  updatedAt?: InputMaybe<DateFilterInput>
   userId?: InputMaybe<IdFilterInput>
 }
 
@@ -79,65 +83,24 @@ export type EBoardFindInput = {
 }
 
 export type EBoardInsertInput = {
+  avatarLink?: InputMaybe<Scalars['String']>
+  bio?: InputMaybe<Scalars['String']>
   createdAt?: InputMaybe<Scalars['Date']>
-  graduatedAt?: InputMaybe<Scalars['Date']>
+  updatedAt?: InputMaybe<Scalars['Date']>
   userId: Scalars['ID']
 }
 
 export type EBoardRelationsFilterInput = {
-  roles?: InputMaybe<EBoardRoleFindInput>
+  terms?: InputMaybe<EBoardTermFindInput>
   user?: InputMaybe<UserFindInput>
 }
 
-export type EBoardRole = {
-  __typename?: 'EBoardRole'
-  eBoard: EBoard
-  eBoardId: Scalars['ID']
-  id: Scalars['ID']
-  roleCode: RoleCode
-}
-
-export type EBoardRoleFilterInput = {
-  and_?: InputMaybe<Array<EBoardRoleFilterInput>>
-  eBoardId?: InputMaybe<IdFilterInput>
-  id?: InputMaybe<IdFilterInput>
-  nor_?: InputMaybe<Array<EBoardRoleFilterInput>>
-  or_?: InputMaybe<Array<EBoardRoleFilterInput>>
-  roleCode?: InputMaybe<RoleCodeFilterInput>
-}
-
-export type EBoardRoleFindInput = {
-  filter?: InputMaybe<EBoardRoleFilterInput>
-  limit?: InputMaybe<Scalars['Int']>
-  relations?: InputMaybe<EBoardRoleRelationsFilterInput>
-  skip?: InputMaybe<Scalars['Int']>
-  sorts?: InputMaybe<Array<EBoardRoleSortInput>>
-}
-
-export type EBoardRoleInsertInput = {
-  eBoardId: Scalars['ID']
-  roleCode: RoleCode
-}
-
-export type EBoardRoleRelationsFilterInput = {
-  eBoard?: InputMaybe<EBoardFindInput>
-}
-
-export type EBoardRoleSortInput = {
-  eBoardId?: InputMaybe<SortDirection>
-  id?: InputMaybe<SortDirection>
-  roleCode?: InputMaybe<SortDirection>
-}
-
-export type EBoardRoleUpdateInput = {
-  eBoardId?: InputMaybe<Scalars['ID']>
-  roleCode?: InputMaybe<RoleCode>
-}
-
 export type EBoardSortInput = {
+  avatarLink?: InputMaybe<SortDirection>
+  bio?: InputMaybe<SortDirection>
   createdAt?: InputMaybe<SortDirection>
-  graduatedAt?: InputMaybe<SortDirection>
   id?: InputMaybe<SortDirection>
+  updatedAt?: InputMaybe<SortDirection>
   userId?: InputMaybe<SortDirection>
 }
 
@@ -145,9 +108,107 @@ export type EBoardSubscriptionFilter = {
   userId?: InputMaybe<Scalars['ID']>
 }
 
+export type EBoardTerm = {
+  __typename?: 'EBoardTerm'
+  eBoard: EBoard
+  eBoardId: Scalars['ID']
+  id: Scalars['ID']
+  roles: Array<EBoardTermRole>
+  year: Scalars['Int']
+}
+
+export type EBoardTermFilterInput = {
+  and_?: InputMaybe<Array<EBoardTermFilterInput>>
+  eBoardId?: InputMaybe<IdFilterInput>
+  id?: InputMaybe<IdFilterInput>
+  nor_?: InputMaybe<Array<EBoardTermFilterInput>>
+  or_?: InputMaybe<Array<EBoardTermFilterInput>>
+  year?: InputMaybe<IntFilterInput>
+}
+
+export type EBoardTermFindInput = {
+  filter?: InputMaybe<EBoardTermFilterInput>
+  limit?: InputMaybe<Scalars['Int']>
+  relations?: InputMaybe<EBoardTermRelationsFilterInput>
+  skip?: InputMaybe<Scalars['Int']>
+  sorts?: InputMaybe<Array<EBoardTermSortInput>>
+}
+
+export type EBoardTermInsertInput = {
+  eBoardId: Scalars['ID']
+  year: Scalars['Int']
+}
+
+export type EBoardTermRelationsFilterInput = {
+  eBoard?: InputMaybe<EBoardFindInput>
+  roles?: InputMaybe<EBoardTermRoleFindInput>
+}
+
+export type EBoardTermRole = {
+  __typename?: 'EBoardTermRole'
+  id: Scalars['ID']
+  roleCode: RoleCode
+  term: EBoardTerm
+  termId: Scalars['ID']
+}
+
+export type EBoardTermRoleFilterInput = {
+  and_?: InputMaybe<Array<EBoardTermRoleFilterInput>>
+  id?: InputMaybe<IdFilterInput>
+  nor_?: InputMaybe<Array<EBoardTermRoleFilterInput>>
+  or_?: InputMaybe<Array<EBoardTermRoleFilterInput>>
+  roleCode?: InputMaybe<RoleCodeFilterInput>
+  termId?: InputMaybe<IdFilterInput>
+}
+
+export type EBoardTermRoleFindInput = {
+  filter?: InputMaybe<EBoardTermRoleFilterInput>
+  limit?: InputMaybe<Scalars['Int']>
+  relations?: InputMaybe<EBoardTermRoleRelationsFilterInput>
+  skip?: InputMaybe<Scalars['Int']>
+  sorts?: InputMaybe<Array<EBoardTermRoleSortInput>>
+}
+
+export type EBoardTermRoleInsertInput = {
+  roleCode: RoleCode
+  termId: Scalars['ID']
+}
+
+export type EBoardTermRoleRelationsFilterInput = {
+  term?: InputMaybe<EBoardTermFindInput>
+}
+
+export type EBoardTermRoleSortInput = {
+  id?: InputMaybe<SortDirection>
+  roleCode?: InputMaybe<SortDirection>
+  termId?: InputMaybe<SortDirection>
+}
+
+export type EBoardTermRoleUpdateInput = {
+  roleCode?: InputMaybe<RoleCode>
+  termId?: InputMaybe<Scalars['ID']>
+}
+
+export type EBoardTermSortInput = {
+  eBoardId?: InputMaybe<SortDirection>
+  id?: InputMaybe<SortDirection>
+  year?: InputMaybe<SortDirection>
+}
+
+export type EBoardTermSubscriptionFilter = {
+  eBoardId?: InputMaybe<Scalars['ID']>
+}
+
+export type EBoardTermUpdateInput = {
+  eBoardId?: InputMaybe<Scalars['ID']>
+  year?: InputMaybe<Scalars['Int']>
+}
+
 export type EBoardUpdateInput = {
+  avatarLink?: InputMaybe<Scalars['String']>
+  bio?: InputMaybe<Scalars['String']>
   createdAt?: InputMaybe<Scalars['Date']>
-  graduatedAt?: InputMaybe<Scalars['Date']>
+  updatedAt?: InputMaybe<Scalars['Date']>
   userId?: InputMaybe<Scalars['ID']>
 }
 
@@ -213,7 +274,8 @@ export type Mutation = {
   __typename?: 'Mutation'
   acceptProjectInvite?: Maybe<Scalars['Boolean']>
   createEBoard: EBoard
-  createEBoardRole: EBoardRole
+  createEBoardTerm: EBoardTerm
+  createEBoardTermRole: EBoardTermRole
   createProject: Project
   createProjectInvite: ProjectInvite
   createProjectMember: ProjectMember
@@ -223,8 +285,9 @@ export type Mutation = {
   createUserRole: UserRole
   createUserSocial: UserSocial
   deleteEBoard?: Maybe<Scalars['Boolean']>
-  deleteEBoardRole?: Maybe<Scalars['Boolean']>
-  deleteEBoardRoles?: Maybe<Scalars['Boolean']>
+  deleteEBoardTerm?: Maybe<Scalars['Boolean']>
+  deleteEBoardTermRoles?: Maybe<Scalars['Boolean']>
+  deleteEBoardTerms?: Maybe<Scalars['Boolean']>
   deleteEBoards?: Maybe<Scalars['Boolean']>
   deleteProject?: Maybe<Scalars['Boolean']>
   deleteProjectInvite?: Maybe<Scalars['Boolean']>
@@ -234,6 +297,7 @@ export type Mutation = {
   deleteProjectMemberRoles?: Maybe<Scalars['Boolean']>
   deleteProjectMembers?: Maybe<Scalars['Boolean']>
   deleteProjects?: Maybe<Scalars['Boolean']>
+  deleteUser?: Maybe<Scalars['Boolean']>
   deleteUserLoginIdentitys?: Maybe<Scalars['Boolean']>
   deleteUserRole?: Maybe<Scalars['Boolean']>
   deleteUserRoles?: Maybe<Scalars['Boolean']>
@@ -241,14 +305,16 @@ export type Mutation = {
   deleteUsers?: Maybe<Scalars['Boolean']>
   joinOpenProject?: Maybe<Scalars['Boolean']>
   newEBoard: Scalars['ID']
-  newEBoardRole: Scalars['ID']
+  newEBoardTerm: Scalars['ID']
   newProject: Scalars['ID']
   newProjectInvite: Scalars['ID']
   newProjectMemberRole: Scalars['ID']
   newUserRole: Scalars['ID']
   transferProjectOwnership?: Maybe<Scalars['Boolean']>
   updateEBoard?: Maybe<Scalars['Boolean']>
-  updateEBoardRoles?: Maybe<Scalars['Boolean']>
+  updateEBoardTerm?: Maybe<Scalars['Boolean']>
+  updateEBoardTermRoles?: Maybe<Scalars['Boolean']>
+  updateEBoardTerms?: Maybe<Scalars['Boolean']>
   updateEBoards?: Maybe<Scalars['Boolean']>
   updateProject?: Maybe<Scalars['Boolean']>
   updateProjectInvites?: Maybe<Scalars['Boolean']>
@@ -271,8 +337,12 @@ export type MutationCreateEBoardArgs = {
   record: EBoardInsertInput
 }
 
-export type MutationCreateEBoardRoleArgs = {
-  record: EBoardRoleInsertInput
+export type MutationCreateEBoardTermArgs = {
+  record: EBoardTermInsertInput
+}
+
+export type MutationCreateEBoardTermRoleArgs = {
+  record: EBoardTermRoleInsertInput
 }
 
 export type MutationCreateProjectArgs = {
@@ -311,12 +381,16 @@ export type MutationDeleteEBoardArgs = {
   id: Scalars['ID']
 }
 
-export type MutationDeleteEBoardRoleArgs = {
+export type MutationDeleteEBoardTermArgs = {
   id: Scalars['ID']
 }
 
-export type MutationDeleteEBoardRolesArgs = {
-  filter: EBoardRoleFilterInput
+export type MutationDeleteEBoardTermRolesArgs = {
+  filter: EBoardTermRoleFilterInput
+}
+
+export type MutationDeleteEBoardTermsArgs = {
+  filter: EBoardTermFilterInput
 }
 
 export type MutationDeleteEBoardsArgs = {
@@ -355,6 +429,10 @@ export type MutationDeleteProjectsArgs = {
   filter: ProjectFilterInput
 }
 
+export type MutationDeleteUserArgs = {
+  id: Scalars['ID']
+}
+
 export type MutationDeleteUserLoginIdentitysArgs = {
   filter: UserLoginIdentityFilterInput
 }
@@ -383,8 +461,8 @@ export type MutationNewEBoardArgs = {
   input: NewEBoardInput
 }
 
-export type MutationNewEBoardRoleArgs = {
-  input: NewEBoardRoleInput
+export type MutationNewEBoardTermArgs = {
+  input: NewEBoardTermInput
 }
 
 export type MutationNewProjectArgs = {
@@ -412,9 +490,18 @@ export type MutationUpdateEBoardArgs = {
   input: UpdateEBoardInput
 }
 
-export type MutationUpdateEBoardRolesArgs = {
-  changes: EBoardRoleUpdateInput
-  filter: EBoardRoleFilterInput
+export type MutationUpdateEBoardTermArgs = {
+  input: UpdateEBoardTermInput
+}
+
+export type MutationUpdateEBoardTermRolesArgs = {
+  changes: EBoardTermRoleUpdateInput
+  filter: EBoardTermRoleFilterInput
+}
+
+export type MutationUpdateEBoardTermsArgs = {
+  changes: EBoardTermUpdateInput
+  filter: EBoardTermFilterInput
 }
 
 export type MutationUpdateEBoardsArgs = {
@@ -478,9 +565,9 @@ export type NewEBoardInput = {
   userId: Scalars['ID']
 }
 
-export type NewEBoardRoleInput = {
+export type NewEBoardTermInput = {
   eBoardId: Scalars['ID']
-  roleCode: RoleCode
+  year: Scalars['Int']
 }
 
 export type NewProjectInput = {
@@ -818,7 +905,8 @@ export type ProjectUpdateInput = {
 
 export type Query = {
   __typename?: 'Query'
-  eBoardRoles: Array<EBoardRole>
+  eBoardTermRoles: Array<EBoardTermRole>
+  eBoardTerms: Array<EBoardTerm>
   eBoards: Array<EBoard>
   isAuthTokenValid?: Maybe<Scalars['Boolean']>
   projectInvites: Array<ProjectInvite>
@@ -833,12 +921,20 @@ export type Query = {
   users: Array<User>
 }
 
-export type QueryEBoardRolesArgs = {
-  filter?: InputMaybe<EBoardRoleFilterInput>
+export type QueryEBoardTermRolesArgs = {
+  filter?: InputMaybe<EBoardTermRoleFilterInput>
   limit?: InputMaybe<Scalars['Int']>
-  relations?: InputMaybe<EBoardRoleRelationsFilterInput>
+  relations?: InputMaybe<EBoardTermRoleRelationsFilterInput>
   skip?: InputMaybe<Scalars['Int']>
-  sorts?: InputMaybe<Array<EBoardRoleSortInput>>
+  sorts?: InputMaybe<Array<EBoardTermRoleSortInput>>
+}
+
+export type QueryEBoardTermsArgs = {
+  filter?: InputMaybe<EBoardTermFilterInput>
+  limit?: InputMaybe<Scalars['Int']>
+  relations?: InputMaybe<EBoardTermRelationsFilterInput>
+  skip?: InputMaybe<Scalars['Int']>
+  sorts?: InputMaybe<Array<EBoardTermSortInput>>
 }
 
 export type QueryEBoardsArgs = {
@@ -982,6 +1078,9 @@ export type Subscription = {
   __typename?: 'Subscription'
   eBoardCreated?: Maybe<Scalars['ID']>
   eBoardDeleted?: Maybe<Scalars['ID']>
+  eBoardTermCreated?: Maybe<Scalars['ID']>
+  eBoardTermDeleted?: Maybe<Scalars['ID']>
+  eBoardTermUpdated?: Maybe<Scalars['ID']>
   eBoardUpdated?: Maybe<Scalars['ID']>
   projectCreated?: Maybe<Scalars['ID']>
   projectDeleted?: Maybe<Scalars['ID']>
@@ -1002,6 +1101,18 @@ export type SubscriptionEBoardCreatedArgs = {
 
 export type SubscriptionEBoardDeletedArgs = {
   filter: EBoardSubscriptionFilter
+}
+
+export type SubscriptionEBoardTermCreatedArgs = {
+  filter: EBoardTermSubscriptionFilter
+}
+
+export type SubscriptionEBoardTermDeletedArgs = {
+  filter: EBoardTermSubscriptionFilter
+}
+
+export type SubscriptionEBoardTermUpdatedArgs = {
+  filter: EBoardTermSubscriptionFilter
 }
 
 export type SubscriptionEBoardUpdatedArgs = {
@@ -1055,6 +1166,9 @@ export type SubscriptionUserUpdatedArgs = {
 export type SubscriptionInsertInput = {
   eBoardCreated?: InputMaybe<Scalars['ID']>
   eBoardDeleted?: InputMaybe<Scalars['ID']>
+  eBoardTermCreated?: InputMaybe<Scalars['ID']>
+  eBoardTermDeleted?: InputMaybe<Scalars['ID']>
+  eBoardTermUpdated?: InputMaybe<Scalars['ID']>
   eBoardUpdated?: InputMaybe<Scalars['ID']>
   projectCreated?: InputMaybe<Scalars['ID']>
   projectDeleted?: InputMaybe<Scalars['ID']>
@@ -1072,6 +1186,9 @@ export type SubscriptionInsertInput = {
 export type SubscriptionSortInput = {
   eBoardCreated?: InputMaybe<SortDirection>
   eBoardDeleted?: InputMaybe<SortDirection>
+  eBoardTermCreated?: InputMaybe<SortDirection>
+  eBoardTermDeleted?: InputMaybe<SortDirection>
+  eBoardTermUpdated?: InputMaybe<SortDirection>
   eBoardUpdated?: InputMaybe<SortDirection>
   projectCreated?: InputMaybe<SortDirection>
   projectDeleted?: InputMaybe<SortDirection>
@@ -1089,6 +1206,9 @@ export type SubscriptionSortInput = {
 export type SubscriptionUpdateInput = {
   eBoardCreated?: InputMaybe<Scalars['ID']>
   eBoardDeleted?: InputMaybe<Scalars['ID']>
+  eBoardTermCreated?: InputMaybe<Scalars['ID']>
+  eBoardTermDeleted?: InputMaybe<Scalars['ID']>
+  eBoardTermUpdated?: InputMaybe<Scalars['ID']>
   eBoardUpdated?: InputMaybe<Scalars['ID']>
   projectCreated?: InputMaybe<Scalars['ID']>
   projectDeleted?: InputMaybe<Scalars['ID']>
@@ -1104,15 +1224,22 @@ export type SubscriptionUpdateInput = {
 }
 
 export type UpdateEBoardInput = {
-  graduatedAt: Scalars['ID']
+  avatar?: InputMaybe<UploadWithOperation>
+  bio?: InputMaybe<Scalars['String']>
+  id: Scalars['ID']
+}
+
+export type UpdateEBoardTermInput = {
   id: Scalars['ID']
   roles?: InputMaybe<Array<RoleCode>>
+  year: Scalars['Int']
 }
 
 export type UpdateProjectInput = {
   access?: InputMaybe<Access>
   banner?: InputMaybe<UploadWithOperation>
   cardImage?: InputMaybe<UploadWithOperation>
+  completed?: InputMaybe<Scalars['Boolean']>
   description?: InputMaybe<Scalars['String']>
   downloadLinks?: InputMaybe<Array<Scalars['String']>>
   galleryImages?: InputMaybe<Array<UploadOrSource>>

@@ -66,15 +66,23 @@ export type ResolversTypes = {
   EBoardFindInput: types.EBoardFindInput
   EBoardInsertInput: types.EBoardInsertInput
   EBoardRelationsFilterInput: types.EBoardRelationsFilterInput
-  EBoardRole: ResolverTypeWrapper<types.EBoardRole>
-  EBoardRoleFilterInput: types.EBoardRoleFilterInput
-  EBoardRoleFindInput: types.EBoardRoleFindInput
-  EBoardRoleInsertInput: types.EBoardRoleInsertInput
-  EBoardRoleRelationsFilterInput: types.EBoardRoleRelationsFilterInput
-  EBoardRoleSortInput: types.EBoardRoleSortInput
-  EBoardRoleUpdateInput: types.EBoardRoleUpdateInput
   EBoardSortInput: types.EBoardSortInput
   EBoardSubscriptionFilter: types.EBoardSubscriptionFilter
+  EBoardTerm: ResolverTypeWrapper<types.EBoardTerm>
+  EBoardTermFilterInput: types.EBoardTermFilterInput
+  EBoardTermFindInput: types.EBoardTermFindInput
+  EBoardTermInsertInput: types.EBoardTermInsertInput
+  EBoardTermRelationsFilterInput: types.EBoardTermRelationsFilterInput
+  EBoardTermRole: ResolverTypeWrapper<types.EBoardTermRole>
+  EBoardTermRoleFilterInput: types.EBoardTermRoleFilterInput
+  EBoardTermRoleFindInput: types.EBoardTermRoleFindInput
+  EBoardTermRoleInsertInput: types.EBoardTermRoleInsertInput
+  EBoardTermRoleRelationsFilterInput: types.EBoardTermRoleRelationsFilterInput
+  EBoardTermRoleSortInput: types.EBoardTermRoleSortInput
+  EBoardTermRoleUpdateInput: types.EBoardTermRoleUpdateInput
+  EBoardTermSortInput: types.EBoardTermSortInput
+  EBoardTermSubscriptionFilter: types.EBoardTermSubscriptionFilter
+  EBoardTermUpdateInput: types.EBoardTermUpdateInput
   EBoardUpdateInput: types.EBoardUpdateInput
   Float: ResolverTypeWrapper<types.Scalars['Float']>
   FloatFilterInput: types.FloatFilterInput
@@ -88,7 +96,7 @@ export type ResolversTypes = {
   JsonFilterInput: types.JsonFilterInput
   Mutation: ResolverTypeWrapper<{}>
   NewEBoardInput: types.NewEBoardInput
-  NewEBoardRoleInput: types.NewEBoardRoleInput
+  NewEBoardTermInput: types.NewEBoardTermInput
   NewProjectInput: types.NewProjectInput
   NewProjectInviteInput: types.NewProjectInviteInput
   NewProjectMemberRoleInput: types.NewProjectMemberRoleInput
@@ -138,6 +146,7 @@ export type ResolversTypes = {
   SubscriptionSortInput: types.SubscriptionSortInput
   SubscriptionUpdateInput: types.SubscriptionUpdateInput
   UpdateEBoardInput: types.UpdateEBoardInput
+  UpdateEBoardTermInput: types.UpdateEBoardTermInput
   UpdateProjectInput: types.UpdateProjectInput
   UpdateProjectMemberInput: types.UpdateProjectMemberInput
   UpdateUserInput: types.UpdateUserInput
@@ -191,15 +200,23 @@ export type ResolversParentTypes = {
   EBoardFindInput: types.EBoardFindInput
   EBoardInsertInput: types.EBoardInsertInput
   EBoardRelationsFilterInput: types.EBoardRelationsFilterInput
-  EBoardRole: types.EBoardRole
-  EBoardRoleFilterInput: types.EBoardRoleFilterInput
-  EBoardRoleFindInput: types.EBoardRoleFindInput
-  EBoardRoleInsertInput: types.EBoardRoleInsertInput
-  EBoardRoleRelationsFilterInput: types.EBoardRoleRelationsFilterInput
-  EBoardRoleSortInput: types.EBoardRoleSortInput
-  EBoardRoleUpdateInput: types.EBoardRoleUpdateInput
   EBoardSortInput: types.EBoardSortInput
   EBoardSubscriptionFilter: types.EBoardSubscriptionFilter
+  EBoardTerm: types.EBoardTerm
+  EBoardTermFilterInput: types.EBoardTermFilterInput
+  EBoardTermFindInput: types.EBoardTermFindInput
+  EBoardTermInsertInput: types.EBoardTermInsertInput
+  EBoardTermRelationsFilterInput: types.EBoardTermRelationsFilterInput
+  EBoardTermRole: types.EBoardTermRole
+  EBoardTermRoleFilterInput: types.EBoardTermRoleFilterInput
+  EBoardTermRoleFindInput: types.EBoardTermRoleFindInput
+  EBoardTermRoleInsertInput: types.EBoardTermRoleInsertInput
+  EBoardTermRoleRelationsFilterInput: types.EBoardTermRoleRelationsFilterInput
+  EBoardTermRoleSortInput: types.EBoardTermRoleSortInput
+  EBoardTermRoleUpdateInput: types.EBoardTermRoleUpdateInput
+  EBoardTermSortInput: types.EBoardTermSortInput
+  EBoardTermSubscriptionFilter: types.EBoardTermSubscriptionFilter
+  EBoardTermUpdateInput: types.EBoardTermUpdateInput
   EBoardUpdateInput: types.EBoardUpdateInput
   Float: types.Scalars['Float']
   FloatFilterInput: types.FloatFilterInput
@@ -212,7 +229,7 @@ export type ResolversParentTypes = {
   JsonFilterInput: types.JsonFilterInput
   Mutation: {}
   NewEBoardInput: types.NewEBoardInput
-  NewEBoardRoleInput: types.NewEBoardRoleInput
+  NewEBoardTermInput: types.NewEBoardTermInput
   NewProjectInput: types.NewProjectInput
   NewProjectInviteInput: types.NewProjectInviteInput
   NewProjectMemberRoleInput: types.NewProjectMemberRoleInput
@@ -258,6 +275,7 @@ export type ResolversParentTypes = {
   SubscriptionSortInput: types.SubscriptionSortInput
   SubscriptionUpdateInput: types.SubscriptionUpdateInput
   UpdateEBoardInput: types.UpdateEBoardInput
+  UpdateEBoardTermInput: types.UpdateEBoardTermInput
   UpdateProjectInput: types.UpdateProjectInput
   UpdateProjectMemberInput: types.UpdateProjectMemberInput
   UpdateUserInput: types.UpdateUserInput
@@ -303,20 +321,31 @@ export interface DateScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes
 }
 
 export type EBoardResolvers<ContextType = any, ParentType extends ResolversParentTypes['EBoard'] = ResolversParentTypes['EBoard']> = {
-  createdAt?: Resolver<ResolversTypes['Date'], ParentType, ContextType>
-  graduatedAt?: Resolver<types.Maybe<ResolversTypes['Date']>, ParentType, ContextType>
+  avatarLink?: Resolver<types.Maybe<ResolversTypes['String']>, ParentType, ContextType>
+  bio?: Resolver<types.Maybe<ResolversTypes['String']>, ParentType, ContextType>
+  createdAt?: Resolver<types.Maybe<ResolversTypes['Date']>, ParentType, ContextType>
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>
-  roles?: Resolver<Array<ResolversTypes['EBoardRole']>, ParentType, ContextType>
+  terms?: Resolver<Array<ResolversTypes['EBoardTerm']>, ParentType, ContextType>
+  updatedAt?: Resolver<types.Maybe<ResolversTypes['Date']>, ParentType, ContextType>
   user?: Resolver<ResolversTypes['User'], ParentType, ContextType>
   userId?: Resolver<ResolversTypes['ID'], ParentType, ContextType>
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>
 }
 
-export type EBoardRoleResolvers<ContextType = any, ParentType extends ResolversParentTypes['EBoardRole'] = ResolversParentTypes['EBoardRole']> = {
+export type EBoardTermResolvers<ContextType = any, ParentType extends ResolversParentTypes['EBoardTerm'] = ResolversParentTypes['EBoardTerm']> = {
   eBoard?: Resolver<ResolversTypes['EBoard'], ParentType, ContextType>
   eBoardId?: Resolver<ResolversTypes['ID'], ParentType, ContextType>
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>
+  roles?: Resolver<Array<ResolversTypes['EBoardTermRole']>, ParentType, ContextType>
+  year?: Resolver<ResolversTypes['Int'], ParentType, ContextType>
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>
+}
+
+export type EBoardTermRoleResolvers<ContextType = any, ParentType extends ResolversParentTypes['EBoardTermRole'] = ResolversParentTypes['EBoardTermRole']> = {
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>
   roleCode?: Resolver<ResolversTypes['RoleCode'], ParentType, ContextType>
+  term?: Resolver<ResolversTypes['EBoardTerm'], ParentType, ContextType>
+  termId?: Resolver<ResolversTypes['ID'], ParentType, ContextType>
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>
 }
 
@@ -327,7 +356,8 @@ export interface JsonScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes
 export type MutationResolvers<ContextType = any, ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']> = {
   acceptProjectInvite?: Resolver<types.Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<types.MutationAcceptProjectInviteArgs, 'inviteId'>>
   createEBoard?: Resolver<ResolversTypes['EBoard'], ParentType, ContextType, RequireFields<types.MutationCreateEBoardArgs, 'record'>>
-  createEBoardRole?: Resolver<ResolversTypes['EBoardRole'], ParentType, ContextType, RequireFields<types.MutationCreateEBoardRoleArgs, 'record'>>
+  createEBoardTerm?: Resolver<ResolversTypes['EBoardTerm'], ParentType, ContextType, RequireFields<types.MutationCreateEBoardTermArgs, 'record'>>
+  createEBoardTermRole?: Resolver<ResolversTypes['EBoardTermRole'], ParentType, ContextType, RequireFields<types.MutationCreateEBoardTermRoleArgs, 'record'>>
   createProject?: Resolver<ResolversTypes['Project'], ParentType, ContextType, RequireFields<types.MutationCreateProjectArgs, 'record'>>
   createProjectInvite?: Resolver<ResolversTypes['ProjectInvite'], ParentType, ContextType, RequireFields<types.MutationCreateProjectInviteArgs, 'record'>>
   createProjectMember?: Resolver<ResolversTypes['ProjectMember'], ParentType, ContextType, RequireFields<types.MutationCreateProjectMemberArgs, 'record'>>
@@ -337,8 +367,9 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   createUserRole?: Resolver<ResolversTypes['UserRole'], ParentType, ContextType, RequireFields<types.MutationCreateUserRoleArgs, 'record'>>
   createUserSocial?: Resolver<ResolversTypes['UserSocial'], ParentType, ContextType, RequireFields<types.MutationCreateUserSocialArgs, 'record'>>
   deleteEBoard?: Resolver<types.Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<types.MutationDeleteEBoardArgs, 'id'>>
-  deleteEBoardRole?: Resolver<types.Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<types.MutationDeleteEBoardRoleArgs, 'id'>>
-  deleteEBoardRoles?: Resolver<types.Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<types.MutationDeleteEBoardRolesArgs, 'filter'>>
+  deleteEBoardTerm?: Resolver<types.Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<types.MutationDeleteEBoardTermArgs, 'id'>>
+  deleteEBoardTermRoles?: Resolver<types.Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<types.MutationDeleteEBoardTermRolesArgs, 'filter'>>
+  deleteEBoardTerms?: Resolver<types.Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<types.MutationDeleteEBoardTermsArgs, 'filter'>>
   deleteEBoards?: Resolver<types.Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<types.MutationDeleteEBoardsArgs, 'filter'>>
   deleteProject?: Resolver<types.Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<types.MutationDeleteProjectArgs, 'id'>>
   deleteProjectInvite?: Resolver<types.Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<types.MutationDeleteProjectInviteArgs, 'inviteId'>>
@@ -348,6 +379,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   deleteProjectMemberRoles?: Resolver<types.Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<types.MutationDeleteProjectMemberRolesArgs, 'filter'>>
   deleteProjectMembers?: Resolver<types.Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<types.MutationDeleteProjectMembersArgs, 'filter'>>
   deleteProjects?: Resolver<types.Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<types.MutationDeleteProjectsArgs, 'filter'>>
+  deleteUser?: Resolver<types.Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<types.MutationDeleteUserArgs, 'id'>>
   deleteUserLoginIdentitys?: Resolver<types.Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<types.MutationDeleteUserLoginIdentitysArgs, 'filter'>>
   deleteUserRole?: Resolver<types.Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<types.MutationDeleteUserRoleArgs, 'id'>>
   deleteUserRoles?: Resolver<types.Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<types.MutationDeleteUserRolesArgs, 'filter'>>
@@ -355,14 +387,16 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   deleteUsers?: Resolver<types.Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<types.MutationDeleteUsersArgs, 'filter'>>
   joinOpenProject?: Resolver<types.Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<types.MutationJoinOpenProjectArgs, 'projectId'>>
   newEBoard?: Resolver<ResolversTypes['ID'], ParentType, ContextType, RequireFields<types.MutationNewEBoardArgs, 'input'>>
-  newEBoardRole?: Resolver<ResolversTypes['ID'], ParentType, ContextType, RequireFields<types.MutationNewEBoardRoleArgs, 'input'>>
+  newEBoardTerm?: Resolver<ResolversTypes['ID'], ParentType, ContextType, RequireFields<types.MutationNewEBoardTermArgs, 'input'>>
   newProject?: Resolver<ResolversTypes['ID'], ParentType, ContextType, RequireFields<types.MutationNewProjectArgs, 'input'>>
   newProjectInvite?: Resolver<ResolversTypes['ID'], ParentType, ContextType, RequireFields<types.MutationNewProjectInviteArgs, 'input'>>
   newProjectMemberRole?: Resolver<ResolversTypes['ID'], ParentType, ContextType, RequireFields<types.MutationNewProjectMemberRoleArgs, 'input'>>
   newUserRole?: Resolver<ResolversTypes['ID'], ParentType, ContextType, RequireFields<types.MutationNewUserRoleArgs, 'input'>>
   transferProjectOwnership?: Resolver<types.Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<types.MutationTransferProjectOwnershipArgs, 'memberId' | 'projectId'>>
   updateEBoard?: Resolver<types.Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<types.MutationUpdateEBoardArgs, 'input'>>
-  updateEBoardRoles?: Resolver<types.Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<types.MutationUpdateEBoardRolesArgs, 'changes' | 'filter'>>
+  updateEBoardTerm?: Resolver<types.Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<types.MutationUpdateEBoardTermArgs, 'input'>>
+  updateEBoardTermRoles?: Resolver<types.Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<types.MutationUpdateEBoardTermRolesArgs, 'changes' | 'filter'>>
+  updateEBoardTerms?: Resolver<types.Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<types.MutationUpdateEBoardTermsArgs, 'changes' | 'filter'>>
   updateEBoards?: Resolver<types.Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<types.MutationUpdateEBoardsArgs, 'changes' | 'filter'>>
   updateProject?: Resolver<types.Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<types.MutationUpdateProjectArgs, 'input'>>
   updateProjectInvites?: Resolver<types.Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<types.MutationUpdateProjectInvitesArgs, 'changes' | 'filter'>>
@@ -430,7 +464,8 @@ export type ProjectMemberRoleResolvers<ContextType = any, ParentType extends Res
 }
 
 export type QueryResolvers<ContextType = any, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = {
-  eBoardRoles?: Resolver<Array<ResolversTypes['EBoardRole']>, ParentType, ContextType, Partial<types.QueryEBoardRolesArgs>>
+  eBoardTermRoles?: Resolver<Array<ResolversTypes['EBoardTermRole']>, ParentType, ContextType, Partial<types.QueryEBoardTermRolesArgs>>
+  eBoardTerms?: Resolver<Array<ResolversTypes['EBoardTerm']>, ParentType, ContextType, Partial<types.QueryEBoardTermsArgs>>
   eBoards?: Resolver<Array<ResolversTypes['EBoard']>, ParentType, ContextType, Partial<types.QueryEBoardsArgs>>
   isAuthTokenValid?: Resolver<types.Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>
   projectInvites?: Resolver<Array<ResolversTypes['ProjectInvite']>, ParentType, ContextType, Partial<types.QueryProjectInvitesArgs>>
@@ -448,6 +483,9 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
 export type SubscriptionResolvers<ContextType = any, ParentType extends ResolversParentTypes['Subscription'] = ResolversParentTypes['Subscription']> = {
   eBoardCreated?: SubscriptionResolver<types.Maybe<ResolversTypes['ID']>, 'eBoardCreated', ParentType, ContextType, RequireFields<types.SubscriptionEBoardCreatedArgs, 'filter'>>
   eBoardDeleted?: SubscriptionResolver<types.Maybe<ResolversTypes['ID']>, 'eBoardDeleted', ParentType, ContextType, RequireFields<types.SubscriptionEBoardDeletedArgs, 'filter'>>
+  eBoardTermCreated?: SubscriptionResolver<types.Maybe<ResolversTypes['ID']>, 'eBoardTermCreated', ParentType, ContextType, RequireFields<types.SubscriptionEBoardTermCreatedArgs, 'filter'>>
+  eBoardTermDeleted?: SubscriptionResolver<types.Maybe<ResolversTypes['ID']>, 'eBoardTermDeleted', ParentType, ContextType, RequireFields<types.SubscriptionEBoardTermDeletedArgs, 'filter'>>
+  eBoardTermUpdated?: SubscriptionResolver<types.Maybe<ResolversTypes['ID']>, 'eBoardTermUpdated', ParentType, ContextType, RequireFields<types.SubscriptionEBoardTermUpdatedArgs, 'filter'>>
   eBoardUpdated?: SubscriptionResolver<types.Maybe<ResolversTypes['ID']>, 'eBoardUpdated', ParentType, ContextType, RequireFields<types.SubscriptionEBoardUpdatedArgs, 'filter'>>
   projectCreated?: SubscriptionResolver<types.Maybe<ResolversTypes['ID']>, 'projectCreated', ParentType, ContextType, RequireFields<types.SubscriptionProjectCreatedArgs, 'filter'>>
   projectDeleted?: SubscriptionResolver<types.Maybe<ResolversTypes['ID']>, 'projectDeleted', ParentType, ContextType, RequireFields<types.SubscriptionProjectDeletedArgs, 'filter'>>
@@ -516,7 +554,8 @@ export type UserSocialResolvers<ContextType = any, ParentType extends ResolversP
 export type Resolvers<ContextType = any> = {
   Date?: GraphQLScalarType
   EBoard?: EBoardResolvers<ContextType>
-  EBoardRole?: EBoardRoleResolvers<ContextType>
+  EBoardTerm?: EBoardTermResolvers<ContextType>
+  EBoardTermRole?: EBoardTermRoleResolvers<ContextType>
   Json?: GraphQLScalarType
   Mutation?: MutationResolvers<ContextType>
   Project?: ProjectResolvers<ContextType>

@@ -23,20 +23,22 @@ export type ScalarsSpecification = {
 export type AST = {
   EBoard: {
     fields: {
-      createdAt: { type: 'scalar'; isList: false; astName: 'Date'; isRequired: true; isListElementRequired: false; isExcluded: false; isId: false; generationStrategy: 'generator' }
-      graduatedAt: { type: 'scalar'; isList: false; astName: 'Date'; isRequired: false; isListElementRequired: false; isExcluded: false; isId: false; generationStrategy: 'undefined' }
+      avatarLink: { type: 'scalar'; isList: false; astName: 'String'; isRequired: false; isListElementRequired: false; isExcluded: false; isId: false; generationStrategy: 'undefined' }
+      bio: { type: 'scalar'; isList: false; astName: 'String'; isRequired: false; isListElementRequired: false; isExcluded: false; isId: false; generationStrategy: 'undefined' }
+      createdAt: { type: 'scalar'; isList: false; astName: 'Date'; isRequired: false; isListElementRequired: false; isExcluded: false; isId: false; generationStrategy: 'undefined' }
       id: { type: 'scalar'; isList: false; astName: 'ID'; isRequired: true; isListElementRequired: false; isExcluded: false; isId: true; generationStrategy: 'db' }
-      roles: {
+      terms: {
         type: 'relation'
         relation: 'foreign'
         isList: true
-        astName: 'EBoardRole'
+        astName: 'EBoardTerm'
         isRequired: true
         isListElementRequired: true
         isExcluded: false
         isId: false
         generationStrategy: 'undefined'
       }
+      updatedAt: { type: 'scalar'; isList: false; astName: 'Date'; isRequired: false; isListElementRequired: false; isExcluded: false; isId: false; generationStrategy: 'undefined' }
       user: { type: 'relation'; relation: 'inner'; isList: false; astName: 'User'; isRequired: true; isListElementRequired: false; isExcluded: false; isId: false; generationStrategy: 'undefined' }
       userId: { type: 'scalar'; isList: false; astName: 'ID'; isRequired: true; isListElementRequired: false; isExcluded: false; isId: false; generationStrategy: 'undefined' }
     }
@@ -46,12 +48,46 @@ export type AST = {
       rawSorts: () => M.Sort
     }
   }
-  EBoardRole: {
+  EBoardTerm: {
     fields: {
       eBoard: { type: 'relation'; relation: 'inner'; isList: false; astName: 'EBoard'; isRequired: true; isListElementRequired: false; isExcluded: false; isId: false; generationStrategy: 'undefined' }
       eBoardId: { type: 'scalar'; isList: false; astName: 'ID'; isRequired: true; isListElementRequired: false; isExcluded: false; isId: false; generationStrategy: 'undefined' }
       id: { type: 'scalar'; isList: false; astName: 'ID'; isRequired: true; isListElementRequired: false; isExcluded: false; isId: true; generationStrategy: 'db' }
+      roles: {
+        type: 'relation'
+        relation: 'foreign'
+        isList: true
+        astName: 'EBoardTermRole'
+        isRequired: true
+        isListElementRequired: true
+        isExcluded: false
+        isId: false
+        generationStrategy: 'undefined'
+      }
+      year: { type: 'scalar'; isList: false; astName: 'Int'; isRequired: true; isListElementRequired: false; isExcluded: false; isId: false; generationStrategy: 'undefined' }
+    }
+    driverSpecification: {
+      rawFilter: () => M.Filter<M.Document>
+      rawUpdate: () => M.UpdateFilter<M.Document>
+      rawSorts: () => M.Sort
+    }
+  }
+  EBoardTermRole: {
+    fields: {
+      id: { type: 'scalar'; isList: false; astName: 'ID'; isRequired: true; isListElementRequired: false; isExcluded: false; isId: true; generationStrategy: 'db' }
       roleCode: { type: 'scalar'; isList: false; astName: 'RoleCode'; isRequired: true; isListElementRequired: false; isExcluded: false; isId: false; generationStrategy: 'undefined' }
+      term: {
+        type: 'relation'
+        relation: 'inner'
+        isList: false
+        astName: 'EBoardTerm'
+        isRequired: true
+        isListElementRequired: false
+        isExcluded: false
+        isId: false
+        generationStrategy: 'undefined'
+      }
+      termId: { type: 'scalar'; isList: false; astName: 'ID'; isRequired: true; isListElementRequired: false; isExcluded: false; isId: false; generationStrategy: 'undefined' }
     }
     driverSpecification: {
       rawFilter: () => M.Filter<M.Document>
@@ -195,6 +231,9 @@ export type AST = {
     fields: {
       eBoardCreated: { type: 'scalar'; isList: false; astName: 'ID'; isRequired: false; isListElementRequired: false; isExcluded: false; isId: false; generationStrategy: 'undefined' }
       eBoardDeleted: { type: 'scalar'; isList: false; astName: 'ID'; isRequired: false; isListElementRequired: false; isExcluded: false; isId: false; generationStrategy: 'undefined' }
+      eBoardTermCreated: { type: 'scalar'; isList: false; astName: 'ID'; isRequired: false; isListElementRequired: false; isExcluded: false; isId: false; generationStrategy: 'undefined' }
+      eBoardTermDeleted: { type: 'scalar'; isList: false; astName: 'ID'; isRequired: false; isListElementRequired: false; isExcluded: false; isId: false; generationStrategy: 'undefined' }
+      eBoardTermUpdated: { type: 'scalar'; isList: false; astName: 'ID'; isRequired: false; isListElementRequired: false; isExcluded: false; isId: false; generationStrategy: 'undefined' }
       eBoardUpdated: { type: 'scalar'; isList: false; astName: 'ID'; isRequired: false; isListElementRequired: false; isExcluded: false; isId: false; generationStrategy: 'undefined' }
       projectCreated: { type: 'scalar'; isList: false; astName: 'ID'; isRequired: false; isListElementRequired: false; isExcluded: false; isId: false; generationStrategy: 'undefined' }
       projectDeleted: { type: 'scalar'; isList: false; astName: 'ID'; isRequired: false; isListElementRequired: false; isExcluded: false; isId: false; generationStrategy: 'undefined' }
@@ -345,15 +384,18 @@ export type AST = {
 
 export function eBoardSchema(): T.Schema<ScalarsSpecification> {
   return {
+    avatarLink: {
+      type: 'scalar',
+      scalar: 'String',
+    },
+    bio: {
+      type: 'scalar',
+      scalar: 'String',
+    },
     createdAt: {
       type: 'scalar',
       scalar: 'Date',
-      required: true,
-      generationStrategy: 'generator',
-    },
-    graduatedAt: {
-      type: 'scalar',
-      scalar: 'Date',
+      metadata: Object.fromEntries([['createdAt', 'true']]),
     },
     id: {
       type: 'scalar',
@@ -363,16 +405,21 @@ export function eBoardSchema(): T.Schema<ScalarsSpecification> {
       required: true,
       alias: '_id',
     },
-    roles: {
+    terms: {
       type: 'relation',
       relation: 'foreign',
-      schema: () => eBoardRoleSchema(),
+      schema: () => eBoardTermSchema(),
       refFrom: 'eBoardId',
       refTo: 'id',
-      dao: 'eBoardRole',
+      dao: 'eBoardTerm',
       isListElementRequired: true,
       required: true,
       isList: true,
+    },
+    updatedAt: {
+      type: 'scalar',
+      scalar: 'Date',
+      metadata: Object.fromEntries([['updatedAt', 'true']]),
     },
     user: {
       type: 'relation',
@@ -450,7 +497,7 @@ export class InMemoryEBoardDAO<MetadataType, OperationMetadataType> extends T.Ab
     })
   }
 }
-export function eBoardRoleSchema(): T.Schema<ScalarsSpecification> {
+export function eBoardTermSchema(): T.Schema<ScalarsSpecification> {
   return {
     eBoard: {
       type: 'relation',
@@ -474,81 +521,199 @@ export function eBoardRoleSchema(): T.Schema<ScalarsSpecification> {
       required: true,
       alias: '_id',
     },
+    roles: {
+      type: 'relation',
+      relation: 'foreign',
+      schema: () => eBoardTermRoleSchema(),
+      refFrom: 'termId',
+      refTo: 'id',
+      dao: 'eBoardTermRole',
+      isListElementRequired: true,
+      required: true,
+      isList: true,
+    },
+    year: {
+      type: 'scalar',
+      scalar: 'Int',
+      required: true,
+    },
+  }
+}
+
+type EBoardTermDAOGenerics<MetadataType, OperationMetadataType> = T.MongoDBDAOGenerics<
+  'EBoardTerm',
+  AST,
+  ScalarsSpecification,
+  EBoardTermCachedTypes,
+  MetadataType,
+  OperationMetadataType,
+  EntityManager<MetadataType, OperationMetadataType>
+>
+export type EBoardTermDAOParams<MetadataType, OperationMetadataType> = Omit<
+  T.MongoDBDAOParams<EBoardTermDAOGenerics<MetadataType, OperationMetadataType>>,
+  'idGenerator' | 'idField' | 'schema' | 'idScalar' | 'idGeneration'
+>
+export type InMemoryEBoardTermDAOParams<MetadataType, OperationMetadataType> = Omit<
+  T.InMemoryDAOParams<EBoardTermDAOGenerics<MetadataType, OperationMetadataType>>,
+  'idGenerator' | 'idField' | 'schema' | 'idScalar' | 'idGeneration'
+>
+
+export type EBoardTermIdFields = T.IdFields<'EBoardTerm', AST>
+export interface EBoardTermModel extends types.EBoardTerm {}
+export interface EBoardTermInsert extends T.Insert<'EBoardTerm', AST, ScalarsSpecification> {}
+export interface EBoardTermPlainModel extends T.GenerateModel<'EBoardTerm', AST, ScalarsSpecification, 'relation'> {}
+export interface EBoardTermProjection extends T.Projection<'EBoardTerm', AST> {}
+export interface EBoardTermUpdate extends T.Update<'EBoardTerm', AST, ScalarsSpecification> {}
+export interface EBoardTermFilter extends T.Filter<'EBoardTerm', AST, ScalarsSpecification> {}
+export interface EBoardTermSortElement extends T.SortElement<'EBoardTerm', AST> {}
+export interface EBoardTermRelationsFindParams extends T.RelationsFindParams<'EBoardTerm', AST, ScalarsSpecification> {}
+export type EBoardTermParams<P extends EBoardTermProjection> = T.Params<'EBoardTerm', AST, ScalarsSpecification, P>
+export type EBoardTermCachedTypes = T.CachedTypes<
+  EBoardTermIdFields,
+  EBoardTermModel,
+  EBoardTermInsert,
+  EBoardTermPlainModel,
+  EBoardTermProjection,
+  EBoardTermUpdate,
+  EBoardTermFilter,
+  EBoardTermSortElement,
+  EBoardTermRelationsFindParams
+>
+
+export class EBoardTermDAO<MetadataType, OperationMetadataType> extends T.AbstractMongoDBDAO<EBoardTermDAOGenerics<MetadataType, OperationMetadataType>> {
+  public static projection<P extends T.Projection<'EBoardTerm', AST>>(p: P) {
+    return p
+  }
+  public static mergeProjection<P1 extends T.Projection<'EBoardTerm', AST>, P2 extends T.Projection<'EBoardTerm', AST>>(p1: P1, p2: P2): T.SelectProjection<T.Projection<'EBoardTerm', AST>, P1, P2> {
+    return T.mergeProjections(p1, p2) as T.SelectProjection<T.Projection<'EBoardTerm', AST>, P1, P2>
+  }
+  public constructor(params: EBoardTermDAOParams<MetadataType, OperationMetadataType>) {
+    super({
+      ...params,
+      schema: eBoardTermSchema(),
+    })
+  }
+}
+
+export class InMemoryEBoardTermDAO<MetadataType, OperationMetadataType> extends T.AbstractInMemoryDAO<EBoardTermDAOGenerics<MetadataType, OperationMetadataType>> {
+  public static projection<P extends T.Projection<'EBoardTerm', AST>>(p: P) {
+    return p
+  }
+  public static mergeProjection<P1 extends T.Projection<'EBoardTerm', AST>, P2 extends T.Projection<'EBoardTerm', AST>>(p1: P1, p2: P2): T.SelectProjection<T.Projection<'EBoardTerm', AST>, P1, P2> {
+    return T.mergeProjections(p1, p2) as T.SelectProjection<T.Projection<'EBoardTerm', AST>, P1, P2>
+  }
+  public constructor(params: InMemoryEBoardTermDAOParams<MetadataType, OperationMetadataType>) {
+    super({
+      ...params,
+      schema: eBoardTermSchema(),
+    })
+  }
+}
+export function eBoardTermRoleSchema(): T.Schema<ScalarsSpecification> {
+  return {
+    id: {
+      type: 'scalar',
+      scalar: 'ID',
+      isId: true,
+      generationStrategy: 'db',
+      required: true,
+      alias: '_id',
+    },
     roleCode: {
       type: 'scalar',
       scalar: 'String',
       required: true,
       isEnum: true,
     },
+    term: {
+      type: 'relation',
+      relation: 'inner',
+      schema: () => eBoardTermSchema(),
+      refFrom: 'termId',
+      refTo: 'id',
+      dao: 'eBoardTerm',
+      required: true,
+    },
+    termId: {
+      type: 'scalar',
+      scalar: 'ID',
+      required: true,
+    },
   }
 }
 
-type EBoardRoleDAOGenerics<MetadataType, OperationMetadataType> = T.MongoDBDAOGenerics<
-  'EBoardRole',
+type EBoardTermRoleDAOGenerics<MetadataType, OperationMetadataType> = T.MongoDBDAOGenerics<
+  'EBoardTermRole',
   AST,
   ScalarsSpecification,
-  EBoardRoleCachedTypes,
+  EBoardTermRoleCachedTypes,
   MetadataType,
   OperationMetadataType,
   EntityManager<MetadataType, OperationMetadataType>
 >
-export type EBoardRoleDAOParams<MetadataType, OperationMetadataType> = Omit<
-  T.MongoDBDAOParams<EBoardRoleDAOGenerics<MetadataType, OperationMetadataType>>,
+export type EBoardTermRoleDAOParams<MetadataType, OperationMetadataType> = Omit<
+  T.MongoDBDAOParams<EBoardTermRoleDAOGenerics<MetadataType, OperationMetadataType>>,
   'idGenerator' | 'idField' | 'schema' | 'idScalar' | 'idGeneration'
 >
-export type InMemoryEBoardRoleDAOParams<MetadataType, OperationMetadataType> = Omit<
-  T.InMemoryDAOParams<EBoardRoleDAOGenerics<MetadataType, OperationMetadataType>>,
+export type InMemoryEBoardTermRoleDAOParams<MetadataType, OperationMetadataType> = Omit<
+  T.InMemoryDAOParams<EBoardTermRoleDAOGenerics<MetadataType, OperationMetadataType>>,
   'idGenerator' | 'idField' | 'schema' | 'idScalar' | 'idGeneration'
 >
 
-export type EBoardRoleIdFields = T.IdFields<'EBoardRole', AST>
-export interface EBoardRoleModel extends types.EBoardRole {}
-export interface EBoardRoleInsert extends T.Insert<'EBoardRole', AST, ScalarsSpecification> {}
-export interface EBoardRolePlainModel extends T.GenerateModel<'EBoardRole', AST, ScalarsSpecification, 'relation'> {}
-export interface EBoardRoleProjection extends T.Projection<'EBoardRole', AST> {}
-export interface EBoardRoleUpdate extends T.Update<'EBoardRole', AST, ScalarsSpecification> {}
-export interface EBoardRoleFilter extends T.Filter<'EBoardRole', AST, ScalarsSpecification> {}
-export interface EBoardRoleSortElement extends T.SortElement<'EBoardRole', AST> {}
-export interface EBoardRoleRelationsFindParams extends T.RelationsFindParams<'EBoardRole', AST, ScalarsSpecification> {}
-export type EBoardRoleParams<P extends EBoardRoleProjection> = T.Params<'EBoardRole', AST, ScalarsSpecification, P>
-export type EBoardRoleCachedTypes = T.CachedTypes<
-  EBoardRoleIdFields,
-  EBoardRoleModel,
-  EBoardRoleInsert,
-  EBoardRolePlainModel,
-  EBoardRoleProjection,
-  EBoardRoleUpdate,
-  EBoardRoleFilter,
-  EBoardRoleSortElement,
-  EBoardRoleRelationsFindParams
+export type EBoardTermRoleIdFields = T.IdFields<'EBoardTermRole', AST>
+export interface EBoardTermRoleModel extends types.EBoardTermRole {}
+export interface EBoardTermRoleInsert extends T.Insert<'EBoardTermRole', AST, ScalarsSpecification> {}
+export interface EBoardTermRolePlainModel extends T.GenerateModel<'EBoardTermRole', AST, ScalarsSpecification, 'relation'> {}
+export interface EBoardTermRoleProjection extends T.Projection<'EBoardTermRole', AST> {}
+export interface EBoardTermRoleUpdate extends T.Update<'EBoardTermRole', AST, ScalarsSpecification> {}
+export interface EBoardTermRoleFilter extends T.Filter<'EBoardTermRole', AST, ScalarsSpecification> {}
+export interface EBoardTermRoleSortElement extends T.SortElement<'EBoardTermRole', AST> {}
+export interface EBoardTermRoleRelationsFindParams extends T.RelationsFindParams<'EBoardTermRole', AST, ScalarsSpecification> {}
+export type EBoardTermRoleParams<P extends EBoardTermRoleProjection> = T.Params<'EBoardTermRole', AST, ScalarsSpecification, P>
+export type EBoardTermRoleCachedTypes = T.CachedTypes<
+  EBoardTermRoleIdFields,
+  EBoardTermRoleModel,
+  EBoardTermRoleInsert,
+  EBoardTermRolePlainModel,
+  EBoardTermRoleProjection,
+  EBoardTermRoleUpdate,
+  EBoardTermRoleFilter,
+  EBoardTermRoleSortElement,
+  EBoardTermRoleRelationsFindParams
 >
 
-export class EBoardRoleDAO<MetadataType, OperationMetadataType> extends T.AbstractMongoDBDAO<EBoardRoleDAOGenerics<MetadataType, OperationMetadataType>> {
-  public static projection<P extends T.Projection<'EBoardRole', AST>>(p: P) {
+export class EBoardTermRoleDAO<MetadataType, OperationMetadataType> extends T.AbstractMongoDBDAO<EBoardTermRoleDAOGenerics<MetadataType, OperationMetadataType>> {
+  public static projection<P extends T.Projection<'EBoardTermRole', AST>>(p: P) {
     return p
   }
-  public static mergeProjection<P1 extends T.Projection<'EBoardRole', AST>, P2 extends T.Projection<'EBoardRole', AST>>(p1: P1, p2: P2): T.SelectProjection<T.Projection<'EBoardRole', AST>, P1, P2> {
-    return T.mergeProjections(p1, p2) as T.SelectProjection<T.Projection<'EBoardRole', AST>, P1, P2>
+  public static mergeProjection<P1 extends T.Projection<'EBoardTermRole', AST>, P2 extends T.Projection<'EBoardTermRole', AST>>(
+    p1: P1,
+    p2: P2,
+  ): T.SelectProjection<T.Projection<'EBoardTermRole', AST>, P1, P2> {
+    return T.mergeProjections(p1, p2) as T.SelectProjection<T.Projection<'EBoardTermRole', AST>, P1, P2>
   }
-  public constructor(params: EBoardRoleDAOParams<MetadataType, OperationMetadataType>) {
+  public constructor(params: EBoardTermRoleDAOParams<MetadataType, OperationMetadataType>) {
     super({
       ...params,
-      schema: eBoardRoleSchema(),
+      schema: eBoardTermRoleSchema(),
     })
   }
 }
 
-export class InMemoryEBoardRoleDAO<MetadataType, OperationMetadataType> extends T.AbstractInMemoryDAO<EBoardRoleDAOGenerics<MetadataType, OperationMetadataType>> {
-  public static projection<P extends T.Projection<'EBoardRole', AST>>(p: P) {
+export class InMemoryEBoardTermRoleDAO<MetadataType, OperationMetadataType> extends T.AbstractInMemoryDAO<EBoardTermRoleDAOGenerics<MetadataType, OperationMetadataType>> {
+  public static projection<P extends T.Projection<'EBoardTermRole', AST>>(p: P) {
     return p
   }
-  public static mergeProjection<P1 extends T.Projection<'EBoardRole', AST>, P2 extends T.Projection<'EBoardRole', AST>>(p1: P1, p2: P2): T.SelectProjection<T.Projection<'EBoardRole', AST>, P1, P2> {
-    return T.mergeProjections(p1, p2) as T.SelectProjection<T.Projection<'EBoardRole', AST>, P1, P2>
+  public static mergeProjection<P1 extends T.Projection<'EBoardTermRole', AST>, P2 extends T.Projection<'EBoardTermRole', AST>>(
+    p1: P1,
+    p2: P2,
+  ): T.SelectProjection<T.Projection<'EBoardTermRole', AST>, P1, P2> {
+    return T.mergeProjections(p1, p2) as T.SelectProjection<T.Projection<'EBoardTermRole', AST>, P1, P2>
   }
-  public constructor(params: InMemoryEBoardRoleDAOParams<MetadataType, OperationMetadataType>) {
+  public constructor(params: InMemoryEBoardTermRoleDAOParams<MetadataType, OperationMetadataType>) {
     super({
       ...params,
-      schema: eBoardRoleSchema(),
+      schema: eBoardTermRoleSchema(),
     })
   }
 }
@@ -748,7 +913,7 @@ export function projectInviteSchema(): T.Schema<ScalarsSpecification> {
       type: 'scalar',
       scalar: 'ID',
       required: true,
-      metadata: Object.fromEntries([['undefined', 'undefined']]),
+      metadata: Object.fromEntries([['unique', 'true']]),
     },
     type: {
       type: 'scalar',
@@ -769,7 +934,7 @@ export function projectInviteSchema(): T.Schema<ScalarsSpecification> {
       type: 'scalar',
       scalar: 'ID',
       required: true,
-      metadata: Object.fromEntries([['undefined', 'undefined']]),
+      metadata: Object.fromEntries([['unique', 'true']]),
     },
   }
 }
@@ -911,7 +1076,7 @@ export function projectMemberSchema(): T.Schema<ScalarsSpecification> {
       type: 'scalar',
       scalar: 'ID',
       required: true,
-      metadata: Object.fromEntries([['undefined', 'undefined']]),
+      metadata: Object.fromEntries([['unique', 'true']]),
     },
   }
 }
@@ -1020,7 +1185,7 @@ export function projectMemberRoleSchema(): T.Schema<ScalarsSpecification> {
       scalar: 'String',
       required: true,
       isEnum: true,
-      metadata: Object.fromEntries([['undefined', 'undefined']]),
+      metadata: Object.fromEntries([['unique', 'true']]),
     },
   }
 }
@@ -1107,6 +1272,18 @@ export function subscriptionSchema(): T.Schema<ScalarsSpecification> {
       scalar: 'ID',
     },
     eBoardDeleted: {
+      type: 'scalar',
+      scalar: 'ID',
+    },
+    eBoardTermCreated: {
+      type: 'scalar',
+      scalar: 'ID',
+    },
+    eBoardTermDeleted: {
+      type: 'scalar',
+      scalar: 'ID',
+    },
+    eBoardTermUpdated: {
       type: 'scalar',
       scalar: 'ID',
     },
@@ -1353,7 +1530,7 @@ export function userLoginIdentitySchema(): T.Schema<ScalarsSpecification> {
       type: 'scalar',
       scalar: 'String',
       required: true,
-      metadata: Object.fromEntries([['undefined', 'undefined']]),
+      metadata: Object.fromEntries([['unique', 'true']]),
     },
     user: {
       type: 'relation',
@@ -1462,7 +1639,7 @@ export function userRoleSchema(): T.Schema<ScalarsSpecification> {
       scalar: 'String',
       required: true,
       isEnum: true,
-      metadata: Object.fromEntries([['undefined', 'undefined']]),
+      metadata: Object.fromEntries([['unique', 'true']]),
     },
     user: {
       type: 'relation',
@@ -1477,7 +1654,7 @@ export function userRoleSchema(): T.Schema<ScalarsSpecification> {
       type: 'scalar',
       scalar: 'ID',
       required: true,
-      metadata: Object.fromEntries([['undefined', 'undefined']]),
+      metadata: Object.fromEntries([['unique', 'true']]),
     },
   }
 }
@@ -1668,7 +1845,8 @@ export type EntityManagerParams<MetadataType, OperationMetadataType, Permissions
   middlewares?: (EntityManagerMiddleware<MetadataType, OperationMetadataType> | GroupMiddleware<any, MetadataType, OperationMetadataType>)[]
   overrides?: {
     eBoard?: Pick<Partial<EBoardDAOParams<MetadataType, OperationMetadataType>>, 'middlewares' | 'metadata'>
-    eBoardRole?: Pick<Partial<EBoardRoleDAOParams<MetadataType, OperationMetadataType>>, 'middlewares' | 'metadata'>
+    eBoardTerm?: Pick<Partial<EBoardTermDAOParams<MetadataType, OperationMetadataType>>, 'middlewares' | 'metadata'>
+    eBoardTermRole?: Pick<Partial<EBoardTermRoleDAOParams<MetadataType, OperationMetadataType>>, 'middlewares' | 'metadata'>
     project?: Pick<Partial<ProjectDAOParams<MetadataType, OperationMetadataType>>, 'middlewares' | 'metadata'>
     projectInvite?: Pick<Partial<ProjectInviteDAOParams<MetadataType, OperationMetadataType>>, 'middlewares' | 'metadata'>
     projectMember?: Pick<Partial<ProjectMemberDAOParams<MetadataType, OperationMetadataType>>, 'middlewares' | 'metadata'>
@@ -1680,7 +1858,7 @@ export type EntityManagerParams<MetadataType, OperationMetadataType, Permissions
   }
   mongodb: Record<'default', M.Db | 'mock'>
   scalars?: T.UserInputDriverDataTypeAdapterMap<ScalarsSpecification, 'mongo'>
-  log?: T.LogInput<'EBoard' | 'EBoardRole' | 'Project' | 'ProjectInvite' | 'ProjectMember' | 'ProjectMemberRole' | 'User' | 'UserLoginIdentity' | 'UserRole' | 'UserSocial'>
+  log?: T.LogInput<'EBoard' | 'EBoardTerm' | 'EBoardTermRole' | 'Project' | 'ProjectInvite' | 'ProjectMember' | 'ProjectMemberRole' | 'User' | 'UserLoginIdentity' | 'UserRole' | 'UserSocial'>
   security?: T.EntityManagerSecurtyPolicy<DAOGenericsMap<MetadataType, OperationMetadataType>, OperationMetadataType, Permissions, SecurityDomain>
 }
 type EntityManagerMiddleware<MetadataType = never, OperationMetadataType = never> = T.DAOMiddleware<DAOGenericsUnion<MetadataType, OperationMetadataType>>
@@ -1691,7 +1869,8 @@ export class EntityManager<
   SecurityDomain extends Record<string, unknown> = never,
 > extends T.AbstractEntityManager<'default', never, ScalarsSpecification, MetadataType> {
   private _eBoard: EBoardDAO<MetadataType, OperationMetadataType> | undefined
-  private _eBoardRole: EBoardRoleDAO<MetadataType, OperationMetadataType> | undefined
+  private _eBoardTerm: EBoardTermDAO<MetadataType, OperationMetadataType> | undefined
+  private _eBoardTermRole: EBoardTermRoleDAO<MetadataType, OperationMetadataType> | undefined
   private _project: ProjectDAO<MetadataType, OperationMetadataType> | undefined
   private _projectInvite: ProjectInviteDAO<MetadataType, OperationMetadataType> | undefined
   private _projectMember: ProjectMemberDAO<MetadataType, OperationMetadataType> | undefined
@@ -1708,7 +1887,9 @@ export class EntityManager<
 
   private middlewares: (EntityManagerMiddleware<MetadataType, OperationMetadataType> | GroupMiddleware<any, MetadataType, OperationMetadataType>)[]
 
-  private logger?: T.LogFunction<'EBoard' | 'EBoardRole' | 'Project' | 'ProjectInvite' | 'ProjectMember' | 'ProjectMemberRole' | 'User' | 'UserLoginIdentity' | 'UserRole' | 'UserSocial'>
+  private logger?: T.LogFunction<
+    'EBoard' | 'EBoardTerm' | 'EBoardTermRole' | 'Project' | 'ProjectInvite' | 'ProjectMember' | 'ProjectMemberRole' | 'User' | 'UserLoginIdentity' | 'UserRole' | 'UserSocial'
+  >
 
   get eBoard(): EBoardDAO<MetadataType, OperationMetadataType> {
     if (!this._eBoard) {
@@ -1743,38 +1924,71 @@ export class EntityManager<
     }
     return this._eBoard
   }
-  get eBoardRole(): EBoardRoleDAO<MetadataType, OperationMetadataType> {
-    if (!this._eBoardRole) {
+  get eBoardTerm(): EBoardTermDAO<MetadataType, OperationMetadataType> {
+    if (!this._eBoardTerm) {
       const db = this.mongodb.default
-      this._eBoardRole =
+      this._eBoardTerm =
         db === 'mock'
-          ? (new InMemoryEBoardRoleDAO({
+          ? (new InMemoryEBoardTermDAO({
               entityManager: this,
               datasource: null,
               metadata: this.metadata,
-              ...this.overrides?.eBoardRole,
+              ...this.overrides?.eBoardTerm,
               middlewares: [
-                ...(this.overrides?.eBoardRole?.middlewares || []),
-                ...(selectMiddleware('eBoardRole', this.middlewares) as T.DAOMiddleware<EBoardRoleDAOGenerics<MetadataType, OperationMetadataType>>[]),
+                ...(this.overrides?.eBoardTerm?.middlewares || []),
+                ...(selectMiddleware('eBoardTerm', this.middlewares) as T.DAOMiddleware<EBoardTermDAOGenerics<MetadataType, OperationMetadataType>>[]),
               ],
-              name: 'EBoardRole',
+              name: 'EBoardTerm',
               logger: this.logger,
-            }) as unknown as EBoardRoleDAO<MetadataType, OperationMetadataType>)
-          : new EBoardRoleDAO({
+            }) as unknown as EBoardTermDAO<MetadataType, OperationMetadataType>)
+          : new EBoardTermDAO({
               entityManager: this,
               datasource: 'default',
               metadata: this.metadata,
-              ...this.overrides?.eBoardRole,
-              collection: db.collection('eBoardRoles'),
+              ...this.overrides?.eBoardTerm,
+              collection: db.collection('eBoardTerms'),
               middlewares: [
-                ...(this.overrides?.eBoardRole?.middlewares || []),
-                ...(selectMiddleware('eBoardRole', this.middlewares) as T.DAOMiddleware<EBoardRoleDAOGenerics<MetadataType, OperationMetadataType>>[]),
+                ...(this.overrides?.eBoardTerm?.middlewares || []),
+                ...(selectMiddleware('eBoardTerm', this.middlewares) as T.DAOMiddleware<EBoardTermDAOGenerics<MetadataType, OperationMetadataType>>[]),
               ],
-              name: 'EBoardRole',
+              name: 'EBoardTerm',
               logger: this.logger,
             })
     }
-    return this._eBoardRole
+    return this._eBoardTerm
+  }
+  get eBoardTermRole(): EBoardTermRoleDAO<MetadataType, OperationMetadataType> {
+    if (!this._eBoardTermRole) {
+      const db = this.mongodb.default
+      this._eBoardTermRole =
+        db === 'mock'
+          ? (new InMemoryEBoardTermRoleDAO({
+              entityManager: this,
+              datasource: null,
+              metadata: this.metadata,
+              ...this.overrides?.eBoardTermRole,
+              middlewares: [
+                ...(this.overrides?.eBoardTermRole?.middlewares || []),
+                ...(selectMiddleware('eBoardTermRole', this.middlewares) as T.DAOMiddleware<EBoardTermRoleDAOGenerics<MetadataType, OperationMetadataType>>[]),
+              ],
+              name: 'EBoardTermRole',
+              logger: this.logger,
+            }) as unknown as EBoardTermRoleDAO<MetadataType, OperationMetadataType>)
+          : new EBoardTermRoleDAO({
+              entityManager: this,
+              datasource: 'default',
+              metadata: this.metadata,
+              ...this.overrides?.eBoardTermRole,
+              collection: db.collection('eBoardTermRoles'),
+              middlewares: [
+                ...(this.overrides?.eBoardTermRole?.middlewares || []),
+                ...(selectMiddleware('eBoardTermRole', this.middlewares) as T.DAOMiddleware<EBoardTermRoleDAOGenerics<MetadataType, OperationMetadataType>>[]),
+              ],
+              name: 'EBoardTermRole',
+              logger: this.logger,
+            })
+    }
+    return this._eBoardTermRole
   }
   get project(): ProjectDAO<MetadataType, OperationMetadataType> {
     if (!this._project) {
@@ -2081,7 +2295,8 @@ export class EntityManager<
       dbs: { mongodb: Record<'default', M.Db | 'mock'> },
       entities: {
         eBoard: M.Collection<M.Document> | null
-        eBoardRole: M.Collection<M.Document> | null
+        eBoardTerm: M.Collection<M.Document> | null
+        eBoardTermRole: M.Collection<M.Document> | null
         project: M.Collection<M.Document> | null
         projectInvite: M.Collection<M.Document> | null
         projectMember: M.Collection<M.Document> | null
@@ -2097,7 +2312,8 @@ export class EntityManager<
       { mongodb: this.mongodb },
       {
         eBoard: this.mongodb.default === 'mock' ? null : this.mongodb.default.collection('eBoards'),
-        eBoardRole: this.mongodb.default === 'mock' ? null : this.mongodb.default.collection('eBoardRoles'),
+        eBoardTerm: this.mongodb.default === 'mock' ? null : this.mongodb.default.collection('eBoardTerms'),
+        eBoardTermRole: this.mongodb.default === 'mock' ? null : this.mongodb.default.collection('eBoardTermRoles'),
         project: this.mongodb.default === 'mock' ? null : this.mongodb.default.collection('projects'),
         projectInvite: this.mongodb.default === 'mock' ? null : this.mongodb.default.collection('projectInvites'),
         projectMember: this.mongodb.default === 'mock' ? null : this.mongodb.default.collection('projectMembers'),
@@ -2118,7 +2334,8 @@ export class EntityManager<
 type DAOName = keyof DAOGenericsMap<never, never>
 type DAOGenericsMap<MetadataType, OperationMetadataType> = {
   eBoard: EBoardDAOGenerics<MetadataType, OperationMetadataType>
-  eBoardRole: EBoardRoleDAOGenerics<MetadataType, OperationMetadataType>
+  eBoardTerm: EBoardTermDAOGenerics<MetadataType, OperationMetadataType>
+  eBoardTermRole: EBoardTermRoleDAOGenerics<MetadataType, OperationMetadataType>
   project: ProjectDAOGenerics<MetadataType, OperationMetadataType>
   projectInvite: ProjectInviteDAOGenerics<MetadataType, OperationMetadataType>
   projectMember: ProjectMemberDAOGenerics<MetadataType, OperationMetadataType>

@@ -5,10 +5,10 @@ import { deleteProjectInvites } from '@src/graphql/project-invite/project-invite
 import pubsub, { PubSubEvents } from '@src/graphql/pubsub';
 import { makeSubscriptionResolver } from '@src/graphql/subscription-resolver-builder';
 import { ApolloResolversContext } from '@src/misc/context';
-import { makePermsCalc } from '@src/shared/security';
+import { makePermsCalc, RoleType } from '@src/shared/security';
 import { HttpError } from '@src/shared/utils';
 import { assertNoDuplicates } from '@src/shared/validation';
-import { assertRequesterCanManageRoleCodes, daoInsertBatch, daoInsertRolesBatch, deleteEntityRoleResolver, EntityRoleResolverOptions, getEntityRoleCodes, isDefined, newEntityRoleResolver, startEntityManagerTransaction } from '@src/utils';
+import { assertRequesterCanManageRoleCodes, assertRolesAreOfType, daoInsertBatch, daoInsertRolesBatch, deleteEntityRoleResolver, EntityRoleResolverOptions, getEntityRoleCodes, isDefined, newEntityRoleResolver, startEntityManagerTransaction } from '@src/utils';
 
 const roleResolverOptions = <EntityRoleResolverOptions>{
   entityCamelCaseName: "user",
@@ -28,9 +28,6 @@ export default {
         });
       
       permCalc.assertPermission(Permission.UpdateUser);
-
-      if (isDefined(args.input.roles))
-        permCalc.assertPermission(Permission.ManageUserRoles);
 
       const user = await context.unsecureEntityManager.user.findOne({
         filter: {
@@ -55,9 +52,11 @@ export default {
         }
 
         if (isDefined(args.input.roles)) {
+          permCalc.assertPermission(Permission.ManageUserRoles);
           const requesterRoleCodes = await roleResolverOptions.getRequesterRoles(transEntityManager, context.securityContext.userId, context.securityContext.userId);
           if (!args.input.roles.some(x => x === RoleCode.User))
             throw new HttpError(400, "User must have User role!");
+          assertRolesAreOfType(args.input.roles, RoleType.User);
           assertRequesterCanManageRoleCodes(requesterRoleCodes, args.input.roles);
           await daoInsertRolesBatch({
             dao: transEntityManager.userRole,
@@ -104,7 +103,7 @@ export default {
           });
         }
 
-        let avatarSelfHostedFilePath = "";
+        let avatarSelfHostedFilePath = null;
         if (isDefined(args.input.avatar)) {
           if (args.input.avatar.operation === UploadOperation.Insert ||
             args.input.avatar.operation === UploadOperation.Delete)
@@ -118,7 +117,7 @@ export default {
           }
         }
 
-        let bannerSelfHostedFilePath = "";
+        let bannerSelfHostedFilePath = null;
         if (isDefined(args.input.banner)) {
           if (args.input.banner.operation === UploadOperation.Insert ||
             args.input.banner.operation === UploadOperation.Delete)

@@ -6,23 +6,23 @@ extend type Mutation {
   updateEBoard(input: UpdateEBoardInput!): Boolean
   deleteEBoard(id: ID!): Boolean
 
-  newEBoardRole(input: NewEBoardRoleInput!): ID!
-  deleteEBoardRole(id: ID!): Boolean
+  newEBoardTerm(input: NewEBoardTermInput!): ID!
+  updateEBoardTerm(input: UpdateEBoardTermInput!): Boolean
+  deleteEBoardTerm(id: ID!): Boolean
 }
 
 extend type Subscription {
   eBoardCreated(filter: EBoardSubscriptionFilter!): ID
   eBoardUpdated(filter: EBoardSubscriptionFilter!): ID
   eBoardDeleted(filter: EBoardSubscriptionFilter!): ID
+
+  eBoardTermCreated(filter: EBoardTermSubscriptionFilter!): ID
+  eBoardTermUpdated(filter: EBoardTermSubscriptionFilter!): ID
+  eBoardTermDeleted(filter: EBoardTermSubscriptionFilter!): ID
 }
 
 input EBoardSubscriptionFilter {
   userId: ID
-}
-
-input NewEBoardRoleInput {
-  eBoardId: ID!
-  roleCode: RoleCode!
 }
 
 input NewEBoardInput {
@@ -31,7 +31,22 @@ input NewEBoardInput {
 
 input UpdateEBoardInput {
   id: ID!
-  graduatedAt: ID!
+  avatar: UploadWithOperation
+  bio: String
+}
+
+input EBoardTermSubscriptionFilter {
+  eBoardId: ID
+}
+
+input NewEBoardTermInput {
+  eBoardId: ID!
+  year: Int!
+}
+
+input UpdateEBoardTermInput {
+  id: ID!
+  year: Int!
   roles: [RoleCode!]
 }
 `;

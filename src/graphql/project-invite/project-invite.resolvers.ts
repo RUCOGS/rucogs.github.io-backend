@@ -56,8 +56,7 @@ export default {
         record: {
           type: args.input.type,
           projectId: args.input.projectId,
-          userId: args.input.userId,
-          createdAt: Date.now()
+          userId: args.input.userId
         }
       });
 
@@ -212,10 +211,7 @@ export async function deleteProjectInvites(entityManager: EntityManager, filter:
 
 export async function makeProjectMember(entityManager: EntityManager, record: ProjectMemberInsert, additionalRoles: RoleCode[] = [], emitSubscription: boolean = true) {
   const member = await entityManager.projectMember.insertOne({
-    record: {
-      ...record,
-      createdAt: Date.now()
-    }
+    record
   })
   await daoInsertRolesBatch({
     dao: entityManager.projectMemberRole, 

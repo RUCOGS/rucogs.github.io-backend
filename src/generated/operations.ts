@@ -153,32 +153,40 @@ export default gql`
 
   ########### EBoard ###########
   input EBoardInsertInput {
+    avatarLink: String
+    bio: String
     createdAt: Date
-    graduatedAt: Date
+    updatedAt: Date
     userId: ID!
   }
   input EBoardUpdateInput {
+    avatarLink: String
+    bio: String
     createdAt: Date
-    graduatedAt: Date
+    updatedAt: Date
     userId: ID
   }
   input EBoardSortInput {
+    avatarLink: SortDirection
+    bio: SortDirection
     createdAt: SortDirection
-    graduatedAt: SortDirection
     id: SortDirection
+    updatedAt: SortDirection
     userId: SortDirection
   }
   input EBoardFilterInput {
+    avatarLink: StringFilterInput
+    bio: StringFilterInput
     createdAt: DateFilterInput
-    graduatedAt: DateFilterInput
     id: IDFilterInput
+    updatedAt: DateFilterInput
     userId: IDFilterInput
     and_: [EBoardFilterInput!]
     or_: [EBoardFilterInput!]
     nor_: [EBoardFilterInput!]
   }
   input EBoardRelationsFilterInput {
-    roles: EBoardRoleFindInput
+    terms: EBoardTermFindInput
     user: UserFindInput
   }
   input EBoardFindInput {
@@ -190,39 +198,74 @@ export default gql`
   }
   ########### EBoard ###########
 
-  ########### EBoardRole ###########
-  input EBoardRoleInsertInput {
+  ########### EBoardTerm ###########
+  input EBoardTermInsertInput {
     eBoardId: ID!
-    roleCode: RoleCode!
+    year: Int!
   }
-  input EBoardRoleUpdateInput {
+  input EBoardTermUpdateInput {
     eBoardId: ID
-    roleCode: RoleCode
+    year: Int
   }
-  input EBoardRoleSortInput {
+  input EBoardTermSortInput {
     eBoardId: SortDirection
     id: SortDirection
-    roleCode: SortDirection
+    year: SortDirection
   }
-  input EBoardRoleFilterInput {
+  input EBoardTermFilterInput {
     eBoardId: IDFilterInput
     id: IDFilterInput
-    roleCode: RoleCodeFilterInput
-    and_: [EBoardRoleFilterInput!]
-    or_: [EBoardRoleFilterInput!]
-    nor_: [EBoardRoleFilterInput!]
+    year: IntFilterInput
+    and_: [EBoardTermFilterInput!]
+    or_: [EBoardTermFilterInput!]
+    nor_: [EBoardTermFilterInput!]
   }
-  input EBoardRoleRelationsFilterInput {
+  input EBoardTermRelationsFilterInput {
     eBoard: EBoardFindInput
+    roles: EBoardTermRoleFindInput
   }
-  input EBoardRoleFindInput {
-    filter: EBoardRoleFilterInput
-    sorts: [EBoardRoleSortInput!]
+  input EBoardTermFindInput {
+    filter: EBoardTermFilterInput
+    sorts: [EBoardTermSortInput!]
     skip: Int
     limit: Int
-    relations: EBoardRoleRelationsFilterInput
+    relations: EBoardTermRelationsFilterInput
   }
-  ########### EBoardRole ###########
+  ########### EBoardTerm ###########
+
+  ########### EBoardTermRole ###########
+  input EBoardTermRoleInsertInput {
+    roleCode: RoleCode!
+    termId: ID!
+  }
+  input EBoardTermRoleUpdateInput {
+    roleCode: RoleCode
+    termId: ID
+  }
+  input EBoardTermRoleSortInput {
+    id: SortDirection
+    roleCode: SortDirection
+    termId: SortDirection
+  }
+  input EBoardTermRoleFilterInput {
+    id: IDFilterInput
+    roleCode: RoleCodeFilterInput
+    termId: IDFilterInput
+    and_: [EBoardTermRoleFilterInput!]
+    or_: [EBoardTermRoleFilterInput!]
+    nor_: [EBoardTermRoleFilterInput!]
+  }
+  input EBoardTermRoleRelationsFilterInput {
+    term: EBoardTermFindInput
+  }
+  input EBoardTermRoleFindInput {
+    filter: EBoardTermRoleFilterInput
+    sorts: [EBoardTermRoleSortInput!]
+    skip: Int
+    limit: Int
+    relations: EBoardTermRoleRelationsFilterInput
+  }
+  ########### EBoardTermRole ###########
 
   ########### Project ###########
   input ProjectInsertInput {
@@ -432,6 +475,9 @@ export default gql`
   input SubscriptionInsertInput {
     eBoardCreated: ID
     eBoardDeleted: ID
+    eBoardTermCreated: ID
+    eBoardTermDeleted: ID
+    eBoardTermUpdated: ID
     eBoardUpdated: ID
     projectCreated: ID
     projectDeleted: ID
@@ -448,6 +494,9 @@ export default gql`
   input SubscriptionUpdateInput {
     eBoardCreated: ID
     eBoardDeleted: ID
+    eBoardTermCreated: ID
+    eBoardTermDeleted: ID
+    eBoardTermUpdated: ID
     eBoardUpdated: ID
     projectCreated: ID
     projectDeleted: ID
@@ -464,6 +513,9 @@ export default gql`
   input SubscriptionSortInput {
     eBoardCreated: SortDirection
     eBoardDeleted: SortDirection
+    eBoardTermCreated: SortDirection
+    eBoardTermDeleted: SortDirection
+    eBoardTermUpdated: SortDirection
     eBoardUpdated: SortDirection
     projectCreated: SortDirection
     projectDeleted: SortDirection
@@ -662,7 +714,8 @@ export default gql`
 
   type Query {
     eBoards(filter: EBoardFilterInput, sorts: [EBoardSortInput!], relations: EBoardRelationsFilterInput, skip: Int, limit: Int): [EBoard!]!
-    eBoardRoles(filter: EBoardRoleFilterInput, sorts: [EBoardRoleSortInput!], relations: EBoardRoleRelationsFilterInput, skip: Int, limit: Int): [EBoardRole!]!
+    eBoardTerms(filter: EBoardTermFilterInput, sorts: [EBoardTermSortInput!], relations: EBoardTermRelationsFilterInput, skip: Int, limit: Int): [EBoardTerm!]!
+    eBoardTermRoles(filter: EBoardTermRoleFilterInput, sorts: [EBoardTermRoleSortInput!], relations: EBoardTermRoleRelationsFilterInput, skip: Int, limit: Int): [EBoardTermRole!]!
     projects(filter: ProjectFilterInput, sorts: [ProjectSortInput!], relations: ProjectRelationsFilterInput, skip: Int, limit: Int): [Project!]!
     projectInvites(filter: ProjectInviteFilterInput, sorts: [ProjectInviteSortInput!], relations: ProjectInviteRelationsFilterInput, skip: Int, limit: Int): [ProjectInvite!]!
     projectMembers(filter: ProjectMemberFilterInput, sorts: [ProjectMemberSortInput!], relations: ProjectMemberRelationsFilterInput, skip: Int, limit: Int): [ProjectMember!]!
@@ -677,9 +730,12 @@ export default gql`
     createEBoard(record: EBoardInsertInput!): EBoard!
     updateEBoards(filter: EBoardFilterInput!, changes: EBoardUpdateInput!): Boolean
     deleteEBoards(filter: EBoardFilterInput!): Boolean
-    createEBoardRole(record: EBoardRoleInsertInput!): EBoardRole!
-    updateEBoardRoles(filter: EBoardRoleFilterInput!, changes: EBoardRoleUpdateInput!): Boolean
-    deleteEBoardRoles(filter: EBoardRoleFilterInput!): Boolean
+    createEBoardTerm(record: EBoardTermInsertInput!): EBoardTerm!
+    updateEBoardTerms(filter: EBoardTermFilterInput!, changes: EBoardTermUpdateInput!): Boolean
+    deleteEBoardTerms(filter: EBoardTermFilterInput!): Boolean
+    createEBoardTermRole(record: EBoardTermRoleInsertInput!): EBoardTermRole!
+    updateEBoardTermRoles(filter: EBoardTermRoleFilterInput!, changes: EBoardTermRoleUpdateInput!): Boolean
+    deleteEBoardTermRoles(filter: EBoardTermRoleFilterInput!): Boolean
     createProject(record: ProjectInsertInput!): Project!
     updateProjects(filter: ProjectFilterInput!, changes: ProjectUpdateInput!): Boolean
     deleteProjects(filter: ProjectFilterInput!): Boolean
