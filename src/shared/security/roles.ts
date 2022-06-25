@@ -22,7 +22,6 @@ export const RoleData: {
     childRoles: [
       RoleCode.Artist, 
       RoleCode.GameDesigner, 
-      RoleCode.Artist, 
       RoleCode.Musician, 
       RoleCode.SoundDesigner, 
       RoleCode.Programmer,
@@ -40,13 +39,14 @@ export const RoleData: {
       RoleCode.User,
 
       // EBoard Roles
-      RoleCode.Eboard,
       RoleCode.President,
       RoleCode.VicePresident,
-      RoleCode.ClubGraphicArtist,
+      RoleCode.Eboard,
+      RoleCode.Webmaster,
+      RoleCode.Treasurer,
       RoleCode.Outreach,
       RoleCode.BotDeveloper,
-      RoleCode.Alumni,
+      RoleCode.ClubGraphicArtist,
 
       // Project Roles
       RoleCode.ProjectOwner,
@@ -115,10 +115,6 @@ export const RoleData: {
   [RoleCode.BotDeveloper]: {
     type: [RoleType.EBoard],
     name: "🤖 Bot Developer"
-  },
-  [RoleCode.Alumni]: {
-    type: [RoleType.EBoard],
-    name: "💫 EBoard Alumni"
   },
   [RoleCode.Treasurer]: {
     type: [RoleType.EBoard],

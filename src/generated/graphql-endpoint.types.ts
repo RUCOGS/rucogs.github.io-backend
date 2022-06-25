@@ -307,7 +307,6 @@ export type QuerySecurityContextArgs = {
 };
 
 export const RoleCode = {
-  Alumni: 'ALUMNI',
   Artist: 'ARTIST',
   BotDeveloper: 'BOT_DEVELOPER',
   ClubGraphicArtist: 'CLUB_GRAPHIC_ARTIST',

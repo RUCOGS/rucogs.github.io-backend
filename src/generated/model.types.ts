@@ -994,7 +994,6 @@ export type QueryUsersArgs = {
 }
 
 export const RoleCode = {
-  Alumni: 'ALUMNI',
   Artist: 'ARTIST',
   BotDeveloper: 'BOT_DEVELOPER',
   ClubGraphicArtist: 'CLUB_GRAPHIC_ARTIST',
@@ -1240,6 +1239,7 @@ export type UpdateUserInput = {
   avatar?: InputMaybe<UploadWithOperation>
   banner?: InputMaybe<UploadWithOperation>
   bio?: InputMaybe<Scalars['String']>
+  classYear?: InputMaybe<Scalars['Int']>
   displayName?: InputMaybe<Scalars['String']>
   id: Scalars['ID']
   roles?: InputMaybe<Array<RoleCode>>
