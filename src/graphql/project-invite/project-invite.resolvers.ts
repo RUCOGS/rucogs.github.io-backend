@@ -174,8 +174,6 @@ export default {
     },
   },
 
-  // TODO NOW: Fix 
-  // "ERROR Error: Socket closed with event 4500 Subscription field must return Async Iterable. Received: undefined."
   Subscription: {
     projectInviteCreated: makeSubscriptionResolver()
       .pubsub(PubSubEvents.ProjectInviteCreated)

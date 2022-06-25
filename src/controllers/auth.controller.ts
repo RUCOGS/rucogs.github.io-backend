@@ -101,17 +101,6 @@ function getOAuthStrategyPassportCallback<TProfile extends passport.Profile>(ent
         }
       });
 
-      // TODO NOW: Delete this after finishing debugging
-      if (newUser.username === "atlinx") {
-        console.log("Promoting atlinx to superadmin")
-        await entityManager.userRole.insertOne({
-          record: {
-            roleCode: 'SUPER_ADMIN',
-            userId: newUser.id,
-          }
-        });
-      }
-
       await entityManager.userLoginIdentity.insertOne({
         record: {
           name: strategyName,

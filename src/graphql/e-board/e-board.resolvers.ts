@@ -135,8 +135,6 @@ export default {
       return true;
     },
 
-    // TODO NOW: Finish backend for EBoardTerms
-
     newEBoardTerm: async (parent, args, context: ApolloResolversContext, info) => {
       const eBoard = await context.unsecureEntityManager.eBoard.findOne({
         filter: { id: args.input.eBoardId }
