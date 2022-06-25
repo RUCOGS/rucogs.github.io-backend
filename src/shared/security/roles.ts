@@ -42,6 +42,7 @@ export const RoleData: {
       RoleCode.President,
       RoleCode.VicePresident,
       RoleCode.Eboard,
+      RoleCode.EventCoordinator,
       RoleCode.Webmaster,
       RoleCode.Treasurer,
       RoleCode.Outreach,
@@ -107,6 +108,10 @@ export const RoleData: {
   [RoleCode.ClubGraphicArtist]: {
     type: [RoleType.EBoard],
     name: "🎨 Club Graphic Artist"
+  },
+  [RoleCode.EventCoordinator]: {
+    type: [RoleType.EBoard],
+    name: "🌃 Event Coordinator"
   },
   [RoleCode.Outreach]: {
     type: [RoleType.EBoard],

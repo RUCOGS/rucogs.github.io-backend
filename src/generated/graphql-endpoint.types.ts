@@ -311,6 +311,7 @@ export const RoleCode = {
   BotDeveloper: 'BOT_DEVELOPER',
   ClubGraphicArtist: 'CLUB_GRAPHIC_ARTIST',
   Eboard: 'EBOARD',
+  EventCoordinator: 'EVENT_COORDINATOR',
   GameDesigner: 'GAME_DESIGNER',
   Moderator: 'MODERATOR',
   Musician: 'MUSICIAN',
