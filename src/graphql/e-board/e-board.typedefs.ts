@@ -46,7 +46,7 @@ input NewEBoardTermInput {
 
 input UpdateEBoardTermInput {
   id: ID!
-  year: Int!
+  year: Int
   roles: [RoleCode!]
 }
 `;

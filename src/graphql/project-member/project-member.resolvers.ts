@@ -5,7 +5,7 @@ import { ApolloResolversContext } from '@src/misc/context';
 import { makePermsCalc, RoleType } from '@src/shared/security';
 import { HttpError } from '@src/shared/utils';
 import { assertProjectHasMember, assertProjectHasOwner } from '@src/shared/validation';
-import { assertRequesterCanManageRoleCodes, assertRolesAreOfType, daoInsertRolesBatch, EntityRoleResolverOptions, isDefined, newEntityRoleResolver, startEntityManagerTransaction } from '@src/utils';
+import { assertRequesterCanManageRoleCodes, assertRolesAreOfType, daoInsertRolesBatch, isDefined, startEntityManagerTransaction } from '@src/utils';
 import { PartialDeep } from 'type-fest';
 import pubsub, { PubSubEvents } from '../pubsub';
 import { makeSubscriptionResolver } from '../subscription-resolver-builder';

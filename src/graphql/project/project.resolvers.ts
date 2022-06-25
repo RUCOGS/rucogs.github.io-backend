@@ -174,6 +174,9 @@ export default {
         filter: { id: args.id },
         projection: ProjectDAO.projection({
           id: true,
+          cardImageLink: true,
+          bannerLink: true,
+          galleryImageLinks: true,
           members: {
             id: true
           }  
@@ -194,6 +197,13 @@ export default {
         await deleteProjectInvites(transEntityManager, {
           projectId: args.id
         }, true);
+  
+        tryDeleteFileIfSelfHosted(project.cardImageLink);
+        tryDeleteFileIfSelfHosted(project.bannerLink);
+        if (project.galleryImageLinks) {
+          for (const galleryImaageLink of project.galleryImageLinks)
+            tryDeleteFileIfSelfHosted(galleryImaageLink);
+        }
 
         await transEntityManager.project.deleteOne({
           filter: { id: args.id }

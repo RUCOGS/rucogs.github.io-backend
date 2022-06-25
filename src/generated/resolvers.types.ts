@@ -504,6 +504,7 @@ export type UserResolvers<ContextType = any, ParentType extends ResolversParentT
   avatarLink?: Resolver<types.Maybe<ResolversTypes['String']>, ParentType, ContextType>
   bannerLink?: Resolver<types.Maybe<ResolversTypes['String']>, ParentType, ContextType>
   bio?: Resolver<types.Maybe<ResolversTypes['String']>, ParentType, ContextType>
+  classYear?: Resolver<types.Maybe<ResolversTypes['Int']>, ParentType, ContextType>
   createdAt?: Resolver<types.Maybe<ResolversTypes['Date']>, ParentType, ContextType>
   displayName?: Resolver<types.Maybe<ResolversTypes['String']>, ParentType, ContextType>
   eBoard?: Resolver<types.Maybe<ResolversTypes['EBoard']>, ParentType, ContextType>

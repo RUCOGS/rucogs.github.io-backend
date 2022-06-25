@@ -258,6 +258,7 @@ export type AST = {
       avatarLink: { type: 'scalar'; isList: false; astName: 'String'; isRequired: false; isListElementRequired: false; isExcluded: false; isId: false; generationStrategy: 'undefined' }
       bannerLink: { type: 'scalar'; isList: false; astName: 'String'; isRequired: false; isListElementRequired: false; isExcluded: false; isId: false; generationStrategy: 'undefined' }
       bio: { type: 'scalar'; isList: false; astName: 'String'; isRequired: false; isListElementRequired: false; isExcluded: false; isId: false; generationStrategy: 'undefined' }
+      classYear: { type: 'scalar'; isList: false; astName: 'Int'; isRequired: false; isListElementRequired: false; isExcluded: false; isId: false; generationStrategy: 'undefined' }
       createdAt: { type: 'scalar'; isList: false; astName: 'Date'; isRequired: false; isListElementRequired: false; isExcluded: false; isId: false; generationStrategy: 'undefined' }
       displayName: { type: 'scalar'; isList: false; astName: 'String'; isRequired: false; isListElementRequired: false; isExcluded: false; isId: false; generationStrategy: 'undefined' }
       eBoard: {
@@ -811,7 +812,7 @@ export function projectSchema(): T.Schema<ScalarsSpecification> {
     updatedAt: {
       type: 'scalar',
       scalar: 'Date',
-      metadata: Object.fromEntries([['createdAt', 'true']]),
+      metadata: Object.fromEntries([['updatedAt', 'true']]),
     },
   }
 }
@@ -1061,7 +1062,7 @@ export function projectMemberSchema(): T.Schema<ScalarsSpecification> {
     updatedAt: {
       type: 'scalar',
       scalar: 'Date',
-      metadata: Object.fromEntries([['createdAt', 'true']]),
+      metadata: Object.fromEntries([['updatedAt', 'true']]),
     },
     user: {
       type: 'relation',
@@ -1351,6 +1352,10 @@ export function userSchema(): T.Schema<ScalarsSpecification> {
       type: 'scalar',
       scalar: 'String',
     },
+    classYear: {
+      type: 'scalar',
+      scalar: 'Int',
+    },
     createdAt: {
       type: 'scalar',
       scalar: 'Date',
@@ -1439,7 +1444,7 @@ export function userSchema(): T.Schema<ScalarsSpecification> {
     updatedAt: {
       type: 'scalar',
       scalar: 'Date',
-      metadata: Object.fromEntries([['createdAt', 'true']]),
+      metadata: Object.fromEntries([['updatedAt', 'true']]),
     },
     username: {
       type: 'scalar',

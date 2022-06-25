@@ -536,6 +536,7 @@ export default gql`
     avatarLink: String
     bannerLink: String
     bio: String
+    classYear: Int
     createdAt: Date
     displayName: String
     email: String!
@@ -546,6 +547,7 @@ export default gql`
     avatarLink: String
     bannerLink: String
     bio: String
+    classYear: Int
     createdAt: Date
     displayName: String
     email: String
@@ -556,6 +558,7 @@ export default gql`
     avatarLink: SortDirection
     bannerLink: SortDirection
     bio: SortDirection
+    classYear: SortDirection
     createdAt: SortDirection
     displayName: SortDirection
     email: SortDirection
@@ -567,6 +570,7 @@ export default gql`
     avatarLink: StringFilterInput
     bannerLink: StringFilterInput
     bio: StringFilterInput
+    classYear: IntFilterInput
     createdAt: DateFilterInput
     displayName: StringFilterInput
     email: StringFilterInput

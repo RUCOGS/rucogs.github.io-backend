@@ -446,7 +446,7 @@ export type UpdateEBoardInput = {
 export type UpdateEBoardTermInput = {
   id: Scalars['ID'];
   roles?: InputMaybe<Array<RoleCode>>;
-  year: Scalars['Int'];
+  year?: InputMaybe<Scalars['Int']>;
 };
 
 export type UpdateProjectInput = {
@@ -474,6 +474,7 @@ export type UpdateUserInput = {
   avatar?: InputMaybe<UploadWithOperation>;
   banner?: InputMaybe<UploadWithOperation>;
   bio?: InputMaybe<Scalars['String']>;
+  classYear?: InputMaybe<Scalars['Int']>;
   displayName?: InputMaybe<Scalars['String']>;
   id: Scalars['ID'];
   roles?: InputMaybe<Array<RoleCode>>;
@@ -507,6 +508,7 @@ export type User = {
   avatarLink?: Maybe<Scalars['String']>;
   bannerLink?: Maybe<Scalars['String']>;
   bio?: Maybe<Scalars['String']>;
+  classYear?: Maybe<Scalars['Int']>;
   createdAt?: Maybe<Scalars['Date']>;
   displayName?: Maybe<Scalars['String']>;
   eBoard?: Maybe<EBoard>;
@@ -859,6 +861,7 @@ export type UserResolvers<ContextType = any, ParentType extends ResolversParentT
   avatarLink?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   bannerLink?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   bio?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  classYear?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   createdAt?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
   displayName?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   eBoard?: Resolver<Maybe<ResolversTypes['EBoard']>, ParentType, ContextType>;

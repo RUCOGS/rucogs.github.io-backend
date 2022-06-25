@@ -24,7 +24,7 @@ async function startMockServer() {
   const unsecure = createUnsecureEntityManager("mock");
   const userIds = await generateUsers(unsecure, 100);
   const projectIds = await generateProjects(unsecure, userIds, 50);
-  const eboardIds = await generateEBoard(unsecure, userIds, 20);
+  const eboardIds = await generateEBoard(unsecure, userIds, 10);
 
   console.log("🥸 Mock server configured!");
 }
@@ -39,7 +39,8 @@ async function generateEBoard(unsecure: EntityManager, userIds: string[], count:
   const validEBoardRoles = getRolesOfType(RoleType.EBoard).filter(x => x.roleCode !== RoleCode.Eboard).map(x => x.roleCode);
 
   let eBoardIds: string[] = [];
-  for (const id of userIds) {
+  for (let i = 0; i < count; i++) {
+    const id = userIds[i];
     const user = await unsecure.user.findOne({ filter: { id }});
     if (!user)
       throw Error("User doesn't exist in Mock generation!");
@@ -59,12 +60,13 @@ async function generateEBoard(unsecure: EntityManager, userIds: string[], count:
     eBoardIds.push(eBoard.id);
 
     // Generate eboard terms
-    const randTerms = randInst.range(4) + 1;
+    const start = randInst(5);
+    const randTerms = randInst.range(5) + 1;
     for (let i = 0; i < randTerms; i++) {
       const term = await unsecure.eBoardTerm.insertOne({
         record: {
           eBoardId: eBoard.id,
-          year: new Date().getFullYear() - i
+          year: new Date().getFullYear() - (i - start)
         }
       })
 
@@ -310,12 +312,15 @@ async function generateUsers(unsecure: EntityManager, count: number) {
     const avatarLink = getRandElem(avatars);
     const bannerLink = getRandElem(banners);
     const bio = paragraph(randInst.range(4) + 1);
+    const currYear = new Date().getFullYear();
+    const classYear = currYear + randInst.range(6) - 3
     users.push({
       username,
       displayName,
       email,
       avatarLink,
       bannerLink,
+      classYear,
       bio
     })
   }

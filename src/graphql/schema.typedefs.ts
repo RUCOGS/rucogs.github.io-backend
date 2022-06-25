@@ -68,11 +68,12 @@ enum InviteType {
 type User @entity @mongodb {
   id: ID! @id(from: "db") @alias(value: "_id")
   createdAt: Date @schema(metadata: [{ key: "createdAt", value: true }])
-  updatedAt: Date @schema(metadata: [{ key: "createdAt", value: true }])
+  updatedAt: Date @schema(metadata: [{ key: "updatedAt", value: true }])
 
   email: String!
   username: String
   displayName: String
+  classYear: Int
   bio: String
   bannerLink: String
   avatarLink: String
@@ -138,7 +139,7 @@ type UserLoginIdentity @entity @mongodb {
 type Project @entity @mongodb {
   id: ID! @id(from: "db") @alias(value: "_id")
   createdAt: Date @schema(metadata: [{ key: "createdAt", value: true }])
-  updatedAt: Date @schema(metadata: [{ key: "createdAt", value: true }])
+  updatedAt: Date @schema(metadata: [{ key: "updatedAt", value: true }])
 
   completedAt: Date
   name: String!
@@ -158,7 +159,7 @@ type Project @entity @mongodb {
 type ProjectMember @entity @mongodb {
   id: ID! @id(from: "db") @alias(value: "_id")
   createdAt: Date @schema(metadata: [{ key: "createdAt", value: true }])
-  updatedAt: Date @schema(metadata: [{ key: "createdAt", value: true }])
+  updatedAt: Date @schema(metadata: [{ key: "updatedAt", value: true }])
 
   contributions: String
   roles: [ProjectMemberRole!]! @foreignRef(refFrom: "projectMemberId")         

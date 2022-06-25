@@ -25,6 +25,7 @@ input UpdateUserInput {
   id: ID!
   displayName: String
   bio: String
+  classYear: Int
   avatar: UploadWithOperation
   banner: UploadWithOperation
   socials: [UpdateUserSocialInput!]

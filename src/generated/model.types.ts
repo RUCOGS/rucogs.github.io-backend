@@ -1212,7 +1212,7 @@ export type UpdateEBoardInput = {
 export type UpdateEBoardTermInput = {
   id: Scalars['ID']
   roles?: InputMaybe<Array<RoleCode>>
-  year: Scalars['Int']
+  year?: InputMaybe<Scalars['Int']>
 }
 
 export type UpdateProjectInput = {
@@ -1293,6 +1293,7 @@ export type User = {
   avatarLink?: Maybe<Scalars['String']>
   bannerLink?: Maybe<Scalars['String']>
   bio?: Maybe<Scalars['String']>
+  classYear?: Maybe<Scalars['Int']>
   createdAt?: Maybe<Scalars['Date']>
   displayName?: Maybe<Scalars['String']>
   eBoard?: Maybe<EBoard>
@@ -1312,6 +1313,7 @@ export type UserFilterInput = {
   avatarLink?: InputMaybe<StringFilterInput>
   bannerLink?: InputMaybe<StringFilterInput>
   bio?: InputMaybe<StringFilterInput>
+  classYear?: InputMaybe<IntFilterInput>
   createdAt?: InputMaybe<DateFilterInput>
   displayName?: InputMaybe<StringFilterInput>
   email?: InputMaybe<StringFilterInput>
@@ -1334,6 +1336,7 @@ export type UserInsertInput = {
   avatarLink?: InputMaybe<Scalars['String']>
   bannerLink?: InputMaybe<Scalars['String']>
   bio?: InputMaybe<Scalars['String']>
+  classYear?: InputMaybe<Scalars['Int']>
   createdAt?: InputMaybe<Scalars['Date']>
   displayName?: InputMaybe<Scalars['String']>
   email: Scalars['String']
@@ -1509,6 +1512,7 @@ export type UserSortInput = {
   avatarLink?: InputMaybe<SortDirection>
   bannerLink?: InputMaybe<SortDirection>
   bio?: InputMaybe<SortDirection>
+  classYear?: InputMaybe<SortDirection>
   createdAt?: InputMaybe<SortDirection>
   displayName?: InputMaybe<SortDirection>
   email?: InputMaybe<SortDirection>
@@ -1525,6 +1529,7 @@ export type UserUpdateInput = {
   avatarLink?: InputMaybe<Scalars['String']>
   bannerLink?: InputMaybe<Scalars['String']>
   bio?: InputMaybe<Scalars['String']>
+  classYear?: InputMaybe<Scalars['Int']>
   createdAt?: InputMaybe<Scalars['Date']>
   displayName?: InputMaybe<Scalars['String']>
   email?: InputMaybe<Scalars['String']>

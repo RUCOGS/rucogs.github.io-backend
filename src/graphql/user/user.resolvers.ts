@@ -1,4 +1,4 @@
-import { DataSize, fileUploadPromiseToCdn, tryDeleteFileIfSelfHosted } from '@src/controllers/cdn.controller';
+import { DataSize, fileUploadPromiseToCdn, isSelfHostedFile, tryDeleteFileIfSelfHosted } from '@src/controllers/cdn.controller';
 import { MutationResolvers, Permission, QueryResolvers, RoleCode, SubscriptionResolvers, UpdateUserSocialInput, UploadOperation } from '@src/generated/graphql-endpoint.types';
 import { EntityManager, UserSocialFilter, UserSocialInsert } from '@src/generated/typetta';
 import { deleteProjectInvites } from '@src/graphql/project-invite/project-invite.resolvers';
@@ -9,6 +9,7 @@ import { makePermsCalc, RoleType } from '@src/shared/security';
 import { HttpError } from '@src/shared/utils';
 import { assertNoDuplicates } from '@src/shared/validation';
 import { assertRequesterCanManageRoleCodes, assertRolesAreOfType, daoInsertBatch, daoInsertRolesBatch, deleteEntityRoleResolver, EntityRoleResolverOptions, getEntityRoleCodes, isDefined, newEntityRoleResolver, startEntityManagerTransaction } from '@src/utils';
+import { deleteEBoard } from '../e-board/e-board.resolvers';
 
 async function getRequesterRoles(unsecureEntityManager: EntityManager, requesterUserId: string, roleEntityId: string) {
   return getEntityRoleCodes(unsecureEntityManager.userRole, "userId", requesterUserId);
@@ -132,6 +133,9 @@ export default {
           id: args.input.id
         },
         changes: {
+          ...(isDefined(args.input.classYear) && {
+            classYear: args.input.classYear
+          }),
           ...(isDefined(args.input.displayName) && { displayName: args.input.displayName }),
           ...(isDefined(args.input.bio) && { bio: args.input.bio }),
           ...(isDefined(args.input.avatar) && { avatarLink: avatarSelfHostedFilePath}),
@@ -180,10 +184,8 @@ export default {
           }
         });
 
-        await transEntityManager.eBoard.deleteAll({
-          filter: {
-            userId: args.id
-          }
+        await deleteEBoard(transEntityManager, {
+          userId: args.id
         });
 
         await transEntityManager.userLoginIdentity.deleteAll({
@@ -195,6 +197,9 @@ export default {
         await deleteProjectInvites(transEntityManager, {
           userId: args.id
         });
+
+        tryDeleteFileIfSelfHosted(user.avatarLink);
+        tryDeleteFileIfSelfHosted(user.bannerLink);
 
         await transEntityManager.user.deleteOne({
           filter: {

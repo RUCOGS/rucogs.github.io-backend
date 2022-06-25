@@ -24,7 +24,6 @@ export const RoleBackendDataDict: {
         READ_USER_PRIVATE: [{ userId }],
         UPDATE_USER: [{ userId }],
         MANAGE_USER_ROLES: [{ userId }],
-        MANAGE_EBOARD_ROLES: [{ userId }],
         MANAGE_PROJECT_INVITES: invites.map(x => ({ projectInviteId: x.id })),
         CREATE_PROJECT: true, 
       };
@@ -41,7 +40,8 @@ export const RoleBackendDataDict: {
         MANAGE_PROJECT_MEMBER: true,
         MANAGE_USER_ROLES: true,
         MANAGE_PROJECT_MEMBER_ROLES: true,
-        MANAGE_EBOARD_ROLES: true
+        MANAGE_EBOARD: [{ userId }],
+        MANAGE_EBOARD_ROLES: [{ userId }],
       };
     }
   },
@@ -51,6 +51,7 @@ export const RoleBackendDataDict: {
         DELETE_USER: true,
         DELETE_PROJECT: true,
         MANAGE_EBOARD: true,
+        MANAGE_EBOARD_ROLES: true,
         TRANSFER_PROJECT_OWNERSHIP: true
       }
     }

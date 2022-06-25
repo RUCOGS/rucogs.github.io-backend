@@ -20,6 +20,7 @@ export const SecurityPolicy = {
         username: true,
         displayName: true,
         projectMembers: true,
+        classYear: true,
         roles: true,
         socials: true,
         bio: true,
@@ -78,7 +79,7 @@ export const SecurityPolicy = {
     },
     defaultPermissions: PERMISSION.READ_ONLY,
   },
-  eBoardRole: {
+  eBoardTermRole: {
     domain: {
       eBoardId: "eBoardId",
     },

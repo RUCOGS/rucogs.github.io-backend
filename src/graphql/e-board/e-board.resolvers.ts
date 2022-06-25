@@ -1,12 +1,11 @@
 import { DataSize, fileUploadPromiseToCdn, tryDeleteFileIfSelfHosted } from '@src/controllers/cdn.controller';
 import { MutationResolvers, QueryResolvers, SubscriptionResolvers, UploadOperation } from '@src/generated/graphql-endpoint.types';
-import { EBoard, EBoardFilterInput, EBoardInsertInput, EBoardTermInsertInput, Permission, RoleCode } from '@src/generated/model.types';
-import { EBoardDAO, EBoardFilter, EBoardInsert, EBoardPlainModel, EBoardTermFilter, EBoardTermInsert, EBoardTermPlainModel, EntityManager, UserDAO } from '@src/generated/typetta';
+import { Permission, RoleCode } from '@src/generated/model.types';
+import { EBoardFilter, EBoardInsert, EBoardPlainModel, EBoardTermFilter, EBoardTermInsert, EBoardTermPlainModel, EntityManager, UserDAO } from '@src/generated/typetta';
 import { ApolloResolversContext } from '@src/misc/context';
 import { makePermsCalc, RoleType } from '@src/shared/security';
 import { HttpError } from '@src/shared/utils';
-import { assertRequesterCanManageRoleCodes, assertRolesAreOfType, daoInsertRolesBatch, deleteEntityRoleResolver, EntityRoleResolverOptions, isDefined, newEntityRoleResolver, startEntityManagerTransaction } from '@src/utils';
-import { PartialDeep } from 'type-fest';
+import { assertRequesterCanManageRoleCodes, assertRolesAreOfType, daoInsertRolesBatch, isDefined, startEntityManagerTransaction } from '@src/utils';
 import pubsub, { PubSubEvents } from '../pubsub';
 import { makeSubscriptionResolver } from '../subscription-resolver-builder';
 
@@ -97,7 +96,7 @@ export default {
           filter: { id: args.input.id },
           changes: {
             ...(isDefined(args.input.avatar) && { avatarLink: avatarSelfHostedFilePath}),
-            ...(isDefined(args.input.bio) && { graduatedAt: args.input.bio })
+            ...(isDefined(args.input.bio) && { bio: args.input.bio })
           }
         })
       });
@@ -228,16 +227,22 @@ export default {
     },
 
     deleteEBoardTerm: async (parent, args, context: ApolloResolversContext, info) => {
-      const eBoardTerm = await context.unsecureEntityManager.eBoard.findOne({
-        filter: { id: args.id }
+      const eBoardTerm = await context.unsecureEntityManager.eBoardTerm.findOne({
+        filter: { id: args.id },
+        projection: {
+          eBoardId: true,
+          eBoard: {
+            userId: true
+          }
+        }
       });
       if (!eBoardTerm)
-        throw new HttpError(400, "EBoard doesn't exist!");
+        throw new HttpError(400, "EBoard term doesn't exist!");
       
       makePermsCalc()
         .withContext(context.securityContext)
         .withDomain({
-          userId: [ eBoardTerm.userId ]
+          userId: [ eBoardTerm.eBoard.userId ]
         }).assertPermission(Permission.ManageEboard);
       
       const error = await startEntityManagerTransaction(context.unsecureEntityManager, context.mongoClient, async (transEntityManager) => {
@@ -301,11 +306,14 @@ export async function makeEBoard(entityManager: EntityManager, record: EBoardIns
 
 export async function deleteEBoard(entityManager: EntityManager, filter: EBoardFilter, emitSubscription: boolean = true) {
   const eBoards = await entityManager.eBoard.findAll({ filter });
-  await entityManager.eBoard.deleteAll({ filter });
   for (const eBoard of eBoards) {
-    
+    tryDeleteFileIfSelfHosted(eBoard.avatarLink);
+    deleteEBoardTerm(entityManager, {
+      eBoardId: eBoard.id
+    });
   }
-
+  await entityManager.eBoard.deleteAll({ filter });
+  
   if (emitSubscription) {
     for (const eBoard of eBoards)
       pubsub.publish(PubSubEvents.EBoardDeleted, eBoard);
@@ -314,6 +322,12 @@ export async function deleteEBoard(entityManager: EntityManager, filter: EBoardF
 
 export async function makeEBoardTerm(entityManager: EntityManager, record: EBoardTermInsert, emitSubscription: boolean = true) {
   const term = await entityManager.eBoardTerm.insertOne({ record });
+  await entityManager.eBoardTermRole.insertOne({
+    record: {
+      termId: term.id,
+      roleCode: RoleCode.Eboard
+    }
+  });
   if (emitSubscription)
     pubsub.publish(PubSubEvents.EBoardTermCreated, term);
   return term;
@@ -321,7 +335,10 @@ export async function makeEBoardTerm(entityManager: EntityManager, record: EBoar
 
 export async function deleteEBoardTerm(entityManager: EntityManager, filter: EBoardTermFilter, emitSubscription: boolean = true) {
   const terms = await entityManager.eBoardTerm.findAll({ filter });
-  await entityManager.eBoardTerm.deleteAll({ filter })
+  await entityManager.eBoardTermRole.deleteAll({ 
+    filter: { termId: { in: terms.map(x => x.id) } }
+  })
+  await entityManager.eBoardTerm.deleteAll({ filter });
 
   if (emitSubscription)
     for (const term of terms)
