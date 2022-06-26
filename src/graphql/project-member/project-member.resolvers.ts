@@ -5,7 +5,13 @@ import { ApolloResolversContext } from '@src/misc/context';
 import { makePermsCalc, RoleType } from '@src/shared/security';
 import { HttpError } from '@src/shared/utils';
 import { assertProjectHasMember, assertProjectHasOwner } from '@src/shared/validation';
-import { assertRequesterCanManageRoleCodes, assertRolesAreOfType, daoInsertRolesBatch, isDefined, startEntityManagerTransaction } from '@src/utils';
+import {
+  assertRequesterCanManageRoleCodes,
+  assertRolesAreOfType,
+  daoInsertRolesBatch,
+  isDefined,
+  startEntityManagerTransaction,
+} from '@src/utils';
 import { PartialDeep } from 'type-fest';
 import pubsub, { PubSubEvents } from '../pubsub';
 import { makeSubscriptionResolver } from '../subscription-resolver-builder';
@@ -43,7 +49,8 @@ async function getRequesterRoles(unsecureEntityManager: EntityManager, requester
       },
     }),
   });
-  if (requesterProjectMember) requesterRoles = requesterRoles.concat(requesterProjectMember.roles.map((x) => x.roleCode));
+  if (requesterProjectMember)
+    requesterRoles = requesterRoles.concat(requesterProjectMember.roles.map((x) => x.roleCode));
 
   return requesterRoles;
 }
@@ -67,45 +74,56 @@ export default {
       });
       if (!projectMember) throw new HttpError(400, "Project member doesn't exist!");
 
-      const error = await startEntityManagerTransaction(context.unsecureEntityManager, context.mongoClient, async (transEntityManager) => {
-        if (!context.securityContext.userId) throw new HttpError(400, 'Expected context.securityContext.userId!');
+      const error = await startEntityManagerTransaction(
+        context.unsecureEntityManager,
+        context.mongoClient,
+        async (transEntityManager) => {
+          if (!context.securityContext.userId) throw new HttpError(400, 'Expected context.securityContext.userId!');
 
-        if (isDefined(args.input.roles)) {
-          permCalc.assertPermission(Permission.ManageProjectMemberRoles);
-          const requesterRoleCodes = await getRequesterRoles(transEntityManager, context.securityContext.userId, args.input.id);
-          if (!args.input.roles.some((x) => x === RoleCode.ProjectMember)) throw new HttpError(400, 'Project Member must have Project Member role!');
-          assertRolesAreOfType(args.input.roles, RoleType.ProjectMember);
-          assertRequesterCanManageRoleCodes(requesterRoleCodes, args.input.roles);
-          const project = await transEntityManager.project.findOne({
-            filter: { id: projectMember.projectId },
-            projection: ProjectDAO.projection({
-              members: {
-                roles: {
-                  roleCode: true,
+          if (isDefined(args.input.roles)) {
+            permCalc.assertPermission(Permission.ManageProjectMemberRoles);
+            const requesterRoleCodes = await getRequesterRoles(
+              transEntityManager,
+              context.securityContext.userId,
+              args.input.id,
+            );
+            if (!args.input.roles.some((x) => x === RoleCode.ProjectMember))
+              throw new HttpError(400, 'Project Member must have Project Member role!');
+            assertRolesAreOfType(args.input.roles, RoleType.ProjectMember);
+            assertRequesterCanManageRoleCodes(requesterRoleCodes, args.input.roles);
+            const project = await transEntityManager.project.findOne({
+              filter: { id: projectMember.projectId },
+              projection: ProjectDAO.projection({
+                members: {
+                  roles: {
+                    roleCode: true,
+                  },
                 },
-              },
-            }),
+              }),
+            });
+            if (!project) throw new HttpError(200, "Project doesn't exist! DB state may be corrupted.");
+
+            assertProjectHasOwner(project as PartialDeep<Project>);
+            assertProjectHasMember(project as PartialDeep<Project>);
+
+            await daoInsertRolesBatch({
+              dao: transEntityManager.projectMemberRole,
+              roleCodes: args.input.roles,
+              idKey: 'projectMemberId',
+              id: args.input.id,
+            });
+          }
+
+          await transEntityManager.projectMember.updateOne({
+            filter: { id: args.input.id },
+            changes: {
+              ...(isDefined(args.input.contributions) && {
+                contributions: args.input.contributions,
+              }),
+            },
           });
-          if (!project) throw new HttpError(200, "Project doesn't exist! DB state may be corrupted.");
-
-          assertProjectHasOwner(project as PartialDeep<Project>);
-          assertProjectHasMember(project as PartialDeep<Project>);
-
-          await daoInsertRolesBatch({
-            dao: transEntityManager.projectMemberRole,
-            roleCodes: args.input.roles,
-            idKey: 'projectMemberId',
-            id: args.input.id,
-          });
-        }
-
-        await transEntityManager.projectMember.updateOne({
-          filter: { id: args.input.id },
-          changes: {
-            ...(isDefined(args.input.contributions) && { contributions: args.input.contributions }),
-          },
-        });
-      });
+        },
+      );
       if (error) throw error;
 
       const updatedProjectMember = await context.unsecureEntityManager.projectMember.findOne({
@@ -146,9 +164,13 @@ export default {
 
       assertProjectHasMember(project as PartialDeep<Project>);
 
-      const error = await startEntityManagerTransaction(context.unsecureEntityManager, context.mongoClient, async (transEntityManager) => {
-        await deleteProjectMembers(transEntityManager, { id: args.id });
-      });
+      const error = await startEntityManagerTransaction(
+        context.unsecureEntityManager,
+        context.mongoClient,
+        async (transEntityManager) => {
+          await deleteProjectMembers(transEntityManager, { id: args.id });
+        },
+      );
       if (error) throw error;
 
       return true;
@@ -156,15 +178,35 @@ export default {
   },
 
   Subscription: {
-    projectMemberCreated: makeSubscriptionResolver().pubsub(PubSubEvents.ProjectMemberCreated).shallowOneToOneFilter().mapId().build(),
+    projectMemberCreated: makeSubscriptionResolver()
+      .pubsub(PubSubEvents.ProjectMemberCreated)
+      .shallowOneToOneFilter()
+      .mapId()
+      .build(),
 
-    projectMemberUpdated: makeSubscriptionResolver().pubsub(PubSubEvents.ProjectMemberUpdated).shallowOneToOneFilter().mapId().build(),
+    projectMemberUpdated: makeSubscriptionResolver()
+      .pubsub(PubSubEvents.ProjectMemberUpdated)
+      .shallowOneToOneFilter()
+      .mapId()
+      .build(),
 
-    projectMemberDeleted: makeSubscriptionResolver().pubsub(PubSubEvents.ProjectMemberDeleted).shallowOneToOneFilter().mapId().build(),
+    projectMemberDeleted: makeSubscriptionResolver()
+      .pubsub(PubSubEvents.ProjectMemberDeleted)
+      .shallowOneToOneFilter()
+      .mapId()
+      .build(),
   },
-} as { Query: QueryResolvers; Mutation: MutationResolvers; Subscription: SubscriptionResolvers };
+} as {
+  Query: QueryResolvers;
+  Mutation: MutationResolvers;
+  Subscription: SubscriptionResolvers;
+};
 
-export async function deleteProjectMembers(entityManager: EntityManager, filter: ProjectMemberFilter, emitSubscription: boolean = true) {
+export async function deleteProjectMembers(
+  entityManager: EntityManager,
+  filter: ProjectMemberFilter,
+  emitSubscription: boolean = true,
+) {
   const members = await entityManager.projectMember.findAll({
     filter,
   });

@@ -133,7 +133,12 @@ async function generateProjects(unsecure: EntityManager, userIds: string[], coun
     .filter((x) => x.roleCode !== RoleCode.ProjectMember)
     .map((x) => x.roleCode);
 
-  async function addProjectMembersFor(projectId: string, createdAt: number, updatedAt: number, memberCount: number = randInst.range(20) + 1) {
+  async function addProjectMembersFor(
+    projectId: string,
+    createdAt: number,
+    updatedAt: number,
+    memberCount: number = randInst.range(20) + 1,
+  ) {
     for (const userId of getRandomSubarray(userIds, memberCount)) {
       const memberResult = await unsecure.projectMember.insertOne({
         record: {
@@ -329,7 +334,9 @@ async function generateUsers(unsecure: EntityManager, count: number) {
     });
   }
 
-  let validRoles: RoleCode[] = RoleDataList.filter((x) => x.type.includes(RoleType.User) && x.roleCode !== RoleCode.SuperAdmin).map((x) => x.roleCode);
+  let validRoles: RoleCode[] = RoleDataList.filter(
+    (x) => x.type.includes(RoleType.User) && x.roleCode !== RoleCode.SuperAdmin,
+  ).map((x) => x.roleCode);
 
   // Populate fake data
   for (const user of users) {

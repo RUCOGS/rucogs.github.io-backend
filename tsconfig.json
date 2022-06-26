@@ -10,7 +10,6 @@
     "baseUrl": ".",
     "declaration": true,
     "experimentalDecorators": true,
-    //"allowSyntheticDefaultImports": true,
     "strict": true,
     "noErrorTruncation": true,
     "paths": {

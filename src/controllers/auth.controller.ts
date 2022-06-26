@@ -175,17 +175,25 @@ export async function authenticate(req: any): Promise<[authScheme: string, paylo
 }
 
 export async function authenticateBasicRootUserPassword(args: string[]): Promise<AuthPayload> {
-  if (args.length !== 2 || args[0].toLowerCase() !== AuthScheme.BasicRoot) throw new HttpError(401, "Invalid user password authentication! Format: 'basic [username]:[password]'.");
+  if (args.length !== 2 || args[0].toLowerCase() !== AuthScheme.BasicRoot)
+    throw new HttpError(401, "Invalid user password authentication! Format: 'basic [username]:[password]'.");
   const usernamePassword = args[1].split(':');
-  if (usernamePassword.length !== 2) throw new HttpError(401, "Basic authentication needs username and password. Format: 'basic [username]:[password]'.");
-  const authorized = AuthConfig.rootUsers.some((user) => user.username === usernamePassword[0] && user.password === usernamePassword[1]);
+  if (usernamePassword.length !== 2)
+    throw new HttpError(
+      401,
+      "Basic authentication needs username and password. Format: 'basic [username]:[password]'.",
+    );
+  const authorized = AuthConfig.rootUsers.some(
+    (user) => user.username === usernamePassword[0] && user.password === usernamePassword[1],
+  );
   if (!authorized) throw new HttpError(401, 'Invalid username/password.');
   return { userId: usernamePassword[0] };
 }
 
 export async function authenticateBearerToken(args: string[]): Promise<AuthPayload> {
   try {
-    if (args.length !== 2 || args[0].toLowerCase() !== AuthScheme.Bearer) throw new HttpError(401, "Invalid JWT authentication! Format: 'bearer [token]'.");
+    if (args.length !== 2 || args[0].toLowerCase() !== AuthScheme.Bearer)
+      throw new HttpError(401, "Invalid JWT authentication! Format: 'bearer [token]'.");
 
     const token = args[1];
     const payload = await jwtVerifyAsync(token);
@@ -245,19 +253,27 @@ export function passportAuthenticateUserAndSendAuthToken(strategy: string) {
       // therefore we have to customize how we return
       // a token using each type of user.
       const authToken = await jwtSignAsync({ userId: user.id });
-      console.log(`Authenticated user:\n${JSON.stringify(user)}\n using strategy '${strategy}' with token '${authToken}'`);
+      console.log(
+        `Authenticated user:\n${JSON.stringify(user)}\n using strategy '${strategy}' with token '${authToken}'`,
+      );
 
       const message = JSON.stringify({
         accessToken: authToken,
         user: user,
       });
 
-      return res.send(`<html><head><title>Authenticate</title></head><body></body><script>res = ${message}; window.opener.postMessage(res, "*");window.close();</script></html>`);
+      return res.send(
+        `<html><head><title>Authenticate</title></head><body></body><script>res = ${message}; window.opener.postMessage(res, "*");window.close();</script></html>`,
+      );
     })(req, res, next);
   };
 }
 
-export async function authAddSecurityContext(req: RequestWithDefaultContext, res: express.Response, next: express.NextFunction) {
+export async function authAddSecurityContext(
+  req: RequestWithDefaultContext,
+  res: express.Response,
+  next: express.NextFunction,
+) {
   if (!req.context) return;
 
   try {

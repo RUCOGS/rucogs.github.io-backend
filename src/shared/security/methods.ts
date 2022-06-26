@@ -10,30 +10,42 @@ import {
   isExtendedSecurityDomain,
   OperationSecurityDomain,
   PermissionCode,
-  SecurityDomain
+  SecurityDomain,
 } from './types';
 
-export function isSecurityDomainValidForOpDomain(permissionCode: PermissionCode, domain: SecurityDomain, operationDomain: OperationSecurityDomain) {
+export function isSecurityDomainValidForOpDomain(
+  permissionCode: PermissionCode,
+  domain: SecurityDomain,
+  operationDomain: OperationSecurityDomain,
+) {
   if (!operationDomain || !domain) return false;
 
   if (isBaseSecurityDomain(domain)) {
-    const baseSecurityDomain = domain as BaseSecurityDomain;
+    const baseSecurityDomain = domain;
     return isBaseDomainValidForOpDomain(baseSecurityDomain, operationDomain);
   } else if (isExtendedSecurityDomain(domain)) {
-    const extendedSecurityDomain = domain as ExtendedSecurityDomain;
+    const extendedSecurityDomain = domain;
     return isExtendedDomainValidForOpDomain(permissionCode, extendedSecurityDomain, operationDomain);
   }
   // Default to extra data
   return isExtraDataValidForOpDomain(permissionCode, domain, operationDomain);
 }
 
-export function isExtendedDomainValidForOpDomain(permissionCode: PermissionCode, domain: ExtendedSecurityDomain, operationDomain: OperationSecurityDomain) {
+export function isExtendedDomainValidForOpDomain(
+  permissionCode: PermissionCode,
+  domain: ExtendedSecurityDomain,
+  operationDomain: OperationSecurityDomain,
+) {
   const validBaseDomain = isBaseDomainValidForOpDomain(domain.baseDomain, operationDomain);
   if (!validBaseDomain) return false;
   return isExtraDataValidForOpDomain(permissionCode, domain.extraData, operationDomain);
 }
 
-export function isExtraDataValidForOpDomain(permissionCode: PermissionCode, extraData: any, operationDomain: OperationSecurityDomain) {
+export function isExtraDataValidForOpDomain(
+  permissionCode: PermissionCode,
+  extraData: any,
+  operationDomain: OperationSecurityDomain,
+) {
   if (PermissionDataDict[permissionCode]) {
     const isExtraDataValidForDomainFn = PermissionDataDict[permissionCode]?.isExtraDataValidForOpDomain;
     if (isExtraDataValidForDomainFn) {

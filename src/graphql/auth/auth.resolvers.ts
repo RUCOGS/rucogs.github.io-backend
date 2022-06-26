@@ -5,7 +5,12 @@ import { ApolloResolversContext } from '@src/misc/context';
 export default {
   Query: {
     securityContext: async (parent, args, context: ApolloResolversContext, info) => {
-      if (args.userId && context.securityContext && context.securityContext.userId && args.userId !== context.securityContext.userId) {
+      if (
+        args.userId &&
+        context.securityContext &&
+        context.securityContext.userId &&
+        args.userId !== context.securityContext.userId
+      ) {
         // If we are querying for the security context of a another user,
         // then we must generate it, because we cannot reuse the security
         // context generated for ourselves.

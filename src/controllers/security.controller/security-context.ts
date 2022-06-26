@@ -9,13 +9,14 @@ import {
   BaseSecurityDomain,
   DefaultSecurityContext,
   ExtendedSecurityDomain,
-  getInheritedPermRolesForRoles, isBaseSecurityDomain,
+  getInheritedPermRolesForRoles,
+  isBaseSecurityDomain,
   isExtendedSecurityDomain,
   PermissionCode,
   RoleData,
   SecurityContext,
   SecurityDomain,
-  SecurityPermissions
+  SecurityPermissions,
 } from '@src/shared/security';
 import { PermissionDataDict } from '@src/shared/security/permissions';
 import { HttpError, isDeepEquals } from '@src/shared/utils';
@@ -84,7 +85,10 @@ export async function getProjectMemberSecurityPermissions(entityManager: AnyEnti
   return rolesToSecurityPermission(entityManager, roleCodes, projectMemberId);
 }
 
-export async function getUserSecurityPermission(entityManager: AnyEntityManager, userId: string): Promise<SecurityPermissions> {
+export async function getUserSecurityPermission(
+  entityManager: AnyEntityManager,
+  userId: string,
+): Promise<SecurityPermissions> {
   const roles = await entityManager.userRole.findAll({
     filter: {
       userId: { eq: userId },
@@ -98,7 +102,11 @@ export async function getUserSecurityPermission(entityManager: AnyEntityManager,
   return rolesToSecurityPermission(entityManager, roleCodes, userId);
 }
 
-export async function rolesToSecurityPermission(entityManager: AnyEntityManager, roleCodes: RoleCode[], id: string): Promise<SecurityPermissions> {
+export async function rolesToSecurityPermission(
+  entityManager: AnyEntityManager,
+  roleCodes: RoleCode[],
+  id: string,
+): Promise<SecurityPermissions> {
   // Get all child roles, because we inherit their permissions
   roleCodes = getInheritedPermRolesForRoles(roleCodes);
   let securityContext = {};
@@ -128,7 +136,10 @@ export function mergeManySecurityPermissionss(...securityContexts: SecurityPermi
 // in the merged array is unique.
 //
 // tdlr: Our merging preserves the most open permissions
-export function mergeSecurityPermissions(securityContext: SecurityPermissions, securityContextTwo: SecurityPermissions) {
+export function mergeSecurityPermissions(
+  securityContext: SecurityPermissions,
+  securityContextTwo: SecurityPermissions,
+) {
   const checkedKeys = new Set<string>();
   // We run merge on each securityContext, beacuse there may have been
   // keys in one context that weren't in the other
@@ -140,7 +151,11 @@ export function mergeSecurityPermissions(securityContext: SecurityPermissions, s
 }
 
 // Helper method used by mergeSecurityPermissions.
-function mergeSecurityPermissionsHalf(contextOne: SecurityPermissions, contextTwo: SecurityPermissions, checkedKeys: Set<string>) {
+function mergeSecurityPermissionsHalf(
+  contextOne: SecurityPermissions,
+  contextTwo: SecurityPermissions,
+  checkedKeys: Set<string>,
+) {
   let mergedContext: SecurityPermissions = {};
   let permissionCode: keyof SecurityPermissions;
   for (permissionCode in contextOne) {
@@ -174,7 +189,11 @@ function mergeBaseDomains(domainOne: BaseSecurityDomain, domainTwo: BaseSecurity
   }
 }
 
-function mergeExtendedDomains(permissionCode: PermissionCode, domainOne: ExtendedSecurityDomain, domainTwo: ExtendedSecurityDomain) {
+function mergeExtendedDomains(
+  permissionCode: PermissionCode,
+  domainOne: ExtendedSecurityDomain,
+  domainTwo: ExtendedSecurityDomain,
+) {
   return <ExtendedSecurityDomain>{
     baseDomain: mergeBaseDomains(domainOne.baseDomain, domainTwo.baseDomain),
     extraData: mergeExtraData(permissionCode, domainOne, domainTwo),

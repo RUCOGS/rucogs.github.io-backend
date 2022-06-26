@@ -13,7 +13,11 @@ export function isDefined<T>(value: T | undefined | null): value is T {
   return value !== undefined && value !== null;
 }
 
-export function tryDeleteOldFileLinkFromEntity(req: RequestWithContext<RequestContext>, fileName: string, object: any): [boolean, string] {
+export function tryDeleteOldFileLinkFromEntity(
+  req: RequestWithContext<RequestContext>,
+  fileName: string,
+  object: any,
+): [boolean, string] {
   const files = req.files as { [fieldname: string]: Express.Multer.File[] };
   let fileUpdated = files[fileName] && files[fileName].length == 1;
   const selfHostedFilePath = fileUpdated ? relativeToSelfHostedFilePath(files[fileName][0].path) : '';
@@ -90,7 +94,10 @@ export async function startEntityManagerTransactionREST(
   ) => Promise<void>,
 ): Promise<Error | undefined> {
   if (!req.context || !req.context.securityContext || !req.context.securityContext.userId) {
-    const error = new HttpError(400, 'Expected context, context.securityContext, context.securityContext.userId, and context.metadata.');
+    const error = new HttpError(
+      400,
+      'Expected context, context.securityContext, context.securityContext.userId, and context.metadata.',
+    );
     next(error);
     return error;
   }
@@ -176,7 +183,12 @@ export async function daoInsertBatch(options: {
   }
 }
 
-export async function daoInsertRolesBatch(options: { dao: AbstractDAO<any>; roleCodes: RoleCode[]; idKey: string; id: string }) {
+export async function daoInsertRolesBatch(options: {
+  dao: AbstractDAO<any>;
+  roleCodes: RoleCode[];
+  idKey: string;
+  id: string;
+}) {
   await daoInsertBatch({
     dao: options.dao,
     elements: options.roleCodes,

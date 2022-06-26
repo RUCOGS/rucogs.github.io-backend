@@ -11,6 +11,10 @@ export function hasDuplicates<T>(arr: T[], equalityFn: (one: T, two: T) => boole
   return false;
 }
 
+export function isDeepEquals(o1: any, o2: any) {
+  return equal(o1, o2);
+}
+
 export function hasDuplicatesDeepEquals<T>(arr: T[]) {
   return hasDuplicates(arr, isDeepEquals);
 }
@@ -18,14 +22,14 @@ export function hasDuplicatesDeepEquals<T>(arr: T[]) {
 // Compares the properties of one object against the
 // properties of another object.
 export function isShallowEquals(o1: any, o2: any) {
-  for (var p in o1) {
+  for (const p in o1) {
     if (o1.hasOwnProperty(p)) {
       if (o1[p] !== o2[p]) {
         return false;
       }
     }
   }
-  for (var p in o2) {
+  for (const p in o2) {
     if (o2.hasOwnProperty(p)) {
       if (o1[p] !== o2[p]) {
         return false;
@@ -33,10 +37,6 @@ export function isShallowEquals(o1: any, o2: any) {
     }
   }
   return true;
-}
-
-export function isDeepEquals(o1: any, o2: any) {
-  return equal(o1, o2);
 }
 
 export class HttpError extends Error {

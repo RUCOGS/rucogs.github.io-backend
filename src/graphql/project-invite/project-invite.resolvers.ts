@@ -1,4 +1,11 @@
-import { InviteType, MutationResolvers, Permission, QueryResolvers, RoleCode, SubscriptionResolvers } from '@src/generated/graphql-endpoint.types';
+import {
+  InviteType,
+  MutationResolvers,
+  Permission,
+  QueryResolvers,
+  RoleCode,
+  SubscriptionResolvers,
+} from '@src/generated/graphql-endpoint.types';
 import { Access } from '@src/generated/model.types';
 import { EntityManager, ProjectDAO, ProjectInviteFilter, ProjectMemberInsert } from '@src/generated/typetta';
 import pubsub, { PubSubEvents } from '@src/graphql/pubsub';
@@ -37,7 +44,9 @@ export default {
         }),
       });
       if (!project) throw new HttpError(400, "Project doesn't exist!");
-      if (args.input.type === InviteType.Incoming) if (project.access !== Access.Invite) throw new HttpError(403, "Cannot request invite for project whose access isn't 'INVITE'!");
+      if (args.input.type === InviteType.Incoming)
+        if (project.access !== Access.Invite)
+          throw new HttpError(403, "Cannot request invite for project whose access isn't 'INVITE'!");
 
       const inviteExists = await context.unsecureEntityManager.projectInvite.exists({
         filter: {
@@ -78,15 +87,19 @@ export default {
           .withDomain({ projectInviteId: [args.inviteId] })
           .assertPermission(Permission.ManageProjectInvites);
       }
-      const error = await startEntityManagerTransaction(context.unsecureEntityManager, context.mongoClient, async (transEntitymanager) => {
-        await makeProjectMember(transEntitymanager, {
-          userId: invite.userId,
-          projectId: invite.projectId,
-        });
-        await transEntitymanager.projectInvite.deleteOne({
-          filter: { id: args.inviteId },
-        });
-      });
+      const error = await startEntityManagerTransaction(
+        context.unsecureEntityManager,
+        context.mongoClient,
+        async (transEntitymanager) => {
+          await makeProjectMember(transEntitymanager, {
+            userId: invite.userId,
+            projectId: invite.projectId,
+          });
+          await transEntitymanager.projectInvite.deleteOne({
+            filter: { id: args.inviteId },
+          });
+        },
+      );
 
       if (error) throw error;
 
@@ -112,11 +125,15 @@ export default {
       ) {
         throw new HttpError(403, 'Unauthorized');
       }
-      const error = await startEntityManagerTransaction(context.unsecureEntityManager, context.mongoClient, async (transEntitymanager) => {
-        await deleteProjectInvites(transEntitymanager, {
-          id: args.inviteId,
-        });
-      });
+      const error = await startEntityManagerTransaction(
+        context.unsecureEntityManager,
+        context.mongoClient,
+        async (transEntitymanager) => {
+          await deleteProjectInvites(transEntitymanager, {
+            id: args.inviteId,
+          });
+        },
+      );
 
       if (error) throw error;
 
@@ -138,12 +155,16 @@ export default {
 
       if (project.access !== Access.Open) throw new HttpError(403, "Project access is not 'OPEN'!");
 
-      const error = await startEntityManagerTransaction(context.unsecureEntityManager, context.mongoClient, async (transEntityManager) => {
-        await makeProjectMember(transEntityManager, {
-          userId,
-          projectId: args.projectId,
-        });
-      });
+      const error = await startEntityManagerTransaction(
+        context.unsecureEntityManager,
+        context.mongoClient,
+        async (transEntityManager) => {
+          await makeProjectMember(transEntityManager, {
+            userId,
+            projectId: args.projectId,
+          });
+        },
+      );
       if (error) throw error;
 
       return true;
@@ -151,13 +172,29 @@ export default {
   },
 
   Subscription: {
-    projectInviteCreated: makeSubscriptionResolver().pubsub(PubSubEvents.ProjectInviteCreated).shallowOneToOneFilter().mapId().build(),
+    projectInviteCreated: makeSubscriptionResolver()
+      .pubsub(PubSubEvents.ProjectInviteCreated)
+      .shallowOneToOneFilter()
+      .mapId()
+      .build(),
 
-    projectInviteDeleted: makeSubscriptionResolver().pubsub(PubSubEvents.ProjectInviteDeleted).shallowOneToOneFilter().mapId().build(),
+    projectInviteDeleted: makeSubscriptionResolver()
+      .pubsub(PubSubEvents.ProjectInviteDeleted)
+      .shallowOneToOneFilter()
+      .mapId()
+      .build(),
   },
-} as { Query: QueryResolvers; Mutation: MutationResolvers; Subscription: SubscriptionResolvers };
+} as {
+  Query: QueryResolvers;
+  Mutation: MutationResolvers;
+  Subscription: SubscriptionResolvers;
+};
 
-export async function deleteProjectInvites(entityManager: EntityManager, filter: ProjectInviteFilter, emitSubscription: boolean = true) {
+export async function deleteProjectInvites(
+  entityManager: EntityManager,
+  filter: ProjectInviteFilter,
+  emitSubscription: boolean = true,
+) {
   let invites;
   if (emitSubscription) {
     invites = await entityManager.projectInvite.findAll({
@@ -174,7 +211,12 @@ export async function deleteProjectInvites(entityManager: EntityManager, filter:
   }
 }
 
-export async function makeProjectMember(entityManager: EntityManager, record: ProjectMemberInsert, additionalRoles: RoleCode[] = [], emitSubscription: boolean = true) {
+export async function makeProjectMember(
+  entityManager: EntityManager,
+  record: ProjectMemberInsert,
+  additionalRoles: RoleCode[] = [],
+  emitSubscription: boolean = true,
+) {
   const member = await entityManager.projectMember.insertOne({
     record,
   });

@@ -6,7 +6,12 @@ export function makeSubscriptionResolver() {
   return new SubscriptionResolverBuilder();
 }
 
-export type SubscriptionResolverFunction = (parent: any, args: any, context: ApolloResolversContext, info: any) => AsyncIterator<any>;
+export type SubscriptionResolverFunction = (
+  parent: any,
+  args: any,
+  context: ApolloResolversContext,
+  info: any,
+) => AsyncIterator<any>;
 export type SecurityFunction = (parent: any, args: any, context: ApolloResolversContext, info: any) => Promise<void>;
 
 export class SubscriptionResolverBuilder {
@@ -14,8 +19,6 @@ export class SubscriptionResolverBuilder {
   private filterFns: FilterFn[] = [];
   private securityFn?: SecurityFunction;
   private mapFns: ((payload: any, args: any, context: any, info: any) => any)[] = [];
-
-  constructor() {}
 
   pubsub(...events: PubSubEvents[]) {
     this.iteratorFn = () => pubsub.asyncIterator(events);
@@ -36,7 +39,7 @@ export class SubscriptionResolverBuilder {
     this.filterFns.push(filter);
   }
 
-  shallowOneToOneFilter(payloadTargetPath: string = '', filterObjectPath: string = 'filter') {
+  shallowOneToOneFilter(payloadTargetPath = '', filterObjectPath = 'filter') {
     this.filterFns.push((payload, args) => {
       if (Object.keys(args.filter).length === 0) return false;
 
@@ -59,7 +62,7 @@ export class SubscriptionResolverBuilder {
     if (!this.iteratorFn) {
       throw new Error('Subscription resolver must have iterator function!');
     }
-    // @ts-ignore
+
     // pipe() technically accepts a spread of operations, but TS typings
     // use generics, which only applies up to 11 operations
     const iteratorFn = this.iteratorFn;

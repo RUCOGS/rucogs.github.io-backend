@@ -19,7 +19,14 @@ export const RoleData: {
   [RoleCode.User]: {
     type: [RoleType.User],
     name: '🙂 User',
-    childRoles: [RoleCode.Artist, RoleCode.GameDesigner, RoleCode.Musician, RoleCode.SoundDesigner, RoleCode.Programmer, RoleCode.Writer],
+    childRoles: [
+      RoleCode.Artist,
+      RoleCode.GameDesigner,
+      RoleCode.Musician,
+      RoleCode.SoundDesigner,
+      RoleCode.Programmer,
+      RoleCode.Writer,
+    ],
   },
   [RoleCode.Moderator]: {
     type: [RoleType.User],
@@ -195,17 +202,19 @@ export function getHighestRoles(roles: RoleCode[]): RoleCode[] {
 }
 
 export function getRolesBelowRoles(targetRoles: RoleCode[]) {
-  let checkedRoles = new Set<RoleCode>();
+  const checkedRoles = new Set<RoleCode>();
   let rolesBelow: RoleCode[] = [];
   for (const role of targetRoles) {
     const childRoles = RoleData[role].childRoles;
-    if (childRoles) for (const childRole of childRoles) rolesBelow = rolesBelow.concat(getRolesBelowOrEqualExitEarly(childRole, checkedRoles));
+    if (childRoles)
+      for (const childRole of childRoles)
+        rolesBelow = rolesBelow.concat(getRolesBelowOrEqualExitEarly(childRole, checkedRoles));
   }
   return rolesBelow;
 }
 
 export function getRolesBelowOrEqualRoles(targetRoles: RoleCode[]) {
-  let checkedRoles = new Set<RoleCode>();
+  const checkedRoles = new Set<RoleCode>();
   let rolesBelow: RoleCode[] = [];
   for (const role of targetRoles) {
     rolesBelow = rolesBelow.concat(getRolesBelowOrEqualExitEarly(role, checkedRoles));
@@ -259,7 +268,7 @@ export function isRoleBelow(targetRole: RoleCode, currentRole: RoleCode) {
 }
 
 export function getInheritedPermRolesForRoles(targetRoles: RoleCode[]) {
-  let checkedRoles = new Set<RoleCode>();
+  const checkedRoles = new Set<RoleCode>();
   let rolesBelow: RoleCode[] = [];
   for (const role of targetRoles) {
     rolesBelow = rolesBelow.concat(getInheritedPermRolesForRolesExitEarly(role, checkedRoles));

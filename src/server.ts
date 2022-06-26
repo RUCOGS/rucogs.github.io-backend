@@ -6,21 +6,21 @@ const args = process.argv.slice(2);
 if (args.length > 0) {
   switch (args[0]) {
     case 'development':
-      startServer(true);
+      void startServer(true);
       break;
     case 'production':
     default:
-      startServer(false);
+      void startServer(false);
       break;
   }
 } else {
   switch (process.env.NODE_ENV) {
     case 'development':
-      startServer(true);
+      void startServer(true);
       break;
     case 'production':
     default:
-      startServer(false);
+      void startServer(false);
       break;
   }
 }

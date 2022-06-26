@@ -120,7 +120,10 @@ export const RoleBackendDataDict: {
 
       // Get all member permissions, so we can edit them
       for (const member of project.members) {
-        const permissions = await RoleBackendDataDict[RoleCode.ProjectMember]?.getSecurityPermissions(entityManager, member.id);
+        const permissions = await RoleBackendDataDict[RoleCode.ProjectMember]?.getSecurityPermissions(
+          entityManager,
+          member.id,
+        );
 
         if (!permissions) throw new Error('Expected ProjectMember permissions to be defined!');
 

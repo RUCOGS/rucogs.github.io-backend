@@ -22,7 +22,8 @@ export function isSelfHostedFile(selfHostedFilePath: string) {
 }
 
 export function selfHostedToRelativeFilePath(selfHostedFilePath: string) {
-  if (!isSelfHostedFile(selfHostedFilePath)) throw new HttpError(400, "Cannot get self hosted filepath from filepath that isn't self hosted.");
+  if (!isSelfHostedFile(selfHostedFilePath))
+    throw new HttpError(400, "Cannot get self hosted filepath from filepath that isn't self hosted.");
   // Trim `self://` from the start
   return selfHostedFilePath.substring(SELF_HOSTED_PREFIX.length);
 }
@@ -58,8 +59,8 @@ export async function downloadToCdn(options: { url: string; filename?: string; d
   const relativePath = path.join(UPLOAD_DIRECTORY, options.dest, uniqueName);
 
   return new Promise<string>((resolve, reject) => {
-    var file = fs.createWriteStream(relativePath);
-    var request = httpModule
+    const file = fs.createWriteStream(relativePath);
+    const request = httpModule
       .get(options.url, function (response) {
         response.pipe(file);
         file.on('finish', function () {
@@ -83,7 +84,7 @@ export class StreamSizeLimiter extends Transform {
     super();
   }
 
-  length: number = 0;
+  length = 0;
 
   _transform(chunk: any, encoding: BufferEncoding, callback: TransformCallback): void {
     this.length += chunk.length;
@@ -104,7 +105,12 @@ export enum DataSize {
   KB = 1_000,
 }
 
-export async function readStreamToCdn(options: { readStream: ReadStream; filename: string; maxSizeBytes?: number; dest?: string }): Promise<string> {
+export async function readStreamToCdn(options: {
+  readStream: ReadStream;
+  filename: string;
+  maxSizeBytes?: number;
+  dest?: string;
+}): Promise<string> {
   if (options.dest == undefined) options.dest = '';
 
   const uniqueName = uniqueFileName(options.filename);
@@ -130,7 +136,11 @@ export async function readStreamToCdn(options: { readStream: ReadStream; filenam
   return selfHostedPath;
 }
 
-export async function fileUploadToCdn(options: { fileUpload: FileUpload; maxSizeBytes?: number; dest?: string }): Promise<string> {
+export async function fileUploadToCdn(options: {
+  fileUpload: FileUpload;
+  maxSizeBytes?: number;
+  dest?: string;
+}): Promise<string> {
   if (options.dest === undefined) options.dest = '';
 
   const readStream = options.fileUpload.createReadStream();
@@ -143,7 +153,11 @@ export async function fileUploadToCdn(options: { fileUpload: FileUpload; maxSize
   return selfHostedPath;
 }
 
-export async function fileUploadPromiseToCdn(options: { fileUploadPromise: Promise<FileUpload>; maxSizeBytes?: number; dest?: string }): Promise<string> {
+export async function fileUploadPromiseToCdn(options: {
+  fileUploadPromise: Promise<FileUpload>;
+  maxSizeBytes?: number;
+  dest?: string;
+}): Promise<string> {
   const fileUpload = await options.fileUploadPromise;
   const readStream = fileUpload.createReadStream();
   const selfHostedPath = await readStreamToCdn({

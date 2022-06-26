@@ -1,7 +1,11 @@
 import ServerConfig from '@src/config/server.config.json';
 import { authenticate, AuthScheme, configPassport } from '@src/controllers/auth.controller';
 import { UPLOAD_DIRECTORY } from '@src/controllers/cdn.controller';
-import { createSecureEntityManager, createUnsecureEntityManager, getOperationMetadataFromRequest } from '@src/controllers/entity-manager.controller/entity-manager';
+import {
+  createSecureEntityManager,
+  createUnsecureEntityManager,
+  getOperationMetadataFromRequest,
+} from '@src/controllers/entity-manager.controller/entity-manager';
 import { getCompleteSecurityContext } from '@src/controllers/security.controller';
 import { EntityManager } from '@src/generated/typetta';
 import { schema } from '@src/graphql';
@@ -72,7 +76,10 @@ async function startApolloServer(
         }
         case AuthScheme.Bearer:
         default: {
-          const securityContext = await getCompleteSecurityContext(createUnsecureEntityManager(mongoDb), authPayload.userId);
+          const securityContext = await getCompleteSecurityContext(
+            createUnsecureEntityManager(mongoDb),
+            authPayload.userId,
+          );
           const metadata = getOperationMetadataFromRequest(req);
           const entityManager = createSecureEntityManager(securityContext, mongoDb, metadata);
           return {

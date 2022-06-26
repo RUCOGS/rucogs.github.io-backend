@@ -1,11 +1,31 @@
 import { DataSize, fileUploadPromiseToCdn, tryDeleteFileIfSelfHosted } from '@src/controllers/cdn.controller';
-import { MutationResolvers, QueryResolvers, SubscriptionResolvers, UploadOperation } from '@src/generated/graphql-endpoint.types';
+import {
+  MutationResolvers,
+  QueryResolvers,
+  SubscriptionResolvers,
+  UploadOperation,
+} from '@src/generated/graphql-endpoint.types';
 import { Permission, RoleCode } from '@src/generated/model.types';
-import { EBoardFilter, EBoardInsert, EBoardPlainModel, EBoardTermFilter, EBoardTermInsert, EBoardTermPlainModel, EntityManager, UserDAO } from '@src/generated/typetta';
+import {
+  EBoardFilter,
+  EBoardInsert,
+  EBoardPlainModel,
+  EBoardTermFilter,
+  EBoardTermInsert,
+  EBoardTermPlainModel,
+  EntityManager,
+  UserDAO,
+} from '@src/generated/typetta';
 import { ApolloResolversContext } from '@src/misc/context';
 import { makePermsCalc, RoleType } from '@src/shared/security';
 import { HttpError } from '@src/shared/utils';
-import { assertRequesterCanManageRoleCodes, assertRolesAreOfType, daoInsertRolesBatch, isDefined, startEntityManagerTransaction } from '@src/utils';
+import {
+  assertRequesterCanManageRoleCodes,
+  assertRolesAreOfType,
+  daoInsertRolesBatch,
+  isDefined,
+  startEntityManagerTransaction,
+} from '@src/utils';
 import pubsub, { PubSubEvents } from '../pubsub';
 import { makeSubscriptionResolver } from '../subscription-resolver-builder';
 
@@ -42,9 +62,13 @@ export default {
       if (exists) throw new HttpError(400, 'EBoard already exists for this user!');
 
       let eBoard: EBoardPlainModel | undefined;
-      const error = await startEntityManagerTransaction(context.unsecureEntityManager, context.mongoClient, async (transEntitymanager) => {
-        eBoard = await makeEBoard(transEntitymanager, args.input);
-      });
+      const error = await startEntityManagerTransaction(
+        context.unsecureEntityManager,
+        context.mongoClient,
+        async (transEntitymanager) => {
+          eBoard = await makeEBoard(transEntitymanager, args.input);
+        },
+      );
 
       if (error) throw error;
 
@@ -71,29 +95,39 @@ export default {
 
       permCalc.assertPermission(Permission.ManageEboard);
 
-      const error = await startEntityManagerTransaction(context.unsecureEntityManager, context.mongoClient, async (transEntityManager) => {
-        if (!context.securityContext.userId) throw new HttpError(400, 'Expected context.securityContext.userId!');
+      const error = await startEntityManagerTransaction(
+        context.unsecureEntityManager,
+        context.mongoClient,
+        async (transEntityManager) => {
+          if (!context.securityContext.userId) throw new HttpError(400, 'Expected context.securityContext.userId!');
 
-        let avatarSelfHostedFilePath = null;
-        if (isDefined(args.input.avatar)) {
-          if (args.input.avatar.operation === UploadOperation.Insert || args.input.avatar.operation === UploadOperation.Delete) tryDeleteFileIfSelfHosted(eBoard.avatarLink);
+          let avatarSelfHostedFilePath = null;
+          if (isDefined(args.input.avatar)) {
+            if (
+              args.input.avatar.operation === UploadOperation.Insert ||
+              args.input.avatar.operation === UploadOperation.Delete
+            )
+              tryDeleteFileIfSelfHosted(eBoard.avatarLink);
 
-          if (args.input.avatar.operation === UploadOperation.Insert) {
-            avatarSelfHostedFilePath = await fileUploadPromiseToCdn({
-              fileUploadPromise: args.input.avatar.upload!,
-              maxSizeBytes: 5 * DataSize.MB,
-            });
+            if (args.input.avatar.operation === UploadOperation.Insert) {
+              avatarSelfHostedFilePath = await fileUploadPromiseToCdn({
+                fileUploadPromise: args.input.avatar.upload!,
+                maxSizeBytes: 5 * DataSize.MB,
+              });
+            }
           }
-        }
 
-        await transEntityManager.eBoard.updateOne({
-          filter: { id: args.input.id },
-          changes: {
-            ...(isDefined(args.input.avatar) && { avatarLink: avatarSelfHostedFilePath }),
-            ...(isDefined(args.input.bio) && { bio: args.input.bio }),
-          },
-        });
-      });
+          await transEntityManager.eBoard.updateOne({
+            filter: { id: args.input.id },
+            changes: {
+              ...(isDefined(args.input.avatar) && {
+                avatarLink: avatarSelfHostedFilePath,
+              }),
+              ...(isDefined(args.input.bio) && { bio: args.input.bio }),
+            },
+          });
+        },
+      );
       if (error) throw error;
 
       const updatedEBoard = await context.unsecureEntityManager.eBoard.findOne({
@@ -117,9 +151,13 @@ export default {
         })
         .assertPermission(Permission.ManageEboard);
 
-      const error = await startEntityManagerTransaction(context.unsecureEntityManager, context.mongoClient, async (transEntityManager) => {
-        await deleteEBoard(transEntityManager, { id: args.id });
-      });
+      const error = await startEntityManagerTransaction(
+        context.unsecureEntityManager,
+        context.mongoClient,
+        async (transEntityManager) => {
+          await deleteEBoard(transEntityManager, { id: args.id });
+        },
+      );
       if (error) throw error;
 
       pubsub.publish(PubSubEvents.EBoardDeleted, eBoard);
@@ -149,9 +187,13 @@ export default {
       if (exists) throw new HttpError(400, 'EBoard term already exists for this eboard member!');
 
       let eBoardTerm: EBoardTermPlainModel | undefined;
-      const error = await startEntityManagerTransaction(context.unsecureEntityManager, context.mongoClient, async (transEntitymanager) => {
-        eBoardTerm = await makeEBoardTerm(transEntitymanager, args.input);
-      });
+      const error = await startEntityManagerTransaction(
+        context.unsecureEntityManager,
+        context.mongoClient,
+        async (transEntitymanager) => {
+          eBoardTerm = await makeEBoardTerm(transEntitymanager, args.input);
+        },
+      );
 
       if (error) throw error;
 
@@ -176,30 +218,39 @@ export default {
         });
       permCalc.assertPermission(Permission.ManageEboard);
 
-      const error = await startEntityManagerTransaction(context.unsecureEntityManager, context.mongoClient, async (transEntityManager) => {
-        if (!context.securityContext.userId) throw new HttpError(400, 'Expected context.securityContext.userId!');
+      const error = await startEntityManagerTransaction(
+        context.unsecureEntityManager,
+        context.mongoClient,
+        async (transEntityManager) => {
+          if (!context.securityContext.userId) throw new HttpError(400, 'Expected context.securityContext.userId!');
 
-        if (isDefined(args.input.roles)) {
-          permCalc.assertPermission(Permission.ManageEboardRoles);
-          const requesterRoleCodes = await getRequesterRoles(transEntityManager, context.securityContext.userId, args.input.id);
-          if (!args.input.roles.some((x) => x === RoleCode.Eboard)) throw new HttpError(400, 'Eboard must have Eboard role!');
-          assertRolesAreOfType(args.input.roles, RoleType.EBoard);
-          assertRequesterCanManageRoleCodes(requesterRoleCodes, args.input.roles);
-          await daoInsertRolesBatch({
-            dao: transEntityManager.eBoardTermRole,
-            roleCodes: args.input.roles,
-            idKey: 'termId',
-            id: args.input.id,
+          if (isDefined(args.input.roles)) {
+            permCalc.assertPermission(Permission.ManageEboardRoles);
+            const requesterRoleCodes = await getRequesterRoles(
+              transEntityManager,
+              context.securityContext.userId,
+              args.input.id,
+            );
+            if (!args.input.roles.some((x) => x === RoleCode.Eboard))
+              throw new HttpError(400, 'Eboard must have Eboard role!');
+            assertRolesAreOfType(args.input.roles, RoleType.EBoard);
+            assertRequesterCanManageRoleCodes(requesterRoleCodes, args.input.roles);
+            await daoInsertRolesBatch({
+              dao: transEntityManager.eBoardTermRole,
+              roleCodes: args.input.roles,
+              idKey: 'termId',
+              id: args.input.id,
+            });
+          }
+
+          await transEntityManager.eBoardTerm.updateOne({
+            filter: { id: args.input.id },
+            changes: {
+              ...(isDefined(args.input.year) && { year: args.input.year }),
+            },
           });
-        }
-
-        await transEntityManager.eBoardTerm.updateOne({
-          filter: { id: args.input.id },
-          changes: {
-            ...(isDefined(args.input.year) && { year: args.input.year }),
-          },
-        });
-      });
+        },
+      );
       if (error) throw error;
 
       const updatedEBoardTerm = await context.unsecureEntityManager.eBoardTerm.findOne({
@@ -229,9 +280,13 @@ export default {
         })
         .assertPermission(Permission.ManageEboard);
 
-      const error = await startEntityManagerTransaction(context.unsecureEntityManager, context.mongoClient, async (transEntityManager) => {
-        await deleteEBoardTerm(transEntityManager, { id: args.id });
-      });
+      const error = await startEntityManagerTransaction(
+        context.unsecureEntityManager,
+        context.mongoClient,
+        async (transEntityManager) => {
+          await deleteEBoardTerm(transEntityManager, { id: args.id });
+        },
+      );
       if (error) throw error;
 
       return true;
@@ -239,19 +294,47 @@ export default {
   },
 
   Subscription: {
-    eBoardCreated: makeSubscriptionResolver().pubsub(PubSubEvents.EBoardCreated).shallowOneToOneFilter().mapId().build(),
+    eBoardCreated: makeSubscriptionResolver()
+      .pubsub(PubSubEvents.EBoardCreated)
+      .shallowOneToOneFilter()
+      .mapId()
+      .build(),
 
-    eBoardUpdated: makeSubscriptionResolver().pubsub(PubSubEvents.EBoardUpdated).shallowOneToOneFilter().mapId().build(),
+    eBoardUpdated: makeSubscriptionResolver()
+      .pubsub(PubSubEvents.EBoardUpdated)
+      .shallowOneToOneFilter()
+      .mapId()
+      .build(),
 
-    eBoardDeleted: makeSubscriptionResolver().pubsub(PubSubEvents.EBoardCreated).shallowOneToOneFilter().mapId().build(),
+    eBoardDeleted: makeSubscriptionResolver()
+      .pubsub(PubSubEvents.EBoardCreated)
+      .shallowOneToOneFilter()
+      .mapId()
+      .build(),
 
-    eBoardTermCreated: makeSubscriptionResolver().pubsub(PubSubEvents.EBoardTermCreated).shallowOneToOneFilter().mapId().build(),
+    eBoardTermCreated: makeSubscriptionResolver()
+      .pubsub(PubSubEvents.EBoardTermCreated)
+      .shallowOneToOneFilter()
+      .mapId()
+      .build(),
 
-    eBoardTermUpdated: makeSubscriptionResolver().pubsub(PubSubEvents.EBoardTermUpdated).shallowOneToOneFilter().mapId().build(),
+    eBoardTermUpdated: makeSubscriptionResolver()
+      .pubsub(PubSubEvents.EBoardTermUpdated)
+      .shallowOneToOneFilter()
+      .mapId()
+      .build(),
 
-    eBoardTermDeleted: makeSubscriptionResolver().pubsub(PubSubEvents.EBoardTermCreated).shallowOneToOneFilter().mapId().build(),
+    eBoardTermDeleted: makeSubscriptionResolver()
+      .pubsub(PubSubEvents.EBoardTermCreated)
+      .shallowOneToOneFilter()
+      .mapId()
+      .build(),
   },
-} as { Query: QueryResolvers; Mutation: MutationResolvers; Subscription: SubscriptionResolvers };
+} as {
+  Query: QueryResolvers;
+  Mutation: MutationResolvers;
+  Subscription: SubscriptionResolvers;
+};
 
 export async function makeEBoard(entityManager: EntityManager, record: EBoardInsert, emitSubscription: boolean = true) {
   const eBoard = await entityManager.eBoard.insertOne({
@@ -262,7 +345,11 @@ export async function makeEBoard(entityManager: EntityManager, record: EBoardIns
   return eBoard;
 }
 
-export async function deleteEBoard(entityManager: EntityManager, filter: EBoardFilter, emitSubscription: boolean = true) {
+export async function deleteEBoard(
+  entityManager: EntityManager,
+  filter: EBoardFilter,
+  emitSubscription: boolean = true,
+) {
   const eBoards = await entityManager.eBoard.findAll({ filter });
   for (const eBoard of eBoards) {
     tryDeleteFileIfSelfHosted(eBoard.avatarLink);
@@ -277,7 +364,11 @@ export async function deleteEBoard(entityManager: EntityManager, filter: EBoardF
   }
 }
 
-export async function makeEBoardTerm(entityManager: EntityManager, record: EBoardTermInsert, emitSubscription: boolean = true) {
+export async function makeEBoardTerm(
+  entityManager: EntityManager,
+  record: EBoardTermInsert,
+  emitSubscription: boolean = true,
+) {
   const term = await entityManager.eBoardTerm.insertOne({ record });
   await entityManager.eBoardTermRole.insertOne({
     record: {
@@ -289,7 +380,11 @@ export async function makeEBoardTerm(entityManager: EntityManager, record: EBoar
   return term;
 }
 
-export async function deleteEBoardTerm(entityManager: EntityManager, filter: EBoardTermFilter, emitSubscription: boolean = true) {
+export async function deleteEBoardTerm(
+  entityManager: EntityManager,
+  filter: EBoardTermFilter,
+  emitSubscription: boolean = true,
+) {
   const terms = await entityManager.eBoardTerm.findAll({ filter });
   await entityManager.eBoardTermRole.deleteAll({
     filter: { termId: { in: terms.map((x) => x.id) } },

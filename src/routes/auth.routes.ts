@@ -24,7 +24,10 @@ for (const providerName of keys(AuthConfig.oauth)) {
   const provider = AuthConfig.oauth[providerName];
 
   router.get('/thirdparty/' + providerName, passport.authenticate(providerName));
-  router.get('/thirdparty/' + providerName + '/callback', authController.passportAuthenticateUserAndSendAuthToken(providerName));
+  router.get(
+    '/thirdparty/' + providerName + '/callback',
+    authController.passportAuthenticateUserAndSendAuthToken(providerName),
+  );
 }
 
 export default router;

@@ -56,8 +56,11 @@ export function createUnsecureEntityManager(db: Db | 'mock'): EntityManager {
   });
 }
 
-export function createSecureEntityManager(securityContext: SecurityContext, db: Db | 'mock', overrideOperationMetadata: EntityManagerMetadata | undefined = undefined): SecureEntityManager {
-  const unsecureEntityManager = createUnsecureEntityManager(db);
+export function createSecureEntityManager(
+  securityContext: SecurityContext,
+  db: Db | 'mock',
+  overrideOperationMetadata: EntityManagerMetadata | undefined = undefined,
+): SecureEntityManager {
   const context = securityContextToTypettaSecurityContext(securityContext);
   return new EntityManager<never, EntityManagerMetadata, Permission, BaseSecurityDomainFieldSet>({
     mongodb: {

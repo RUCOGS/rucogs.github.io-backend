@@ -12,7 +12,11 @@ export type EntityRoleResolverOptions = {
   entityName?: string;
   entityIdKey?: string;
   permission?: Permission;
-  getRequesterRoles: (unsecureEntityManager: EntityManager, requesterUserId: string, roleEntityId: string) => Promise<RoleCode[]>;
+  getRequesterRoles: (
+    unsecureEntityManager: EntityManager,
+    requesterUserId: string,
+    roleEntityId: string,
+  ) => Promise<RoleCode[]>;
 };
 
 export function newEntityRoleResolver(options: EntityRoleResolverOptions) {
@@ -33,13 +37,20 @@ export function newEntityRoleResolver(options: EntityRoleResolverOptions) {
 
     const roleExists = await (<any>context.unsecureEntityManager)[concreteOptions.roleDao].exists({
       filter: {
-        [concreteOptions.entityIdKey]: { eq: args.input[concreteOptions.entityIdKey] },
+        [concreteOptions.entityIdKey]: {
+          eq: args.input[concreteOptions.entityIdKey],
+        },
         roleCode: { eq: args.input.roleCode },
       },
     });
-    if (roleExists) throw new HttpError(400, `${capitalizeFirstLetter(concreteOptions.entityName)} role already exists!`);
+    if (roleExists)
+      throw new HttpError(400, `${capitalizeFirstLetter(concreteOptions.entityName)} role already exists!`);
 
-    const requesterRoleCodes = await concreteOptions.getRequesterRoles(context.unsecureEntityManager, context.securityContext.userId, args.input[concreteOptions.entityIdKey]);
+    const requesterRoleCodes = await concreteOptions.getRequesterRoles(
+      context.unsecureEntityManager,
+      context.securityContext.userId,
+      args.input[concreteOptions.entityIdKey],
+    );
     assertRequesterCanManageRoleCodes(requesterRoleCodes, [args.input.roleCode]);
 
     const role = await (<any>context.unsecureEntityManager)[concreteOptions.roleDao].insertOne({
@@ -76,7 +87,11 @@ export function deleteEntityRoleResolver(options: EntityRoleResolverOptions) {
     });
     if (!role) throw new HttpError(400, `${capitalizeFirstLetter(concreteOptions.entityName)} role doesn't exist!`);
 
-    const requesterRoleCodes = await concreteOptions.getRequesterRoles(context.unsecureEntityManager, context.securityContext.userId, role[concreteOptions.entityIdKey]);
+    const requesterRoleCodes = await concreteOptions.getRequesterRoles(
+      context.unsecureEntityManager,
+      context.securityContext.userId,
+      role[concreteOptions.entityIdKey],
+    );
     assertRequesterCanManageRoleCodes(requesterRoleCodes, [role.roleCode]);
 
     await (<any>context.unsecureEntityManager)[concreteOptions.roleDao].deleteOne({
@@ -94,8 +109,10 @@ function getEntityRoleResolverConcreteOptions(options: EntityRoleResolverOptions
     if (!options.entityName) options.entityName = camelCaseToSpace(options.entityCamelCaseName);
     if (!options.roleDao) options.roleDao = options.entityCamelCaseName + 'Role';
     if (!options.entityIdKey) options.entityIdKey = options.entityCamelCaseName + 'Id';
-    if (!options.permission) options.permission = `UPDATE_${camelCaseToSnakeCase(options.entityCamelCaseName).toUpperCase()}` as Permission;
-    if (!Object.values(Permission).includes(options.permission as Permission)) throw new Error(`Permission ${options.permission} doesn't exist! Maybe the auto generation was wrong?`);
+    if (!options.permission)
+      options.permission = `UPDATE_${camelCaseToSnakeCase(options.entityCamelCaseName).toUpperCase()}` as Permission;
+    if (!Object.values(Permission).includes(options.permission))
+      throw new Error(`Permission ${options.permission} doesn't exist! Maybe the auto generation was wrong?`);
   } else if (!options.entityName || !options.roleDao || !options.entityIdKey || !options.permission) {
     throw new Error('Resolver must specify entityCamelCaseName for auto options generation.');
   }
@@ -105,11 +122,19 @@ function getEntityRoleResolverConcreteOptions(options: EntityRoleResolverOptions
     entityName: string;
     entityIdKey: string;
     permission: string;
-    getRequesterRoles: (unsecureEntityManager: EntityManager, requesterUserId: string, roleEntityId: string) => Promise<RoleCode[]>;
+    getRequesterRoles: (
+      unsecureEntityManager: EntityManager,
+      requesterUserId: string,
+      roleEntityId: string,
+    ) => Promise<RoleCode[]>;
   };
 }
 
-export async function getEntityRoleCodes(roleDao: AbstractDAO<any>, entityIdKey: string, entityId: string | undefined | null) {
+export async function getEntityRoleCodes(
+  roleDao: AbstractDAO<any>,
+  entityIdKey: string,
+  entityId: string | undefined | null,
+) {
   if (!entityId) return [];
   const roles = await roleDao.findAll({
     filter: {
@@ -124,7 +149,8 @@ export async function getEntityRoleCodes(roleDao: AbstractDAO<any>, entityIdKey:
 
 export function assertRequesterCanDeleteRoleCodes(requesterRoleCodes: RoleCode[], roleCodes: RoleCode[]) {
   const requestHighestRoleCodes = getHighestRoles(requesterRoleCodes);
-  for (const roleCode of roleCodes) if (requestHighestRoleCodes.includes(roleCode)) throw new HttpError(403, 'Cannot remove your own highest role!');
+  for (const roleCode of roleCodes)
+    if (requestHighestRoleCodes.includes(roleCode)) throw new HttpError(403, 'Cannot remove your own highest role!');
 }
 
 export function assertRequesterCanManageRoleCodes(requesterRoleCodes: RoleCode[], roleCodes: RoleCode[]) {
@@ -145,6 +171,7 @@ export function assertRequesterCanManageRoleCodes(requesterRoleCodes: RoleCode[]
 
 export function assertRolesAreOfType(roles: RoleCode[], type: RoleType) {
   for (const role of roles) {
-    if (!RoleData[role].type.includes(type)) throw new HttpError(400, `Expected roles to be of type "${RoleType[type]}"`);
+    if (!RoleData[role].type.includes(type))
+      throw new HttpError(400, `Expected roles to be of type "${RoleType[type]}"`);
   }
 }

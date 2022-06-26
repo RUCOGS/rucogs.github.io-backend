@@ -1,9 +1,12 @@
 import { HttpError } from '@src/shared/utils';
 import { isSecurityDomainValidForOpDomain } from './methods';
-import { DefaultSecurityContext, OperationSecurityDomain, PermissionCode, SecurityContext, SecurityPolicy } from './types';
+import { DefaultSecurityContext, OperationSecurityDomain, PermissionCode, SecurityContext } from './types';
 
 export class PermissionsCalculator {
-  constructor(public securityContext: SecurityContext = DefaultSecurityContext, public operationDomain: OperationSecurityDomain = {}) {}
+  constructor(
+    public securityContext: SecurityContext = DefaultSecurityContext,
+    public operationDomain: OperationSecurityDomain = {},
+  ) {}
 
   withContext(securityContext: SecurityContext) {
     this.securityContext = securityContext;
@@ -17,7 +20,11 @@ export class PermissionsCalculator {
 
   hasPermission(permissionCode: PermissionCode) {
     if (!this.securityContext) return false;
-    return isSecurityDomainValidForOpDomain(permissionCode, this.securityContext.permissions[permissionCode], this.operationDomain);
+    return isSecurityDomainValidForOpDomain(
+      permissionCode,
+      this.securityContext.permissions[permissionCode],
+      this.operationDomain,
+    );
   }
 
   hasAllPermissions(...permissionCodes: PermissionCode[]) {
@@ -31,27 +38,18 @@ export class PermissionsCalculator {
   }
 
   assertAllPermissions(...permissionCodes: PermissionCode[]) {
-    if (!this.hasAllPermissions(...permissionCodes)) throw new HttpError(403, `Missing required permissions: "${permissionCodes}".`);
+    if (!this.hasAllPermissions(...permissionCodes))
+      throw new HttpError(403, `Missing required permissions: "${permissionCodes.toString()}".`);
   }
 
   assertSomePermissions(...permissionCodes: PermissionCode[]) {
-    if (!this.hasSomePermission(...permissionCodes)) throw new HttpError(403, `Must have at least one permission from "${permissionCodes}".`);
+    if (!this.hasSomePermission(...permissionCodes))
+      throw new HttpError(403, `Must have at least one permission from "${permissionCodes.toString()}".`);
   }
 
   assertPermission(permissionCode: PermissionCode) {
-    if (!this.hasPermission(permissionCode)) throw new HttpError(403, `Missing required permission "${permissionCode}".`);
-  }
-}
-
-export class CRUDPermissionsCalculator {
-  constructor(public securityPolicy: SecurityPolicy = {}) {}
-
-  withPolicy(securityPolicy: SecurityPolicy) {
-    this.securityPolicy = securityPolicy;
-  }
-
-  getCrudPermissions(entity: string, field: string) {
-    this.securityPolicy[entity];
+    if (!this.hasPermission(permissionCode))
+      throw new HttpError(403, `Missing required permission "${permissionCode}".`);
   }
 }
 
