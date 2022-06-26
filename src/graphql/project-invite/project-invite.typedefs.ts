@@ -2,7 +2,7 @@ import { gql } from 'apollo-server';
 
 export default gql`
   extend type Mutation {
-    newProjectInvite(input: NewProjectInviteInput!): ID!
+    newProjectInvite(input: NewProjectInviteInput!): ID
     acceptProjectInvite(inviteId: ID!): Boolean
     deleteProjectInvite(inviteId: ID!): Boolean
     joinOpenProject(projectId: ID!): Boolean
