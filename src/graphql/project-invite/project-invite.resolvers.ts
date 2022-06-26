@@ -15,6 +15,49 @@ import { HttpError } from '@src/shared/utils';
 import { daoInsertRolesBatch, startEntityManagerTransaction } from '@src/utils';
 import { makeSubscriptionResolver } from '../subscription-resolver-builder';
 
+const acceptProjectInvite: MutationResolvers['acceptProjectInvite'] = async (
+  parent,
+  args,
+  context: ApolloResolversContext,
+  info,
+) => {
+  const invite = await context.unsecureEntityManager.projectInvite.findOne({
+    filter: { id: args.inviteId },
+  });
+
+  if (!invite) throw new HttpError(400, "Invite doesn't exist!");
+
+  if (invite.type === InviteType.Incoming) {
+    makePermsCalc()
+      .withContext(context.securityContext)
+      .withDomain({ projectId: [invite.projectId] })
+      .assertPermission(Permission.UpdateProject);
+  } else if (invite.type === InviteType.Outgoing) {
+    makePermsCalc()
+      .withContext(context.securityContext)
+      .withDomain({ projectInviteId: [args.inviteId] })
+      .assertPermission(Permission.ManageProjectInvites);
+  }
+  const error = await startEntityManagerTransaction(
+    context.unsecureEntityManager,
+    context.mongoClient,
+    async (transEntitymanager) => {
+      await makeProjectMember(transEntitymanager, {
+        userId: invite.userId,
+        projectId: invite.projectId,
+      });
+      await transEntitymanager.projectInvite.deleteOne({
+        filter: { id: args.inviteId },
+      });
+    },
+  );
+
+  if (error) throw error;
+
+  pubsub.publish(PubSubEvents.ProjectInviteDeleted, invite);
+  return true;
+};
+
 export default {
   Mutation: {
     // Requesting user to accept
@@ -55,57 +98,44 @@ export default {
           userId: args.input.userId,
         },
       });
-      if (inviteExists) throw new HttpError(400, 'Outgoing invite already exists!');
+      if (inviteExists) throw new HttpError(400, 'Invite already exists!');
 
-      const insertedInvite = await context.unsecureEntityManager.projectInvite.insertOne({
-        record: {
-          type: args.input.type,
+      const oppositeInviteType = args.input.type === InviteType.Incoming ? InviteType.Outgoing : InviteType.Incoming;
+      const oppositeInvite = await context.unsecureEntityManager.projectInvite.findOne({
+        filter: {
+          type: oppositeInviteType,
           projectId: args.input.projectId,
           userId: args.input.userId,
         },
-      });
-
-      pubsub.publish(PubSubEvents.ProjectInviteCreated, insertedInvite);
-      return insertedInvite.id;
-    },
-
-    acceptProjectInvite: async (parent, args, context: ApolloResolversContext, info) => {
-      const invite = await context.unsecureEntityManager.projectInvite.findOne({
-        filter: { id: args.inviteId },
-      });
-
-      if (!invite) throw new HttpError(400, "Invite doesn't exist!");
-
-      if (invite.type === InviteType.Incoming) {
-        makePermsCalc()
-          .withContext(context.securityContext)
-          .withDomain({ projectId: [invite.projectId] })
-          .assertPermission(Permission.UpdateProject);
-      } else if (invite.type === InviteType.Outgoing) {
-        makePermsCalc()
-          .withContext(context.securityContext)
-          .withDomain({ projectInviteId: [args.inviteId] })
-          .assertPermission(Permission.ManageProjectInvites);
-      }
-      const error = await startEntityManagerTransaction(
-        context.unsecureEntityManager,
-        context.mongoClient,
-        async (transEntitymanager) => {
-          await makeProjectMember(transEntitymanager, {
-            userId: invite.userId,
-            projectId: invite.projectId,
-          });
-          await transEntitymanager.projectInvite.deleteOne({
-            filter: { id: args.inviteId },
-          });
+        projection: {
+          id: true,
         },
-      );
+      });
+      if (oppositeInvite) {
+        await acceptProjectInvite(
+          parent,
+          {
+            inviteId: oppositeInvite.id,
+          },
+          context,
+          info,
+        );
+        return;
+      } else {
+        const insertedInvite = await context.unsecureEntityManager.projectInvite.insertOne({
+          record: {
+            type: args.input.type,
+            projectId: args.input.projectId,
+            userId: args.input.userId,
+          },
+        });
 
-      if (error) throw error;
-
-      pubsub.publish(PubSubEvents.ProjectInviteDeleted, invite);
-      return true;
+        pubsub.publish(PubSubEvents.ProjectInviteCreated, insertedInvite);
+        return insertedInvite.id;
+      }
     },
+
+    acceptProjectInvite,
 
     deleteProjectInvite: async (parent, args, context: ApolloResolversContext, info) => {
       const invite = await context.unsecureEntityManager.projectInvite.findOne({

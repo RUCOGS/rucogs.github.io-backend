@@ -19,7 +19,7 @@
 				"clientID": "",
 				"clientSecret": "",
 				"callbackURL": "/auth/thirdparty/discord/callback",
-				"scope": ["identify", "email", "guilds"]
+				"scope": ["identify", "email"]
 			}
 		},
 		"google": {
