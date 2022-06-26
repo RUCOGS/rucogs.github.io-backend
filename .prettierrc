@@ -1,7 +1,10 @@
 {
+  "extends": [
+    "prettier"
+  ],
   "singleQuote": true,
   "trailingComma": "all",
   "printWidth": 200,
   "tabWidth": 2,
-  "semi": false
+  "semi": true
 }

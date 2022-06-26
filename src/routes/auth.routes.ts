@@ -1,21 +1,18 @@
-import express from 'express';
-import * as authController from '@src/controllers/auth.controller';
 import AuthConfig from '@src/config/auth.config.json';
+import * as authController from '@src/controllers/auth.controller';
+import express from 'express';
 import passport from 'passport';
 
 // ----- START HELPER ----- //
 function keys<T extends object>(obj: T) {
-    return Object.keys(obj) as Array<keyof T>;
+  return Object.keys(obj) as Array<keyof T>;
 }
 // ----- END HELPER ------- //
 
 const router = express.Router();
 
-router.use(function(req, res, next) {
-  res.header(
-    'Access-Control-Allow-Headers',
-    'x-access-token, Origin, Content-Type, Accept'
-  );
+router.use(function (req, res, next) {
+  res.header('Access-Control-Allow-Headers', 'x-access-token, Origin, Content-Type, Accept');
   next();
 });
 

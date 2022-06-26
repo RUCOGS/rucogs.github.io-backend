@@ -1,4 +1,4 @@
-import * as types from './resolvers.types'
+import * as types from './resolvers.types';
 export const resolvers: { Mutation: types.MutationResolvers; Query: types.QueryResolvers } = {
   Query: {
     eBoards: (parent, args, context, info) => context.entityManager.eBoard.resolvers.read(args, info),
@@ -48,4 +48,4 @@ export const resolvers: { Mutation: types.MutationResolvers; Query: types.QueryR
     updateUserSocials: async (parent, args, context) => context.entityManager.userSocial.resolvers.update(args),
     deleteUserSocials: async (parent, args, context) => context.entityManager.userSocial.resolvers.delete(args),
   },
-}
+};

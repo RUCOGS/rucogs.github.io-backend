@@ -1,188 +1,187 @@
-import { gql } from 'graphql-tag'
+import { gql } from 'graphql-tag';
 
 export default gql`
+  scalar Date
+  scalar Json
 
-scalar Date
-scalar Json
+  enum RoleCode {
+    SUPER_ADMIN
+    MODERATOR
+    USER
 
-enum RoleCode {
-  SUPER_ADMIN,
-  MODERATOR,
-  USER,
+    PROJECT_MEMBER
+    PROJECT_OFFICER
+    PROJECT_OWNER
 
-  PROJECT_MEMBER,
-  PROJECT_OFFICER,
-  PROJECT_OWNER,
-  
-  # EBoard Roles
-  PRESIDENT,
-  VICE_PRESIDENT,
-  EBOARD,
-  WEBMASTER,
-  EVENT_COORDINATOR,
-  TREASURER,
-  OUTREACH,
-  BOT_DEVELOPER,
-  CLUB_GRAPHIC_ARTIST,
+    # EBoard Roles
+    PRESIDENT
+    VICE_PRESIDENT
+    EBOARD
+    WEBMASTER
+    EVENT_COORDINATOR
+    TREASURER
+    OUTREACH
+    BOT_DEVELOPER
+    CLUB_GRAPHIC_ARTIST
 
-  # Public roles
-  ARTIST,
-  PROGRAMMER,
-  GAME_DESIGNER,
-  MUSICIAN,
-  SOUND_DESIGNER
-  WRITER,
-}
+    # Public roles
+    ARTIST
+    PROGRAMMER
+    GAME_DESIGNER
+    MUSICIAN
+    SOUND_DESIGNER
+    WRITER
+  }
 
-enum Permission {
-  CREATE_PROJECT,
-  DELETE_PROJECT,
-  UPDATE_PROJECT,
-  TRANSFER_PROJECT_OWNERSHIP
-  
-  MANAGE_PROJECT_INVITES,
-  
-  MANAGE_PROJECT_MEMBER,
-  MANAGE_PROJECT_MEMBER_ROLES,
-  
-  UPDATE_USER,
-  DELETE_USER,
-  MANAGE_USER_ROLES,
-  READ_USER_PRIVATE,
-  
-  MANAGE_EBOARD,
-  MANAGE_EBOARD_ROLES,
-}
+  enum Permission {
+    CREATE_PROJECT
+    DELETE_PROJECT
+    UPDATE_PROJECT
+    TRANSFER_PROJECT_OWNERSHIP
 
-enum Access {
-  OPEN,
-  INVITE,
-  CLOSED,
-}
+    MANAGE_PROJECT_INVITES
 
-enum InviteType {
-  INCOMING,
-  OUTGOING
-}
+    MANAGE_PROJECT_MEMBER
+    MANAGE_PROJECT_MEMBER_ROLES
 
-type User @entity @mongodb {
-  id: ID! @id(from: "db") @alias(value: "_id")
-  createdAt: Date @schema(metadata: [{ key: "createdAt", value: true }])
-  updatedAt: Date @schema(metadata: [{ key: "updatedAt", value: true }])
+    UPDATE_USER
+    DELETE_USER
+    MANAGE_USER_ROLES
+    READ_USER_PRIVATE
 
-  email: String!
-  username: String
-  displayName: String
-  classYear: Int
-  bio: String
-  bannerLink: String
-  avatarLink: String
-  loginIdentities: [UserLoginIdentity!]! @foreignRef(refFrom: "userId")
-  socials: [UserSocial!]! @foreignRef(refFrom: "userId")
-  projectMembers: [ProjectMember!]! @foreignRef(refFrom: "userId")
-  roles: [UserRole!]! @foreignRef(refFrom: "userId")
-  eBoard: EBoard @foreignRef(refFrom: "userId")
-  projectInvites: [ProjectInvite!]! @foreignRef(refFrom: "userId")
-}
+    MANAGE_EBOARD
+    MANAGE_EBOARD_ROLES
+  }
 
-type EBoard @entity @mongodb {
-  id: ID! @id(from: "db") @alias(value: "_id")
-  user: User! @innerRef
-  userId: ID!
-  createdAt: Date @schema(metadata: [{ key: "createdAt", value: true }])
-  updatedAt: Date @schema(metadata: [{ key: "updatedAt", value: true }])
-  bio: String
-  avatarLink: String
-  terms: [EBoardTerm!]!  @foreignRef(refFrom: "eBoardId")
-}
+  enum Access {
+    OPEN
+    INVITE
+    CLOSED
+  }
 
-type EBoardTerm @entity @mongodb {
-  id: ID! @id(from: "db") @alias(value: "_id")
-  eBoard: EBoard! @innerRef
-  eBoardId: ID!
-  year: Int!
-  roles: [EBoardTermRole!]! @foreignRef(refFrom: "termId")
-}
+  enum InviteType {
+    INCOMING
+    OUTGOING
+  }
 
-type EBoardTermRole @entity @mongodb {
-  id: ID! @id(from: "db") @alias(value: "_id")
-  roleCode: RoleCode!
-  term: EBoardTerm! @innerRef
-  termId: ID!
-}
+  type User @entity @mongodb {
+    id: ID! @id(from: "db") @alias(value: "_id")
+    createdAt: Date @schema(metadata: [{ key: "createdAt", value: true }])
+    updatedAt: Date @schema(metadata: [{ key: "updatedAt", value: true }])
 
-type UserRole @entity @mongodb {
-  id: ID! @id(from: "db") @alias(value: "_id")
-  roleCode: RoleCode! @schema(metadata: [{ key: "unique", value: true }])
-  user: User! @innerRef
-  userId: ID! @schema(metadata: [{ key: "unique", value: true }])
-}
+    email: String!
+    username: String
+    displayName: String
+    classYear: Int
+    bio: String
+    bannerLink: String
+    avatarLink: String
+    loginIdentities: [UserLoginIdentity!]! @foreignRef(refFrom: "userId")
+    socials: [UserSocial!]! @foreignRef(refFrom: "userId")
+    projectMembers: [ProjectMember!]! @foreignRef(refFrom: "userId")
+    roles: [UserRole!]! @foreignRef(refFrom: "userId")
+    eBoard: EBoard @foreignRef(refFrom: "userId")
+    projectInvites: [ProjectInvite!]! @foreignRef(refFrom: "userId")
+  }
 
-type UserSocial @entity @mongodb {
-  id: ID! @id(from: "db") @alias(value: "_id")
-  platform: String!
-  username: String!
-  link: String!
-  user: User! @innerRef
-  userId: ID!
-}
+  type EBoard @entity @mongodb {
+    id: ID! @id(from: "db") @alias(value: "_id")
+    user: User! @innerRef
+    userId: ID!
+    createdAt: Date @schema(metadata: [{ key: "createdAt", value: true }])
+    updatedAt: Date @schema(metadata: [{ key: "updatedAt", value: true }])
+    bio: String
+    avatarLink: String
+    terms: [EBoardTerm!]! @foreignRef(refFrom: "eBoardId")
+  }
 
-type UserLoginIdentity @entity @mongodb {
-  id: ID! @id(from: "db") @alias(value: "_id")
-  name: String! @schema(metadata: [{ key: "unique", value: true }])
-  identityId: String!
-  data: Json
-  user: User! @innerRef 
-  userId: ID!
-}
+  type EBoardTerm @entity @mongodb {
+    id: ID! @id(from: "db") @alias(value: "_id")
+    eBoard: EBoard! @innerRef
+    eBoardId: ID!
+    year: Int!
+    roles: [EBoardTermRole!]! @foreignRef(refFrom: "termId")
+  }
 
-type Project @entity @mongodb {
-  id: ID! @id(from: "db") @alias(value: "_id")
-  createdAt: Date @schema(metadata: [{ key: "createdAt", value: true }])
-  updatedAt: Date @schema(metadata: [{ key: "updatedAt", value: true }])
+  type EBoardTermRole @entity @mongodb {
+    id: ID! @id(from: "db") @alias(value: "_id")
+    roleCode: RoleCode!
+    term: EBoardTerm! @innerRef
+    termId: ID!
+  }
 
-  completedAt: Date
-  name: String!
-  pitch: String!
-  access: Access!
-  description: String
-  cardImageLink: String
-  bannerLink: String
-  tags: [String!]
-  galleryImageLinks: [String!]
-  soundcloudEmbedSrc: String
-  downloadLinks: [String!]
-  members: [ProjectMember!]! @foreignRef(refFrom: "projectId")
-  invites: [ProjectInvite!]! @foreignRef(refFrom: "projectId")
-}
+  type UserRole @entity @mongodb {
+    id: ID! @id(from: "db") @alias(value: "_id")
+    roleCode: RoleCode! @schema(metadata: [{ key: "unique", value: true }])
+    user: User! @innerRef
+    userId: ID! @schema(metadata: [{ key: "unique", value: true }])
+  }
 
-type ProjectMember @entity @mongodb {
-  id: ID! @id(from: "db") @alias(value: "_id")
-  createdAt: Date @schema(metadata: [{ key: "createdAt", value: true }])
-  updatedAt: Date @schema(metadata: [{ key: "updatedAt", value: true }])
+  type UserSocial @entity @mongodb {
+    id: ID! @id(from: "db") @alias(value: "_id")
+    platform: String!
+    username: String!
+    link: String!
+    user: User! @innerRef
+    userId: ID!
+  }
 
-  contributions: String
-  roles: [ProjectMemberRole!]! @foreignRef(refFrom: "projectMemberId")         
-  project: Project! @innerRef
-  projectId: ID!
-  user: User! @innerRef
-  userId: ID! @schema(metadata: [{ key: "unique", value: true }])
-}
+  type UserLoginIdentity @entity @mongodb {
+    id: ID! @id(from: "db") @alias(value: "_id")
+    name: String! @schema(metadata: [{ key: "unique", value: true }])
+    identityId: String!
+    data: Json
+    user: User! @innerRef
+    userId: ID!
+  }
 
-type ProjectMemberRole @entity @mongodb {
-  id: ID! @id(from: "db") @alias(value: "_id")
-  roleCode: RoleCode! @schema(metadata: [{ key: "unique", value: true }])
-  projectMember: ProjectMember! @innerRef
-  projectMemberId: ID!
-}
+  type Project @entity @mongodb {
+    id: ID! @id(from: "db") @alias(value: "_id")
+    createdAt: Date @schema(metadata: [{ key: "createdAt", value: true }])
+    updatedAt: Date @schema(metadata: [{ key: "updatedAt", value: true }])
 
-type ProjectInvite @entity @mongodb {
-  id: ID! @id(from: "db") @alias(value: "_id")
-  createdAt: Date @schema(metadata: [{ key: "createdAt", value: true }])
-  type: InviteType!
-  user: User! @innerRef
-  userId: ID! @schema(metadata: [{ key: "unique", value: true }])
-  project: Project! @innerRef
-  projectId: ID! @schema(metadata: [{ key: "unique", value: true }])
-}
+    completedAt: Date
+    name: String!
+    pitch: String!
+    access: Access!
+    description: String
+    cardImageLink: String
+    bannerLink: String
+    tags: [String!]
+    galleryImageLinks: [String!]
+    soundcloudEmbedSrc: String
+    downloadLinks: [String!]
+    members: [ProjectMember!]! @foreignRef(refFrom: "projectId")
+    invites: [ProjectInvite!]! @foreignRef(refFrom: "projectId")
+  }
+
+  type ProjectMember @entity @mongodb {
+    id: ID! @id(from: "db") @alias(value: "_id")
+    createdAt: Date @schema(metadata: [{ key: "createdAt", value: true }])
+    updatedAt: Date @schema(metadata: [{ key: "updatedAt", value: true }])
+
+    contributions: String
+    roles: [ProjectMemberRole!]! @foreignRef(refFrom: "projectMemberId")
+    project: Project! @innerRef
+    projectId: ID!
+    user: User! @innerRef
+    userId: ID! @schema(metadata: [{ key: "unique", value: true }])
+  }
+
+  type ProjectMemberRole @entity @mongodb {
+    id: ID! @id(from: "db") @alias(value: "_id")
+    roleCode: RoleCode! @schema(metadata: [{ key: "unique", value: true }])
+    projectMember: ProjectMember! @innerRef
+    projectMemberId: ID!
+  }
+
+  type ProjectInvite @entity @mongodb {
+    id: ID! @id(from: "db") @alias(value: "_id")
+    createdAt: Date @schema(metadata: [{ key: "createdAt", value: true }])
+    type: InviteType!
+    user: User! @innerRef
+    userId: ID! @schema(metadata: [{ key: "unique", value: true }])
+    project: Project! @innerRef
+    projectId: ID! @schema(metadata: [{ key: "unique", value: true }])
+  }
 `;

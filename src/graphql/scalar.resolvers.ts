@@ -10,5 +10,5 @@ export default {
     parseValue: (value: any) => {
       return value;
     },
-  })
-}
+  }),
+};

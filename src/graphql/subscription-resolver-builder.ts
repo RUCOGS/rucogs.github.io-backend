@@ -1,7 +1,6 @@
-import { SubscriptionResolvers } from "@src/generated/graphql-endpoint.types";
-import { ApolloResolversContext } from "@src/misc/context";
-import { FilterFn, withFilter } from "graphql-subscriptions";
-import pubsub, { PubSubEvents } from "./pubsub";
+import { ApolloResolversContext } from '@src/misc/context';
+import { FilterFn, withFilter } from 'graphql-subscriptions';
+import pubsub, { PubSubEvents } from './pubsub';
 
 export function makeSubscriptionResolver() {
   return new SubscriptionResolverBuilder();
@@ -12,13 +11,11 @@ export type SecurityFunction = (parent: any, args: any, context: ApolloResolvers
 
 export class SubscriptionResolverBuilder {
   private iteratorFn?: () => AsyncIterator<any>;
-  private filterFns: FilterFn[] = []
+  private filterFns: FilterFn[] = [];
   private securityFn?: SecurityFunction;
   private mapFns: ((payload: any, args: any, context: any, info: any) => any)[] = [];
 
-  constructor() {
-
-  }
+  constructor() {}
 
   pubsub(...events: PubSubEvents[]) {
     this.iteratorFn = () => pubsub.asyncIterator(events);
@@ -26,12 +23,12 @@ export class SubscriptionResolverBuilder {
   }
 
   mapId() {
-    this.map((payload) => (payload.id))
+    this.map((payload) => payload.id);
     return this;
   }
 
   map(mapFn: (payload: any, args: any, context: any, info: any) => any) {
-    this.mapFns.push(mapFn)
+    this.mapFns.push(mapFn);
     return this;
   }
 
@@ -39,15 +36,13 @@ export class SubscriptionResolverBuilder {
     this.filterFns.push(filter);
   }
 
-  shallowOneToOneFilter(payloadTargetPath: string = "", filterObjectPath: string = "filter") {
+  shallowOneToOneFilter(payloadTargetPath: string = '', filterObjectPath: string = 'filter') {
     this.filterFns.push((payload, args) => {
-      if (Object.keys(args.filter).length === 0)
-        return false;
+      if (Object.keys(args.filter).length === 0) return false;
 
       const payloadTarget = payloadTargetPath ? payload[payloadTargetPath] : payload;
       for (const key in args.filter) {
-        if (payloadTarget[key] !== args[filterObjectPath][key])
-          return false;
+        if (payloadTarget[key] !== args[filterObjectPath][key]) return false;
       }
 
       return true;
@@ -62,7 +57,7 @@ export class SubscriptionResolverBuilder {
 
   build(): any {
     if (!this.iteratorFn) {
-      throw new Error("Subscription resolver must have iterator function!");
+      throw new Error('Subscription resolver must have iterator function!');
     }
     // @ts-ignore
     // pipe() technically accepts a spread of operations, but TS typings
@@ -72,22 +67,16 @@ export class SubscriptionResolverBuilder {
     const filterFns = this.filterFns;
     const mapFns = this.mapFns;
     let baseFn: SubscriptionResolverFunction = iteratorFn;
-    
+
     if (filterFns.length > 0)
-      baseFn = withFilter(
-        baseFn,
-        async (payload: any, variables: any) => {
-          for (const filterFn of filterFns)
-            if (!(await filterFn(payload, variables)))
-              return false;
-          return true;
-        }
-      );
+      baseFn = withFilter(baseFn, async (payload: any, variables: any) => {
+        for (const filterFn of filterFns) if (!(await filterFn(payload, variables))) return false;
+        return true;
+      });
 
     return {
-      subscribe: async(parent: any, args: any, context: any, info: any) => {
-        if (securityFn)
-          await securityFn(parent, args, context, info);
+      subscribe: async (parent: any, args: any, context: any, info: any) => {
+        if (securityFn) await securityFn(parent, args, context, info);
         return baseFn(parent, args, context, info);
       },
       resolve: (payload: any, args: any, context: any, info: any) => {
@@ -96,7 +85,7 @@ export class SubscriptionResolverBuilder {
           processedPayload = mapFn(processedPayload, args, context, info);
         }
         return processedPayload;
-      }
-    }
+      },
+    };
   }
 }

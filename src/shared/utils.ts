@@ -1,5 +1,3 @@
-import { Project, RoleCode } from '@src/generated/graphql-endpoint.types';
-import { PartialDeep } from 'type-fest';
 import equal from 'deep-equal';
 
 export function hasDuplicates<T>(arr: T[], equalityFn: (one: T, two: T) => boolean) {
@@ -19,33 +17,30 @@ export function hasDuplicatesDeepEquals<T>(arr: T[]) {
 
 // Compares the properties of one object against the
 // properties of another object.
-export function isShallowEquals(o1: any, o2: any){
-	for(var p in o1){
-		if(o1.hasOwnProperty(p)){
-			if(o1[p] !== o2[p]){
-				return false;
-			}
-		}
-	}
-	for(var p in o2){
-		if(o2.hasOwnProperty(p)){
-			if(o1[p] !== o2[p]){
-				return false;
-			}
-		}
-	}
-	return true;
-};
+export function isShallowEquals(o1: any, o2: any) {
+  for (var p in o1) {
+    if (o1.hasOwnProperty(p)) {
+      if (o1[p] !== o2[p]) {
+        return false;
+      }
+    }
+  }
+  for (var p in o2) {
+    if (o2.hasOwnProperty(p)) {
+      if (o1[p] !== o2[p]) {
+        return false;
+      }
+    }
+  }
+  return true;
+}
 
 export function isDeepEquals(o1: any, o2: any) {
-	return equal(o1, o2);
+  return equal(o1, o2);
 }
 
 export class HttpError extends Error {
-  constructor(
-    public statusCode: number,
-    public message: string
-  ) {
+  constructor(public statusCode: number, public message: string) {
     super(message);
   }
 }

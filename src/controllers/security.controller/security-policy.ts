@@ -1,14 +1,14 @@
-import { PERMISSION } from "@twinlogix/typetta";
+import { PERMISSION } from '@twinlogix/typetta';
 
 // CONFIG: Security policy
 export const SecurityPolicy = {
   user: {
     domain: {
-      userId: "id",
+      userId: 'id',
     },
     permissions: {
       READ_USER_PRIVATE: PERMISSION.READ_ONLY,
-    }, 
+    },
     defaultPermissions: {
       read: {
         __typename: true,
@@ -25,72 +25,72 @@ export const SecurityPolicy = {
         socials: true,
         bio: true,
         eBoard: true,
-        
+
         email: false,
         loginIdentities: false,
-      }
+      },
     },
   },
   project: {
     domain: {
-      projectId: "id",
+      projectId: 'id',
     },
-    defaultPermissions: PERMISSION.READ_ONLY
+    defaultPermissions: PERMISSION.READ_ONLY,
   },
   projectMember: {
     domain: {
-      projectMemberId: "id",
+      projectMemberId: 'id',
     },
     defaultPermissions: PERMISSION.READ_ONLY,
   },
   userLoginIdentity: {
     domain: {
-      userId: "userId",
+      userId: 'userId',
     },
     defaultPermissions: PERMISSION.READ_ONLY,
   },
   userSocial: {
     domain: {
-      userId: "userId",
+      userId: 'userId',
     },
     defaultPermissions: PERMISSION.READ_ONLY,
   },
   userRole: {
     domain: {
-      userId: "userId",
+      userId: 'userId',
     },
     defaultPermissions: PERMISSION.READ_ONLY,
   },
   projectMemberRole: {
     domain: {
-      projectMemberId: "projectMemberId",
+      projectMemberId: 'projectMemberId',
     },
     defaultPermissions: PERMISSION.READ_ONLY,
   },
   eBoard: {
     domain: {
-      userId: "userId"
+      userId: 'userId',
     },
-    defaultPermissions: PERMISSION.READ_ONLY 
+    defaultPermissions: PERMISSION.READ_ONLY,
   },
   eBoardTerm: {
     domain: {
-      userId: "userId"
+      userId: 'userId',
     },
     defaultPermissions: PERMISSION.READ_ONLY,
   },
   eBoardTermRole: {
     domain: {
-      eBoardId: "eBoardId",
+      eBoardId: 'eBoardId',
     },
-    defaultPermissions: PERMISSION.READ_ONLY
+    defaultPermissions: PERMISSION.READ_ONLY,
   },
   projectInvite: {
     domain: {
-      projectInviteId: "id"
+      projectInviteId: 'id',
     },
     permissions: {
       MANAGE_PROJECT_INVITES: PERMISSION.READ_ONLY,
-    }
-  }
+    },
+  },
 };

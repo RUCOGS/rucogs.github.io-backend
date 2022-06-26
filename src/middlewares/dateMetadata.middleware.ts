@@ -15,8 +15,8 @@ export function dateMetadataMiddleware(generateDate: () => any) {
         default:
           return {
             ...args,
-            continue: true
-          }
+            continue: true,
+          };
       }
       const now: Date = generateDate();
       for (const field in context.schema) {
@@ -29,8 +29,8 @@ export function dateMetadataMiddleware(generateDate: () => any) {
       }
       return {
         ...args,
-        continue: true
-      }
-    }
+        continue: true,
+      };
+    },
   };
 }

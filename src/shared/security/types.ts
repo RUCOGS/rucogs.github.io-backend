@@ -1,4 +1,4 @@
-import { Permission } from "@src/generated/graphql-endpoint.types";
+import { Permission } from '@src/generated/graphql-endpoint.types';
 
 export type SecurityDomainTemplate = {
   userId: string;
@@ -6,16 +6,16 @@ export type SecurityDomainTemplate = {
   roleCode: string;
   projectMemberId: string;
   projectInviteId: string;
-}
+};
 
 /**
 Represents a set of objects
  */
-export type BaseSecurityDomainFieldSet = Partial<SecurityDomainTemplate>
+export type BaseSecurityDomainFieldSet = Partial<SecurityDomainTemplate>;
 
 export type EntityManagerMetadata = {
   securityDomain: OperationSecurityDomain;
-}
+};
 
 /**
 Represents the domain of entities we want to operate on.
@@ -39,20 +39,20 @@ for each entitiy:
   roleCode == "USER", OR "MODERATOR", OR "SUPER_ADMIN",
 
  */
-export type OperationSecurityDomain = { 
+export type OperationSecurityDomain = {
   [K in keyof BaseSecurityDomainFieldSet]: SecurityDomainTemplate[K][];
-}
+};
 
 export type BaseSecurityDomain = BaseSecurityDomainFieldSet[] | true;
 export function isBaseSecurityDomain(object: any): object is BaseSecurityDomain {
-  return object === true || (Array.isArray(object));
+  return object === true || Array.isArray(object);
 }
 
 export type ExtendedSecurityDomain = {
   baseDomain: BaseSecurityDomain;
   // Extra data for more complex permissions
   extraData: any;
-}
+};
 export function isExtendedSecurityDomain(object: any): object is ExtendedSecurityDomain {
   return object && object.baseDomain && isBaseSecurityDomain(object.crudDomain);
 }
@@ -72,7 +72,7 @@ This ultimately leads to less
 complexity when handling the
 security domain.
  */
-export type SecurityDomain = BaseSecurityDomain | ExtendedSecurityDomain | CustomSecurityDomain
+export type SecurityDomain = BaseSecurityDomain | ExtendedSecurityDomain | CustomSecurityDomain;
 
 /**
 A class that stores the security 
@@ -86,9 +86,9 @@ It will then be used to verify permissions
 in other parts of the operation.
 */
 export type SecurityContext = {
-  userId?: string
-  permissions: SecurityPermissions
-}
+  userId?: string;
+  permissions: SecurityPermissions;
+};
 
 export type SecurityPermissions = {
   /**
@@ -97,36 +97,36 @@ export type SecurityPermissions = {
   that this permission affects.
    */
   [K in PermissionCode]?: SecurityDomain;
-}
+};
 
 export type PermissionCode = Permission;
 
-export type CrudOperationPermissions = boolean | {
-  [key: string]: boolean
-}
+export type CrudOperationPermissions =
+  | boolean
+  | {
+      [key: string]: boolean;
+    };
 
 export type CrudOperationSecurity = {
-  delete: CrudOperationPermissions,
-  read: CrudOperationPermissions,
-  create: CrudOperationPermissions,
-  update: CrudOperationPermissions
-}
+  delete: CrudOperationPermissions;
+  read: CrudOperationPermissions;
+  create: CrudOperationPermissions;
+  update: CrudOperationPermissions;
+};
 
 export type SecurityPolicy = {
   [key: string]: {
     domain: {
-      [K in keyof BaseSecurityDomainFieldSet]: string
-    },
+      [K in keyof BaseSecurityDomainFieldSet]: string;
+    };
     permissions: {
-      [K in PermissionCode]?: CrudOperationSecurity
-    }
-    defaultPermissions: CrudOperationSecurity
-  }
-}
+      [K in PermissionCode]?: CrudOperationSecurity;
+    };
+    defaultPermissions: CrudOperationSecurity;
+  };
+};
 
 // CONFIG: Default security context
 export const DefaultSecurityContext: SecurityContext = {
-  permissions: {
-    
-  }
-}
+  permissions: {},
+};

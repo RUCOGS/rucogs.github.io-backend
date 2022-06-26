@@ -1,4 +1,4 @@
-import { gql } from 'graphql-tag'
+import { gql } from 'graphql-tag';
 
 export default gql`
   enum SortDirection {
@@ -765,4 +765,4 @@ export default gql`
     updateUserSocials(filter: UserSocialFilterInput!, changes: UserSocialUpdateInput!): Boolean
     deleteUserSocials(filter: UserSocialFilterInput!): Boolean
   }
-`
+`;

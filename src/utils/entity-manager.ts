@@ -1,4 +1,4 @@
-import { AbstractDAO, DAOGenerics } from "@twinlogix/typetta";
+import { AbstractDAO, DAOGenerics } from '@twinlogix/typetta';
 
 interface FindOrCreateParams {
   filter: any;
@@ -8,8 +8,8 @@ interface FindOrCreateParams {
 
 export async function modifyOrCreate<T extends DAOGenerics>(dao: AbstractDAO<T>, params: FindOrCreateParams) {
   try {
-    await dao.updateOne({ filter: params.filter, changes: params.changes});
-  } catch(e) {
+    await dao.updateOne({ filter: params.filter, changes: params.changes });
+  } catch (e) {
     await dao.insertOne({ record: params.record ?? params.changes });
   }
 }

@@ -21,42 +21,42 @@ import { WebSocketServer } from 'ws';
 
 export async function startServer(debug: boolean, mock: boolean = false) {
   const mongoClient = new MongoClient(ServerConfig.mongodbUrl);
-  const mongoDb = mock ? "mock" : mongoClient.db(ServerConfig.mongodbDbName);
+  const mongoDb = mock ? 'mock' : mongoClient.db(ServerConfig.mongodbDbName);
 
   await mongoClient.connect();
 
   const unsecuredEntityManager = createUnsecureEntityManager(mongoDb);
-  
+
   const app = express();
   configExpress(app, unsecuredEntityManager, mongoClient, debug);
 
   const httpServer = http.createServer(app);
 
-  startApolloServer(
-    httpServer,
-    app, 
-    mongoDb, 
-    ServerConfig.baseUrl + "/graphql", 
-    unsecuredEntityManager,
-    mongoClient,
-    {
-      debug,
-      csrfPrevention: true,
-      schema,
-    }
-  );
+  startApolloServer(httpServer, app, mongoDb, ServerConfig.baseUrl + '/graphql', unsecuredEntityManager, mongoClient, {
+    debug,
+    csrfPrevention: true,
+    schema,
+  });
   // Set port, listen for requests
   const port = ServerConfig.port;
   // Promisfy httpServer.listen();
-  await new Promise<void>(resolve => httpServer.listen({ port }, resolve));
-  
+  await new Promise<void>((resolve) => httpServer.listen({ port }, resolve));
+
   console.log(
     `\
 🚀 Server ready at: http://localhost:${port}`,
-  );  
+  );
 }
 
-async function startApolloServer(httpServer: http.Server, app: express.Application, mongoDb: Db | "mock", endpointPath: string, unsecureEntityManager: EntityManager, mongoClient: MongoClient, apolloConfig: Config<ExpressContext>) {
+async function startApolloServer(
+  httpServer: http.Server,
+  app: express.Application,
+  mongoDb: Db | 'mock',
+  endpointPath: string,
+  unsecureEntityManager: EntityManager,
+  mongoClient: MongoClient,
+  apolloConfig: Config<ExpressContext>,
+) {
   async function authenticateGetContext(req: any) {
     const authenticated = await authenticate(req);
     if (authenticated) {
@@ -91,45 +91,48 @@ async function startApolloServer(httpServer: http.Server, app: express.Applicati
         unsecureEntityManager,
         securityContext: DefaultSecurityContext,
         mongoClient,
-      }
+      };
     }
   }
-  
+
   // Create websocket server for Apollo GraphQL subscriptions
   const wsServer = new WebSocketServer({
     server: httpServer,
-    path: endpointPath
-  })
-  const serverCleanup = useServer({ 
-    schema: schema,
-    onConnect: async (ctx) => {
-      console.log(`Subscription Connected: ${ctx.subscriptions}`);
+    path: endpointPath,
+  });
+  const serverCleanup = useServer(
+    {
+      schema: schema,
+      onConnect: async (ctx) => {
+        console.log(`Subscription Connected: ${ctx.subscriptions}`);
+      },
+      onDisconnect(ctx, code, reason) {
+        console.log(`Subscription Disconnected: (${code}) "${reason}"`);
+      },
+      context: async (ctx, msg, args) => {
+        console.log('Context: ' + ctx);
+        const context = await authenticateGetContext(ctx.connectionParams);
+        return context;
+      },
     },
-    onDisconnect(ctx, code, reason) {
-      console.log(`Subscription Disconnected: (${code}) "${reason}"`);
-    },
-    context: async(ctx, msg, args) => {
-      console.log("Context: " + ctx);
-      const context = await authenticateGetContext(ctx.connectionParams);
-      return context;
-    }
-  }, wsServer);
+    wsServer,
+  );
 
   const server = new ExpressApolloServer({
-    ...apolloConfig,    
+    ...apolloConfig,
     plugins: [
       // Shutdown for HTTP server.
       ApolloServerPluginDrainHttpServer({ httpServer }),
-      // Shutdown for subscriptions WebSocket server. 
+      // Shutdown for subscriptions WebSocket server.
       {
         async serverWillStart() {
           return {
             async drainServer() {
               await serverCleanup.dispose();
-            }
-          }
-        }
-      }
+            },
+          };
+        },
+      },
     ],
     context: async ({ req }): Promise<ApolloResolversContext> => {
       return await authenticateGetContext(req);
@@ -138,19 +141,21 @@ async function startApolloServer(httpServer: http.Server, app: express.Applicati
 
   await server.start();
 
-  app.use(graphqlUploadExpress({ 
-    maxFileSize: 1_000_000 * 100, // 100mb
-    maxFiles: 10 
-  }));
-  server.applyMiddleware({ 
-    app, 
-    path: endpointPath
+  app.use(
+    graphqlUploadExpress({
+      maxFileSize: 1_000_000 * 100, // 100mb
+      maxFiles: 10,
+    }),
+  );
+  server.applyMiddleware({
+    app,
+    path: endpointPath,
   });
 
   console.log(
     `\
 📈 GraphQL API ready at: ${server.graphqlPath}`,
-  );  
+  );
 }
 
 function configExpress(app: Express, entityManager: EntityManager, mongoClient: MongoClient, debug: boolean) {
@@ -159,9 +164,11 @@ function configExpress(app: Express, entityManager: EntityManager, mongoClient: 
   if (debug) {
     app.use(cors());
   } else {
-    app.use(cors({
-      origin: ["https://cogs.club", "https://atlinx.net"]
-    }));
+    app.use(
+      cors({
+        origin: ['https://cogs.club', 'https://atlinx.net'],
+      }),
+    );
   }
 
   // ----- PASSPORT ----- //
@@ -171,25 +178,25 @@ function configExpress(app: Express, entityManager: EntityManager, mongoClient: 
   // We are using JWTs instead of sessions in order
   // to avoid having to store session data on the server.
   // app.use(passport.session());
-  
+
   // ----- REQUEST CONTEXT ----- //
   // We need to inject a context into `req` so we
   // can use it in any of our requests.
   app.use((req: RequestWithDefaultContext, res, next) => {
     req.context = {
       unsecureEntityManager: entityManager,
-      mongoClient
-    }
+      mongoClient,
+    };
     next();
-  })
+  });
 
   const router = express.Router();
   router.use('/auth', authRouter);
-  router.use('/cdn/', express.static(UPLOAD_DIRECTORY))
+  router.use('/cdn/', express.static(UPLOAD_DIRECTORY));
 
   router.get('/', (req, res) => {
     res.json({ message: 'Welcome to the RUCOGS backend API!' });
   });
-  
+
   app.use(ServerConfig.baseUrl, router);
 }

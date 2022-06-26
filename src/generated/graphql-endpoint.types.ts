@@ -20,7 +20,7 @@ export type Scalars = {
 export const Access = {
   Closed: 'CLOSED',
   Invite: 'INVITE',
-  Open: 'OPEN'
+  Open: 'OPEN',
 } as const;
 
 export type Access = typeof Access[keyof typeof Access];
@@ -63,7 +63,7 @@ export type EBoardTermSubscriptionFilter = {
 
 export const InviteType = {
   Incoming: 'INCOMING',
-  Outgoing: 'OUTGOING'
+  Outgoing: 'OUTGOING',
 } as const;
 
 export type InviteType = typeof InviteType[keyof typeof InviteType];
@@ -89,92 +89,74 @@ export type Mutation = {
   updateUser?: Maybe<Scalars['Boolean']>;
 };
 
-
 export type MutationAcceptProjectInviteArgs = {
   inviteId: Scalars['ID'];
 };
-
 
 export type MutationDeleteEBoardArgs = {
   id: Scalars['ID'];
 };
 
-
 export type MutationDeleteEBoardTermArgs = {
   id: Scalars['ID'];
 };
-
 
 export type MutationDeleteProjectArgs = {
   id: Scalars['ID'];
 };
 
-
 export type MutationDeleteProjectInviteArgs = {
   inviteId: Scalars['ID'];
 };
-
 
 export type MutationDeleteProjectMemberArgs = {
   id: Scalars['ID'];
 };
 
-
 export type MutationDeleteUserArgs = {
   id: Scalars['ID'];
 };
-
 
 export type MutationJoinOpenProjectArgs = {
   projectId: Scalars['ID'];
 };
 
-
 export type MutationNewEBoardArgs = {
   input: NewEBoardInput;
 };
-
 
 export type MutationNewEBoardTermArgs = {
   input: NewEBoardTermInput;
 };
 
-
 export type MutationNewProjectArgs = {
   input: NewProjectInput;
 };
 
-
 export type MutationNewProjectInviteArgs = {
   input: NewProjectInviteInput;
 };
-
 
 export type MutationTransferProjectOwnershipArgs = {
   memberId: Scalars['ID'];
   projectId: Scalars['ID'];
 };
 
-
 export type MutationUpdateEBoardArgs = {
   input: UpdateEBoardInput;
 };
-
 
 export type MutationUpdateEBoardTermArgs = {
   input: UpdateEBoardTermInput;
 };
 
-
 export type MutationUpdateProjectArgs = {
   input: UpdateProjectInput;
 };
 
-
 export type MutationUpdateProjectMemberArgs = {
   input: UpdateProjectMemberInput;
 };
-
 
 export type MutationUpdateUserArgs = {
   input: UpdateUserInput;
@@ -224,7 +206,7 @@ export const Permission = {
   ReadUserPrivate: 'READ_USER_PRIVATE',
   TransferProjectOwnership: 'TRANSFER_PROJECT_OWNERSHIP',
   UpdateProject: 'UPDATE_PROJECT',
-  UpdateUser: 'UPDATE_USER'
+  UpdateUser: 'UPDATE_USER',
 } as const;
 
 export type Permission = typeof Permission[keyof typeof Permission];
@@ -301,7 +283,6 @@ export type Query = {
   securityPolicy?: Maybe<Scalars['Json']>;
 };
 
-
 export type QuerySecurityContextArgs = {
   userId?: InputMaybe<Scalars['ID']>;
 };
@@ -327,7 +308,7 @@ export const RoleCode = {
   User: 'USER',
   VicePresident: 'VICE_PRESIDENT',
   Webmaster: 'WEBMASTER',
-  Writer: 'WRITER'
+  Writer: 'WRITER',
 } as const;
 
 export type RoleCode = typeof RoleCode[keyof typeof RoleCode];
@@ -352,86 +333,69 @@ export type Subscription = {
   userUpdated?: Maybe<Scalars['ID']>;
 };
 
-
 export type SubscriptionEBoardCreatedArgs = {
   filter: EBoardSubscriptionFilter;
 };
-
 
 export type SubscriptionEBoardDeletedArgs = {
   filter: EBoardSubscriptionFilter;
 };
 
-
 export type SubscriptionEBoardTermCreatedArgs = {
   filter: EBoardTermSubscriptionFilter;
 };
-
 
 export type SubscriptionEBoardTermDeletedArgs = {
   filter: EBoardTermSubscriptionFilter;
 };
 
-
 export type SubscriptionEBoardTermUpdatedArgs = {
   filter: EBoardTermSubscriptionFilter;
 };
-
 
 export type SubscriptionEBoardUpdatedArgs = {
   filter: EBoardSubscriptionFilter;
 };
 
-
 export type SubscriptionProjectCreatedArgs = {
   filter: ProjectSubscriptionFilter;
 };
-
 
 export type SubscriptionProjectDeletedArgs = {
   filter: ProjectSubscriptionFilter;
 };
 
-
 export type SubscriptionProjectInviteCreatedArgs = {
   filter: ProjectInviteSubscriptionFilter;
 };
-
 
 export type SubscriptionProjectInviteDeletedArgs = {
   filter: ProjectInviteSubscriptionFilter;
 };
 
-
 export type SubscriptionProjectMemberCreatedArgs = {
   filter: ProjectMemberSubscriptionFilter;
 };
-
 
 export type SubscriptionProjectMemberDeletedArgs = {
   filter: ProjectMemberSubscriptionFilter;
 };
 
-
 export type SubscriptionProjectMemberUpdatedArgs = {
   filter: ProjectMemberSubscriptionFilter;
 };
-
 
 export type SubscriptionProjectUpdatedArgs = {
   filter: ProjectSubscriptionFilter;
 };
 
-
 export type SubscriptionUserCreatedArgs = {
   filter: UserSubscriptionFilter;
 };
 
-
 export type SubscriptionUserDeletedArgs = {
   filter: UserSubscriptionFilter;
 };
-
 
 export type SubscriptionUserUpdatedArgs = {
   filter: UserSubscriptionFilter;
@@ -489,7 +453,7 @@ export type UpdateUserSocialInput = {
 
 export const UploadOperation = {
   Delete: 'DELETE',
-  Insert: 'INSERT'
+  Insert: 'INSERT',
 } as const;
 
 export type UploadOperation = typeof UploadOperation[keyof typeof UploadOperation];
@@ -555,36 +519,23 @@ export type UserSubscriptionFilter = {
   userId?: InputMaybe<Scalars['ID']>;
 };
 
-
-
 export type ResolverTypeWrapper<T> = Promise<T> | T;
-
 
 export type ResolverWithResolve<TResult, TParent, TContext, TArgs> = {
   resolve: ResolverFn<TResult, TParent, TContext, TArgs>;
 };
 export type Resolver<TResult, TParent = {}, TContext = {}, TArgs = {}> = ResolverFn<TResult, TParent, TContext, TArgs> | ResolverWithResolve<TResult, TParent, TContext, TArgs>;
 
-export type ResolverFn<TResult, TParent, TContext, TArgs> = (
-  parent: TParent,
-  args: TArgs,
-  context: TContext,
-  info: GraphQLResolveInfo
-) => Promise<TResult> | TResult;
+export type ResolverFn<TResult, TParent, TContext, TArgs> = (parent: TParent, args: TArgs, context: TContext, info: GraphQLResolveInfo) => Promise<TResult> | TResult;
 
 export type SubscriptionSubscribeFn<TResult, TParent, TContext, TArgs> = (
   parent: TParent,
   args: TArgs,
   context: TContext,
-  info: GraphQLResolveInfo
+  info: GraphQLResolveInfo,
 ) => AsyncIterable<TResult> | Promise<AsyncIterable<TResult>>;
 
-export type SubscriptionResolveFn<TResult, TParent, TContext, TArgs> = (
-  parent: TParent,
-  args: TArgs,
-  context: TContext,
-  info: GraphQLResolveInfo
-) => TResult | Promise<TResult>;
+export type SubscriptionResolveFn<TResult, TParent, TContext, TArgs> = (parent: TParent, args: TArgs, context: TContext, info: GraphQLResolveInfo) => TResult | Promise<TResult>;
 
 export interface SubscriptionSubscriberObject<TResult, TKey extends string, TParent, TContext, TArgs> {
   subscribe: SubscriptionSubscribeFn<{ [key in TKey]: TResult }, TParent, TContext, TArgs>;
@@ -604,11 +555,7 @@ export type SubscriptionResolver<TResult, TKey extends string, TParent = {}, TCo
   | ((...args: any[]) => SubscriptionObject<TResult, TKey, TParent, TContext, TArgs>)
   | SubscriptionObject<TResult, TKey, TParent, TContext, TArgs>;
 
-export type TypeResolveFn<TTypes, TParent = {}, TContext = {}> = (
-  parent: TParent,
-  context: TContext,
-  info: GraphQLResolveInfo
-) => Maybe<TTypes> | Promise<Maybe<TTypes>>;
+export type TypeResolveFn<TTypes, TParent = {}, TContext = {}> = (parent: TParent, context: TContext, info: GraphQLResolveInfo) => Maybe<TTypes> | Promise<Maybe<TTypes>>;
 
 export type IsTypeOfResolverFn<T = {}, TContext = {}> = (obj: T, context: TContext, info: GraphQLResolveInfo) => boolean | Promise<boolean>;
 
@@ -619,7 +566,7 @@ export type DirectiveResolverFn<TResult = {}, TParent = {}, TContext = {}, TArgs
   parent: TParent,
   args: TArgs,
   context: TContext,
-  info: GraphQLResolveInfo
+  info: GraphQLResolveInfo,
 ) => TResult | Promise<TResult>;
 
 /** Mapping between all available schema types and the resolvers types */
@@ -834,23 +781,23 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
 };
 
 export type SubscriptionResolvers<ContextType = any, ParentType extends ResolversParentTypes['Subscription'] = ResolversParentTypes['Subscription']> = {
-  eBoardCreated?: SubscriptionResolver<Maybe<ResolversTypes['ID']>, "eBoardCreated", ParentType, ContextType, RequireFields<SubscriptionEBoardCreatedArgs, 'filter'>>;
-  eBoardDeleted?: SubscriptionResolver<Maybe<ResolversTypes['ID']>, "eBoardDeleted", ParentType, ContextType, RequireFields<SubscriptionEBoardDeletedArgs, 'filter'>>;
-  eBoardTermCreated?: SubscriptionResolver<Maybe<ResolversTypes['ID']>, "eBoardTermCreated", ParentType, ContextType, RequireFields<SubscriptionEBoardTermCreatedArgs, 'filter'>>;
-  eBoardTermDeleted?: SubscriptionResolver<Maybe<ResolversTypes['ID']>, "eBoardTermDeleted", ParentType, ContextType, RequireFields<SubscriptionEBoardTermDeletedArgs, 'filter'>>;
-  eBoardTermUpdated?: SubscriptionResolver<Maybe<ResolversTypes['ID']>, "eBoardTermUpdated", ParentType, ContextType, RequireFields<SubscriptionEBoardTermUpdatedArgs, 'filter'>>;
-  eBoardUpdated?: SubscriptionResolver<Maybe<ResolversTypes['ID']>, "eBoardUpdated", ParentType, ContextType, RequireFields<SubscriptionEBoardUpdatedArgs, 'filter'>>;
-  projectCreated?: SubscriptionResolver<Maybe<ResolversTypes['ID']>, "projectCreated", ParentType, ContextType, RequireFields<SubscriptionProjectCreatedArgs, 'filter'>>;
-  projectDeleted?: SubscriptionResolver<Maybe<ResolversTypes['ID']>, "projectDeleted", ParentType, ContextType, RequireFields<SubscriptionProjectDeletedArgs, 'filter'>>;
-  projectInviteCreated?: SubscriptionResolver<Maybe<ResolversTypes['ID']>, "projectInviteCreated", ParentType, ContextType, RequireFields<SubscriptionProjectInviteCreatedArgs, 'filter'>>;
-  projectInviteDeleted?: SubscriptionResolver<Maybe<ResolversTypes['ID']>, "projectInviteDeleted", ParentType, ContextType, RequireFields<SubscriptionProjectInviteDeletedArgs, 'filter'>>;
-  projectMemberCreated?: SubscriptionResolver<Maybe<ResolversTypes['ID']>, "projectMemberCreated", ParentType, ContextType, RequireFields<SubscriptionProjectMemberCreatedArgs, 'filter'>>;
-  projectMemberDeleted?: SubscriptionResolver<Maybe<ResolversTypes['ID']>, "projectMemberDeleted", ParentType, ContextType, RequireFields<SubscriptionProjectMemberDeletedArgs, 'filter'>>;
-  projectMemberUpdated?: SubscriptionResolver<Maybe<ResolversTypes['ID']>, "projectMemberUpdated", ParentType, ContextType, RequireFields<SubscriptionProjectMemberUpdatedArgs, 'filter'>>;
-  projectUpdated?: SubscriptionResolver<Maybe<ResolversTypes['ID']>, "projectUpdated", ParentType, ContextType, RequireFields<SubscriptionProjectUpdatedArgs, 'filter'>>;
-  userCreated?: SubscriptionResolver<Maybe<ResolversTypes['ID']>, "userCreated", ParentType, ContextType, RequireFields<SubscriptionUserCreatedArgs, 'filter'>>;
-  userDeleted?: SubscriptionResolver<Maybe<ResolversTypes['ID']>, "userDeleted", ParentType, ContextType, RequireFields<SubscriptionUserDeletedArgs, 'filter'>>;
-  userUpdated?: SubscriptionResolver<Maybe<ResolversTypes['ID']>, "userUpdated", ParentType, ContextType, RequireFields<SubscriptionUserUpdatedArgs, 'filter'>>;
+  eBoardCreated?: SubscriptionResolver<Maybe<ResolversTypes['ID']>, 'eBoardCreated', ParentType, ContextType, RequireFields<SubscriptionEBoardCreatedArgs, 'filter'>>;
+  eBoardDeleted?: SubscriptionResolver<Maybe<ResolversTypes['ID']>, 'eBoardDeleted', ParentType, ContextType, RequireFields<SubscriptionEBoardDeletedArgs, 'filter'>>;
+  eBoardTermCreated?: SubscriptionResolver<Maybe<ResolversTypes['ID']>, 'eBoardTermCreated', ParentType, ContextType, RequireFields<SubscriptionEBoardTermCreatedArgs, 'filter'>>;
+  eBoardTermDeleted?: SubscriptionResolver<Maybe<ResolversTypes['ID']>, 'eBoardTermDeleted', ParentType, ContextType, RequireFields<SubscriptionEBoardTermDeletedArgs, 'filter'>>;
+  eBoardTermUpdated?: SubscriptionResolver<Maybe<ResolversTypes['ID']>, 'eBoardTermUpdated', ParentType, ContextType, RequireFields<SubscriptionEBoardTermUpdatedArgs, 'filter'>>;
+  eBoardUpdated?: SubscriptionResolver<Maybe<ResolversTypes['ID']>, 'eBoardUpdated', ParentType, ContextType, RequireFields<SubscriptionEBoardUpdatedArgs, 'filter'>>;
+  projectCreated?: SubscriptionResolver<Maybe<ResolversTypes['ID']>, 'projectCreated', ParentType, ContextType, RequireFields<SubscriptionProjectCreatedArgs, 'filter'>>;
+  projectDeleted?: SubscriptionResolver<Maybe<ResolversTypes['ID']>, 'projectDeleted', ParentType, ContextType, RequireFields<SubscriptionProjectDeletedArgs, 'filter'>>;
+  projectInviteCreated?: SubscriptionResolver<Maybe<ResolversTypes['ID']>, 'projectInviteCreated', ParentType, ContextType, RequireFields<SubscriptionProjectInviteCreatedArgs, 'filter'>>;
+  projectInviteDeleted?: SubscriptionResolver<Maybe<ResolversTypes['ID']>, 'projectInviteDeleted', ParentType, ContextType, RequireFields<SubscriptionProjectInviteDeletedArgs, 'filter'>>;
+  projectMemberCreated?: SubscriptionResolver<Maybe<ResolversTypes['ID']>, 'projectMemberCreated', ParentType, ContextType, RequireFields<SubscriptionProjectMemberCreatedArgs, 'filter'>>;
+  projectMemberDeleted?: SubscriptionResolver<Maybe<ResolversTypes['ID']>, 'projectMemberDeleted', ParentType, ContextType, RequireFields<SubscriptionProjectMemberDeletedArgs, 'filter'>>;
+  projectMemberUpdated?: SubscriptionResolver<Maybe<ResolversTypes['ID']>, 'projectMemberUpdated', ParentType, ContextType, RequireFields<SubscriptionProjectMemberUpdatedArgs, 'filter'>>;
+  projectUpdated?: SubscriptionResolver<Maybe<ResolversTypes['ID']>, 'projectUpdated', ParentType, ContextType, RequireFields<SubscriptionProjectUpdatedArgs, 'filter'>>;
+  userCreated?: SubscriptionResolver<Maybe<ResolversTypes['ID']>, 'userCreated', ParentType, ContextType, RequireFields<SubscriptionUserCreatedArgs, 'filter'>>;
+  userDeleted?: SubscriptionResolver<Maybe<ResolversTypes['ID']>, 'userDeleted', ParentType, ContextType, RequireFields<SubscriptionUserDeletedArgs, 'filter'>>;
+  userUpdated?: SubscriptionResolver<Maybe<ResolversTypes['ID']>, 'userUpdated', ParentType, ContextType, RequireFields<SubscriptionUserUpdatedArgs, 'filter'>>;
 };
 
 export interface UploadScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['Upload'], any> {
@@ -924,4 +871,3 @@ export type Resolvers<ContextType = any> = {
   UserRole?: UserRoleResolvers<ContextType>;
   UserSocial?: UserSocialResolvers<ContextType>;
 };
-
