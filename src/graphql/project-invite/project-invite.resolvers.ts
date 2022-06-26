@@ -48,14 +48,14 @@ export default {
         if (project.access !== Access.Invite)
           throw new HttpError(403, "Cannot request invite for project whose access isn't 'INVITE'!");
 
+      // We don't filter by invite type, because we want at most one invite to exist at all times between a user and a project.
       const inviteExists = await context.unsecureEntityManager.projectInvite.exists({
         filter: {
-          type: args.input.type,
           projectId: args.input.projectId,
           userId: args.input.userId,
         },
       });
-      if (inviteExists) throw new HttpError(400, 'Outgoing invite already exists!');
+      if (inviteExists) throw new HttpError(400, 'Same invite already exists!');
 
       const insertedInvite = await context.unsecureEntityManager.projectInvite.insertOne({
         record: {
