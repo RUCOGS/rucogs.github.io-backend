@@ -50,6 +50,14 @@ export async function startServer(debug: boolean, mock: boolean = false) {
     `\
 🚀 Server ready at: http://localhost:${port}`,
   );
+
+  return {
+    mongoClient,
+    mongoDb,
+    unsecuredEntityManager,
+    app,
+    httpServer,
+  };
 }
 
 async function startApolloServer(
