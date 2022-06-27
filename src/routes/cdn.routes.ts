@@ -19,7 +19,7 @@ router.use(function (req, res, next) {
 // ----- REFRESH TOKENS ----- //
 // router.post('/token', authController.processRefreshToken);
 
-router.use('/cdn/dynamic/', (req, res, next) => {
+router.use('/dynamic', (req, res, next) => {
   let image =
     req.query.src && typeof req.query.src === 'string'
       ? req.query.src
@@ -28,8 +28,8 @@ router.use('/cdn/dynamic/', (req, res, next) => {
   let width = parseInt(req.query.width && typeof req.query.width === 'string' ? req.query.width : '100');
   let height = parseInt(req.query.height && typeof req.query.height === 'string' ? req.query.height : '100');
 
-  width = Math.max(width, 600);
-  height = Math.max(height, 600);
+  width = Math.min(width, 600);
+  height = Math.min(height, 600);
 
   var transformer = sharp()
     .resize(width, height, {
