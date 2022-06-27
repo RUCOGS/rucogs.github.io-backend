@@ -1,6 +1,5 @@
 import ServerConfig from '@src/config/server.config.json';
 import { authenticate, AuthScheme, configPassport } from '@src/controllers/auth.controller';
-import { UPLOAD_DIRECTORY } from '@src/controllers/cdn.controller';
 import {
   createSecureEntityManager,
   createUnsecureEntityManager,
@@ -11,6 +10,7 @@ import { EntityManager } from '@src/generated/typetta';
 import { schema } from '@src/graphql';
 import { ApolloResolversContext, RequestWithDefaultContext } from '@src/misc/context';
 import authRouter from '@src/routes/auth.routes';
+import cdnRouter from '@src/routes/cdn.routes';
 import { DefaultSecurityContext } from '@src/shared/security';
 import { ApolloServerPluginDrainHttpServer, Config } from 'apollo-server-core';
 import { ApolloServer as ExpressApolloServer, ExpressContext } from 'apollo-server-express';
@@ -50,6 +50,14 @@ export async function startServer(debug: boolean, mock: boolean = false) {
     `\
 🚀 Server ready at: http://localhost:${port}`,
   );
+
+  return {
+    mongoClient,
+    mongoDb,
+    unsecuredEntityManager,
+    app,
+    httpServer,
+  };
 }
 
 async function startApolloServer(
@@ -199,7 +207,7 @@ function configExpress(app: Express, entityManager: EntityManager, mongoClient: 
 
   const router = express.Router();
   router.use('/auth', authRouter);
-  router.use('/cdn/', express.static(UPLOAD_DIRECTORY));
+  router.use('/cdn', cdnRouter);
 
   router.get('/', (req, res) => {
     res.json({ message: 'Welcome to the RUCOGS backend API!' });

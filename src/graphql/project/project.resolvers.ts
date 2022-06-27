@@ -17,10 +17,13 @@ import { ApolloResolversContext } from '@src/misc/context';
 import { makePermsCalc } from '@src/shared/security';
 import { HttpError } from '@src/shared/utils';
 import { daoInsertRolesBatch, isDefined, startEntityManagerTransaction } from '@src/utils';
+import AsyncLock from 'async-lock';
 import { deleteProjectInvites, makeProjectMember } from '../project-invite/project-invite.resolvers';
 import { deleteProjectMembers } from '../project-member/project-member.resolvers';
 import pubsub, { PubSubEvents } from '../pubsub';
 import { makeSubscriptionResolver } from '../subscription-resolver-builder';
+
+const updateProjectLock = new AsyncLock();
 
 export default {
   Mutation: {
@@ -71,126 +74,128 @@ export default {
     },
 
     updateProject: async (parent, args, context: ApolloResolversContext, info) => {
-      if (
-        !makePermsCalc()
-          .withContext(context.securityContext)
-          .withDomain({
-            projectId: [args.input.id],
-          })
-          .hasPermission(Permission.UpdateProject)
-      ) {
-        throw new HttpError(401, 'Not authorized!');
-      }
+      await updateProjectLock.acquire('lock', async () => {
+        if (
+          !makePermsCalc()
+            .withContext(context.securityContext)
+            .withDomain({
+              projectId: [args.input.id],
+            })
+            .hasPermission(Permission.UpdateProject)
+        ) {
+          throw new HttpError(401, 'Not authorized!');
+        }
 
-      const project = await context.unsecureEntityManager.project.findOne({
-        filter: { id: args.input.id },
-        projection: {
-          cardImageLink: true,
-          bannerLink: true,
-          galleryImageLinks: true,
-        },
-      });
-      if (!project) {
-        throw new HttpError(401, 'Invalid projectid!');
-      }
+        const project = await context.unsecureEntityManager.project.findOne({
+          filter: { id: args.input.id },
+          projection: {
+            cardImageLink: true,
+            bannerLink: true,
+            galleryImageLinks: true,
+          },
+        });
+        if (!project) {
+          throw new HttpError(401, 'Invalid projectid!');
+        }
 
-      const error = await startEntityManagerTransaction(
-        context.unsecureEntityManager,
-        context.mongoClient,
-        async (transEntityManager) => {
-          let cardImageSelfHostedFilePath = null;
-          if (isDefined(args.input.cardImage)) {
-            if (
-              args.input.cardImage.operation === UploadOperation.Insert ||
-              args.input.cardImage.operation === UploadOperation.Delete
-            )
-              tryDeleteFileIfSelfHosted(project.cardImageLink);
+        const error = await startEntityManagerTransaction(
+          context.unsecureEntityManager,
+          context.mongoClient,
+          async (transEntityManager) => {
+            let cardImageSelfHostedFilePath = null;
+            if (isDefined(args.input.cardImage)) {
+              if (
+                args.input.cardImage.operation === UploadOperation.Insert ||
+                args.input.cardImage.operation === UploadOperation.Delete
+              )
+                tryDeleteFileIfSelfHosted(project.cardImageLink);
 
-            if (args.input.cardImage.operation === UploadOperation.Insert) {
-              cardImageSelfHostedFilePath = await fileUploadPromiseToCdn({
-                fileUploadPromise: args.input.cardImage.upload!,
-                maxSizeBytes: 5 * DataSize.MB,
-              });
-            }
-          }
-
-          let bannerSelfHostedFilePath = null;
-          if (isDefined(args.input.banner)) {
-            if (
-              args.input.banner.operation === UploadOperation.Insert ||
-              args.input.banner.operation === UploadOperation.Delete
-            )
-              tryDeleteFileIfSelfHosted(project.bannerLink);
-
-            if (args.input.banner.operation === UploadOperation.Insert) {
-              bannerSelfHostedFilePath = await fileUploadPromiseToCdn({
-                fileUploadPromise: args.input.banner.upload!,
-                maxSizeBytes: 10 * DataSize.MB,
-              });
-            }
-          }
-
-          let galleryImageLinks: string[] = [];
-          if (isDefined(args.input.galleryImages)) {
-            // Delete files that weren't found in the new galleryImages but existed in the old galleryImages
-            if (project.galleryImageLinks) {
-              for (const oldLink of project.galleryImageLinks) {
-                if (!args.input.galleryImages.some((x) => x.source === oldLink)) {
-                  // Delete this
-                  if (isSelfHostedFile(oldLink)) tryDeleteFileIfSelfHosted(oldLink);
-                }
+              if (args.input.cardImage.operation === UploadOperation.Insert) {
+                cardImageSelfHostedFilePath = await fileUploadPromiseToCdn({
+                  fileUploadPromise: args.input.cardImage.upload!,
+                  maxSizeBytes: 5 * DataSize.MB,
+                });
               }
             }
 
-            // Upload the new files, and build the list of links to those files
-            for (const image of args.input.galleryImages) {
-              let relativePath = image.source ?? '';
-              if (image.upload) {
-                relativePath = await fileUploadPromiseToCdn({
-                  fileUploadPromise: image.upload,
+            let bannerSelfHostedFilePath = null;
+            if (isDefined(args.input.banner)) {
+              if (
+                args.input.banner.operation === UploadOperation.Insert ||
+                args.input.banner.operation === UploadOperation.Delete
+              )
+                tryDeleteFileIfSelfHosted(project.bannerLink);
+
+              if (args.input.banner.operation === UploadOperation.Insert) {
+                bannerSelfHostedFilePath = await fileUploadPromiseToCdn({
+                  fileUploadPromise: args.input.banner.upload!,
                   maxSizeBytes: 10 * DataSize.MB,
                 });
               }
-              galleryImageLinks.push(relativePath);
             }
-          }
-          await transEntityManager.project.updateOne({
-            filter: {
-              id: args.input.id,
-            },
-            changes: {
-              ...(isDefined(args.input.completed) && {
-                completedAt: args.input.completed ? Date.now() : null,
-              }),
-              ...(isDefined(args.input.tags) && { tags: args.input.tags }),
-              ...(isDefined(args.input.access) && {
-                access: args.input.access,
-              }),
-              ...(isDefined(args.input.name) && { name: args.input.name }),
-              ...(isDefined(args.input.pitch) && { pitch: args.input.pitch }),
-              ...(isDefined(args.input.description) && {
-                description: args.input.description,
-              }),
-              ...(isDefined(args.input.galleryImages) && { galleryImageLinks }),
-              ...(isDefined(args.input.soundcloudEmbedSrc) && {
-                soundcloudEmbedSrc: args.input.soundcloudEmbedSrc,
-              }),
-              ...(isDefined(args.input.downloadLinks) && {
-                downloadLinks: args.input.downloadLinks,
-              }),
-              ...(isDefined(args.input.cardImage) && {
-                cardImageLink: cardImageSelfHostedFilePath,
-              }),
-              ...(isDefined(args.input.banner) && {
-                bannerLink: bannerSelfHostedFilePath,
-              }),
-            },
-          });
-        },
-      );
-      if (error) {
-        throw error;
-      }
+
+            let galleryImageLinks: string[] = [];
+            if (isDefined(args.input.galleryImages)) {
+              // Delete files that weren't found in the new galleryImages but existed in the old galleryImages
+              if (project.galleryImageLinks) {
+                for (const oldLink of project.galleryImageLinks) {
+                  if (!args.input.galleryImages.some((x) => x.source === oldLink)) {
+                    // Delete this
+                    if (isSelfHostedFile(oldLink)) tryDeleteFileIfSelfHosted(oldLink);
+                  }
+                }
+              }
+
+              // Upload the new files, and build the list of links to those files
+              for (const image of args.input.galleryImages) {
+                let relativePath = image.source ?? '';
+                if (image.upload) {
+                  relativePath = await fileUploadPromiseToCdn({
+                    fileUploadPromise: image.upload,
+                    maxSizeBytes: 10 * DataSize.MB,
+                  });
+                }
+                galleryImageLinks.push(relativePath);
+              }
+            }
+            await transEntityManager.project.updateOne({
+              filter: {
+                id: args.input.id,
+              },
+              changes: {
+                ...(isDefined(args.input.completed) && {
+                  completedAt: args.input.completed ? Date.now() : null,
+                }),
+                ...(isDefined(args.input.tags) && { tags: args.input.tags }),
+                ...(isDefined(args.input.access) && {
+                  access: args.input.access,
+                }),
+                ...(isDefined(args.input.name) && { name: args.input.name }),
+                ...(isDefined(args.input.pitch) && { pitch: args.input.pitch }),
+                ...(isDefined(args.input.description) && {
+                  description: args.input.description,
+                }),
+                ...(isDefined(args.input.galleryImages) && { galleryImageLinks }),
+                ...(isDefined(args.input.soundcloudEmbedSrc) && {
+                  soundcloudEmbedSrc: args.input.soundcloudEmbedSrc,
+                }),
+                ...(isDefined(args.input.downloadLinks) && {
+                  downloadLinks: args.input.downloadLinks,
+                }),
+                ...(isDefined(args.input.cardImage) && {
+                  cardImageLink: cardImageSelfHostedFilePath,
+                }),
+                ...(isDefined(args.input.banner) && {
+                  bannerLink: bannerSelfHostedFilePath,
+                }),
+              },
+            });
+          },
+        );
+        if (error) {
+          throw error;
+        }
+      });
 
       const updatedProject = await context.unsecureEntityManager.project.findOne({
         filter: { id: args.input.id },

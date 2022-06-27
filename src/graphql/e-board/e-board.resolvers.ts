@@ -26,6 +26,7 @@ import {
   isDefined,
   startEntityManagerTransaction,
 } from '@src/utils';
+import AsyncLock from 'async-lock';
 import pubsub, { PubSubEvents } from '../pubsub';
 import { makeSubscriptionResolver } from '../subscription-resolver-builder';
 
@@ -45,6 +46,8 @@ async function getRequesterRoles(unsecureEntityManager: EntityManager, requester
 
   return requesterRoles;
 }
+
+const updateEBoardLock = new AsyncLock();
 
 export default {
   Mutation: {
@@ -78,57 +81,59 @@ export default {
     },
 
     updateEBoard: async (parent, args, context: ApolloResolversContext, info) => {
-      const eBoard = await context.unsecureEntityManager.eBoard.findOne({
-        filter: { id: args.input.id },
-        projection: {
-          userId: true,
-          avatarLink: true,
-        },
-      });
-      if (!eBoard) throw new HttpError(400, "EBoard doesn't exist!");
-
-      const permCalc = makePermsCalc()
-        .withContext(context.securityContext)
-        .withDomain({
-          userId: [eBoard.userId],
+      await updateEBoardLock.acquire('lock', async () => {
+        const eBoard = await context.unsecureEntityManager.eBoard.findOne({
+          filter: { id: args.input.id },
+          projection: {
+            userId: true,
+            avatarLink: true,
+          },
         });
+        if (!eBoard) throw new HttpError(400, "EBoard doesn't exist!");
 
-      permCalc.assertPermission(Permission.ManageEboard);
-
-      const error = await startEntityManagerTransaction(
-        context.unsecureEntityManager,
-        context.mongoClient,
-        async (transEntityManager) => {
-          if (!context.securityContext.userId) throw new HttpError(400, 'Expected context.securityContext.userId!');
-
-          let avatarSelfHostedFilePath = null;
-          if (isDefined(args.input.avatar)) {
-            if (
-              args.input.avatar.operation === UploadOperation.Insert ||
-              args.input.avatar.operation === UploadOperation.Delete
-            )
-              tryDeleteFileIfSelfHosted(eBoard.avatarLink);
-
-            if (args.input.avatar.operation === UploadOperation.Insert) {
-              avatarSelfHostedFilePath = await fileUploadPromiseToCdn({
-                fileUploadPromise: args.input.avatar.upload!,
-                maxSizeBytes: 5 * DataSize.MB,
-              });
-            }
-          }
-
-          await transEntityManager.eBoard.updateOne({
-            filter: { id: args.input.id },
-            changes: {
-              ...(isDefined(args.input.avatar) && {
-                avatarLink: avatarSelfHostedFilePath,
-              }),
-              ...(isDefined(args.input.bio) && { bio: args.input.bio }),
-            },
+        const permCalc = makePermsCalc()
+          .withContext(context.securityContext)
+          .withDomain({
+            userId: [eBoard.userId],
           });
-        },
-      );
-      if (error) throw error;
+
+        permCalc.assertPermission(Permission.ManageEboard);
+
+        const error = await startEntityManagerTransaction(
+          context.unsecureEntityManager,
+          context.mongoClient,
+          async (transEntityManager) => {
+            if (!context.securityContext.userId) throw new HttpError(400, 'Expected context.securityContext.userId!');
+
+            let avatarSelfHostedFilePath = null;
+            if (isDefined(args.input.avatar)) {
+              if (
+                args.input.avatar.operation === UploadOperation.Insert ||
+                args.input.avatar.operation === UploadOperation.Delete
+              )
+                tryDeleteFileIfSelfHosted(eBoard.avatarLink);
+
+              if (args.input.avatar.operation === UploadOperation.Insert) {
+                avatarSelfHostedFilePath = await fileUploadPromiseToCdn({
+                  fileUploadPromise: args.input.avatar.upload!,
+                  maxSizeBytes: 5 * DataSize.MB,
+                });
+              }
+            }
+
+            await transEntityManager.eBoard.updateOne({
+              filter: { id: args.input.id },
+              changes: {
+                ...(isDefined(args.input.avatar) && {
+                  avatarLink: avatarSelfHostedFilePath,
+                }),
+                ...(isDefined(args.input.bio) && { bio: args.input.bio }),
+              },
+            });
+          },
+        );
+        if (error) throw error;
+      });
 
       const updatedEBoard = await context.unsecureEntityManager.eBoard.findOne({
         filter: { id: args.input.id },
