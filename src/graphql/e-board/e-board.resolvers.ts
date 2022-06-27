@@ -81,33 +81,32 @@ export default {
     },
 
     updateEBoard: async (parent, args, context: ApolloResolversContext, info) => {
-      const eBoard = await context.unsecureEntityManager.eBoard.findOne({
-        filter: { id: args.input.id },
-        projection: {
-          userId: true,
-          avatarLink: true,
-        },
-      });
-      if (!eBoard) throw new HttpError(400, "EBoard doesn't exist!");
-
-      const permCalc = makePermsCalc()
-        .withContext(context.securityContext)
-        .withDomain({
-          userId: [eBoard.userId],
+      await updateEBoardLock.acquire('lock', async () => {
+        const eBoard = await context.unsecureEntityManager.eBoard.findOne({
+          filter: { id: args.input.id },
+          projection: {
+            userId: true,
+            avatarLink: true,
+          },
         });
+        if (!eBoard) throw new HttpError(400, "EBoard doesn't exist!");
 
-      permCalc.assertPermission(Permission.ManageEboard);
+        const permCalc = makePermsCalc()
+          .withContext(context.securityContext)
+          .withDomain({
+            userId: [eBoard.userId],
+          });
 
-      const error = await startEntityManagerTransaction(
-        context.unsecureEntityManager,
-        context.mongoClient,
-        async (transEntityManager) => {
-          if (!context.securityContext.userId) throw new HttpError(400, 'Expected context.securityContext.userId!');
+        permCalc.assertPermission(Permission.ManageEboard);
 
-          let avatarSelfHostedFilePath = null;
-          if (isDefined(args.input.avatar)) {
-            updateEBoardLock.acquire('avatar', async () => {
-              if (!isDefined(args.input.avatar)) return;
+        const error = await startEntityManagerTransaction(
+          context.unsecureEntityManager,
+          context.mongoClient,
+          async (transEntityManager) => {
+            if (!context.securityContext.userId) throw new HttpError(400, 'Expected context.securityContext.userId!');
+
+            let avatarSelfHostedFilePath = null;
+            if (isDefined(args.input.avatar)) {
               if (
                 args.input.avatar.operation === UploadOperation.Insert ||
                 args.input.avatar.operation === UploadOperation.Delete
@@ -120,21 +119,21 @@ export default {
                   maxSizeBytes: 5 * DataSize.MB,
                 });
               }
-            });
-          }
+            }
 
-          await transEntityManager.eBoard.updateOne({
-            filter: { id: args.input.id },
-            changes: {
-              ...(isDefined(args.input.avatar) && {
-                avatarLink: avatarSelfHostedFilePath,
-              }),
-              ...(isDefined(args.input.bio) && { bio: args.input.bio }),
-            },
-          });
-        },
-      );
-      if (error) throw error;
+            await transEntityManager.eBoard.updateOne({
+              filter: { id: args.input.id },
+              changes: {
+                ...(isDefined(args.input.avatar) && {
+                  avatarLink: avatarSelfHostedFilePath,
+                }),
+                ...(isDefined(args.input.bio) && { bio: args.input.bio }),
+              },
+            });
+          },
+        );
+        if (error) throw error;
+      });
 
       const updatedEBoard = await context.unsecureEntityManager.eBoard.findOne({
         filter: { id: args.input.id },

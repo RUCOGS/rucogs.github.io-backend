@@ -74,37 +74,36 @@ export default {
     },
 
     updateProject: async (parent, args, context: ApolloResolversContext, info) => {
-      if (
-        !makePermsCalc()
-          .withContext(context.securityContext)
-          .withDomain({
-            projectId: [args.input.id],
-          })
-          .hasPermission(Permission.UpdateProject)
-      ) {
-        throw new HttpError(401, 'Not authorized!');
-      }
+      await updateProjectLock.acquire('lock', async () => {
+        if (
+          !makePermsCalc()
+            .withContext(context.securityContext)
+            .withDomain({
+              projectId: [args.input.id],
+            })
+            .hasPermission(Permission.UpdateProject)
+        ) {
+          throw new HttpError(401, 'Not authorized!');
+        }
 
-      const project = await context.unsecureEntityManager.project.findOne({
-        filter: { id: args.input.id },
-        projection: {
-          cardImageLink: true,
-          bannerLink: true,
-          galleryImageLinks: true,
-        },
-      });
-      if (!project) {
-        throw new HttpError(401, 'Invalid projectid!');
-      }
+        const project = await context.unsecureEntityManager.project.findOne({
+          filter: { id: args.input.id },
+          projection: {
+            cardImageLink: true,
+            bannerLink: true,
+            galleryImageLinks: true,
+          },
+        });
+        if (!project) {
+          throw new HttpError(401, 'Invalid projectid!');
+        }
 
-      const error = await startEntityManagerTransaction(
-        context.unsecureEntityManager,
-        context.mongoClient,
-        async (transEntityManager) => {
-          let cardImageSelfHostedFilePath = null;
-          if (isDefined(args.input.cardImage)) {
-            updateProjectLock.acquire('cardImage', async () => {
-              if (!isDefined(args.input.cardImage)) return;
+        const error = await startEntityManagerTransaction(
+          context.unsecureEntityManager,
+          context.mongoClient,
+          async (transEntityManager) => {
+            let cardImageSelfHostedFilePath = null;
+            if (isDefined(args.input.cardImage)) {
               if (
                 args.input.cardImage.operation === UploadOperation.Insert ||
                 args.input.cardImage.operation === UploadOperation.Delete
@@ -117,13 +116,10 @@ export default {
                   maxSizeBytes: 5 * DataSize.MB,
                 });
               }
-            });
-          }
+            }
 
-          let bannerSelfHostedFilePath = null;
-          if (isDefined(args.input.banner)) {
-            updateProjectLock.acquire('banner', async () => {
-              if (!isDefined(args.input.banner)) return;
+            let bannerSelfHostedFilePath = null;
+            if (isDefined(args.input.banner)) {
               if (
                 args.input.banner.operation === UploadOperation.Insert ||
                 args.input.banner.operation === UploadOperation.Delete
@@ -136,13 +132,10 @@ export default {
                   maxSizeBytes: 10 * DataSize.MB,
                 });
               }
-            });
-          }
+            }
 
-          let galleryImageLinks: string[] = [];
-          if (isDefined(args.input.galleryImages)) {
-            updateProjectLock.acquire('galleryImages', async () => {
-              if (!isDefined(args.input.galleryImages)) return;
+            let galleryImageLinks: string[] = [];
+            if (isDefined(args.input.galleryImages)) {
               // Delete files that weren't found in the new galleryImages but existed in the old galleryImages
               if (project.galleryImageLinks) {
                 for (const oldLink of project.galleryImageLinks) {
@@ -164,45 +157,45 @@ export default {
                 }
                 galleryImageLinks.push(relativePath);
               }
+            }
+            await transEntityManager.project.updateOne({
+              filter: {
+                id: args.input.id,
+              },
+              changes: {
+                ...(isDefined(args.input.completed) && {
+                  completedAt: args.input.completed ? Date.now() : null,
+                }),
+                ...(isDefined(args.input.tags) && { tags: args.input.tags }),
+                ...(isDefined(args.input.access) && {
+                  access: args.input.access,
+                }),
+                ...(isDefined(args.input.name) && { name: args.input.name }),
+                ...(isDefined(args.input.pitch) && { pitch: args.input.pitch }),
+                ...(isDefined(args.input.description) && {
+                  description: args.input.description,
+                }),
+                ...(isDefined(args.input.galleryImages) && { galleryImageLinks }),
+                ...(isDefined(args.input.soundcloudEmbedSrc) && {
+                  soundcloudEmbedSrc: args.input.soundcloudEmbedSrc,
+                }),
+                ...(isDefined(args.input.downloadLinks) && {
+                  downloadLinks: args.input.downloadLinks,
+                }),
+                ...(isDefined(args.input.cardImage) && {
+                  cardImageLink: cardImageSelfHostedFilePath,
+                }),
+                ...(isDefined(args.input.banner) && {
+                  bannerLink: bannerSelfHostedFilePath,
+                }),
+              },
             });
-          }
-          await transEntityManager.project.updateOne({
-            filter: {
-              id: args.input.id,
-            },
-            changes: {
-              ...(isDefined(args.input.completed) && {
-                completedAt: args.input.completed ? Date.now() : null,
-              }),
-              ...(isDefined(args.input.tags) && { tags: args.input.tags }),
-              ...(isDefined(args.input.access) && {
-                access: args.input.access,
-              }),
-              ...(isDefined(args.input.name) && { name: args.input.name }),
-              ...(isDefined(args.input.pitch) && { pitch: args.input.pitch }),
-              ...(isDefined(args.input.description) && {
-                description: args.input.description,
-              }),
-              ...(isDefined(args.input.galleryImages) && { galleryImageLinks }),
-              ...(isDefined(args.input.soundcloudEmbedSrc) && {
-                soundcloudEmbedSrc: args.input.soundcloudEmbedSrc,
-              }),
-              ...(isDefined(args.input.downloadLinks) && {
-                downloadLinks: args.input.downloadLinks,
-              }),
-              ...(isDefined(args.input.cardImage) && {
-                cardImageLink: cardImageSelfHostedFilePath,
-              }),
-              ...(isDefined(args.input.banner) && {
-                bannerLink: bannerSelfHostedFilePath,
-              }),
-            },
-          });
-        },
-      );
-      if (error) {
-        throw error;
-      }
+          },
+        );
+        if (error) {
+          throw error;
+        }
+      });
 
       const updatedProject = await context.unsecureEntityManager.project.findOne({
         filter: { id: args.input.id },
