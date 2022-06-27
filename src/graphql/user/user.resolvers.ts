@@ -25,11 +25,14 @@ import {
   isDefined,
   startEntityManagerTransaction,
 } from '@src/utils';
+import AsyncLock from 'async-lock';
 import { deleteEBoard } from '../e-board/e-board.resolvers';
 
 async function getRequesterRoles(unsecureEntityManager: EntityManager, requesterUserId: string, roleEntityId: string) {
   return getEntityRoleCodes(unsecureEntityManager.userRole, 'userId', requesterUserId);
 }
+
+const updateUserLock = new AsyncLock();
 
 export default {
   Mutation: {
@@ -127,36 +130,42 @@ export default {
 
           let avatarSelfHostedFilePath = null;
           if (isDefined(args.input.avatar)) {
-            if (
-              args.input.avatar.operation === UploadOperation.Insert ||
-              args.input.avatar.operation === UploadOperation.Delete
-            ) {
-              void tryDeleteFileIfSelfHosted(user.avatarLink);
-            }
+            await updateUserLock.acquire('avatar', async () => {
+              if (!isDefined(args.input.avatar)) return;
+              if (
+                args.input.avatar.operation === UploadOperation.Insert ||
+                args.input.avatar.operation === UploadOperation.Delete
+              ) {
+                void tryDeleteFileIfSelfHosted(user.avatarLink);
+              }
 
-            if (args.input.avatar.operation === UploadOperation.Insert) {
-              avatarSelfHostedFilePath = await fileUploadPromiseToCdn({
-                fileUploadPromise: args.input.avatar.upload,
-                maxSizeBytes: 5 * DataSize.MB,
-              });
-            }
+              if (args.input.avatar.operation === UploadOperation.Insert) {
+                avatarSelfHostedFilePath = await fileUploadPromiseToCdn({
+                  fileUploadPromise: args.input.avatar.upload,
+                  maxSizeBytes: 5 * DataSize.MB,
+                });
+              }
+            });
           }
 
           let bannerSelfHostedFilePath = null;
           if (isDefined(args.input.banner)) {
-            if (
-              args.input.banner.operation === UploadOperation.Insert ||
-              args.input.banner.operation === UploadOperation.Delete
-            ) {
-              void tryDeleteFileIfSelfHosted(user.bannerLink);
-            }
+            await updateUserLock.acquire('banner', async () => {
+              if (!isDefined(args.input.banner)) return;
+              if (
+                args.input.banner.operation === UploadOperation.Insert ||
+                args.input.banner.operation === UploadOperation.Delete
+              ) {
+                void tryDeleteFileIfSelfHosted(user.bannerLink);
+              }
 
-            if (args.input.banner.operation === UploadOperation.Insert) {
-              bannerSelfHostedFilePath = await fileUploadPromiseToCdn({
-                fileUploadPromise: args.input.banner.upload,
-                maxSizeBytes: 10 * DataSize.MB,
-              });
-            }
+              if (args.input.banner.operation === UploadOperation.Insert) {
+                bannerSelfHostedFilePath = await fileUploadPromiseToCdn({
+                  fileUploadPromise: args.input.banner.upload,
+                  maxSizeBytes: 10 * DataSize.MB,
+                });
+              }
+            });
           }
 
           await transEntityManager.user.updateOne({

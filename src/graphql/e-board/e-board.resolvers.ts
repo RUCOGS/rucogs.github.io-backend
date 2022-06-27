@@ -26,6 +26,7 @@ import {
   isDefined,
   startEntityManagerTransaction,
 } from '@src/utils';
+import AsyncLock from 'async-lock';
 import pubsub, { PubSubEvents } from '../pubsub';
 import { makeSubscriptionResolver } from '../subscription-resolver-builder';
 
@@ -45,6 +46,8 @@ async function getRequesterRoles(unsecureEntityManager: EntityManager, requester
 
   return requesterRoles;
 }
+
+const updateEBoardLock = new AsyncLock();
 
 export default {
   Mutation: {
@@ -103,18 +106,21 @@ export default {
 
           let avatarSelfHostedFilePath = null;
           if (isDefined(args.input.avatar)) {
-            if (
-              args.input.avatar.operation === UploadOperation.Insert ||
-              args.input.avatar.operation === UploadOperation.Delete
-            )
-              tryDeleteFileIfSelfHosted(eBoard.avatarLink);
+            updateEBoardLock.acquire('avatar', async () => {
+              if (!isDefined(args.input.avatar)) return;
+              if (
+                args.input.avatar.operation === UploadOperation.Insert ||
+                args.input.avatar.operation === UploadOperation.Delete
+              )
+                tryDeleteFileIfSelfHosted(eBoard.avatarLink);
 
-            if (args.input.avatar.operation === UploadOperation.Insert) {
-              avatarSelfHostedFilePath = await fileUploadPromiseToCdn({
-                fileUploadPromise: args.input.avatar.upload!,
-                maxSizeBytes: 5 * DataSize.MB,
-              });
-            }
+              if (args.input.avatar.operation === UploadOperation.Insert) {
+                avatarSelfHostedFilePath = await fileUploadPromiseToCdn({
+                  fileUploadPromise: args.input.avatar.upload!,
+                  maxSizeBytes: 5 * DataSize.MB,
+                });
+              }
+            });
           }
 
           await transEntityManager.eBoard.updateOne({

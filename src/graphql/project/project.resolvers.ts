@@ -17,10 +17,13 @@ import { ApolloResolversContext } from '@src/misc/context';
 import { makePermsCalc } from '@src/shared/security';
 import { HttpError } from '@src/shared/utils';
 import { daoInsertRolesBatch, isDefined, startEntityManagerTransaction } from '@src/utils';
+import AsyncLock from 'async-lock';
 import { deleteProjectInvites, makeProjectMember } from '../project-invite/project-invite.resolvers';
 import { deleteProjectMembers } from '../project-member/project-member.resolvers';
 import pubsub, { PubSubEvents } from '../pubsub';
 import { makeSubscriptionResolver } from '../subscription-resolver-builder';
+
+const updateProjectLock = new AsyncLock();
 
 export default {
   Mutation: {
@@ -100,59 +103,68 @@ export default {
         async (transEntityManager) => {
           let cardImageSelfHostedFilePath = null;
           if (isDefined(args.input.cardImage)) {
-            if (
-              args.input.cardImage.operation === UploadOperation.Insert ||
-              args.input.cardImage.operation === UploadOperation.Delete
-            )
-              tryDeleteFileIfSelfHosted(project.cardImageLink);
+            updateProjectLock.acquire('cardImage', async () => {
+              if (!isDefined(args.input.cardImage)) return;
+              if (
+                args.input.cardImage.operation === UploadOperation.Insert ||
+                args.input.cardImage.operation === UploadOperation.Delete
+              )
+                tryDeleteFileIfSelfHosted(project.cardImageLink);
 
-            if (args.input.cardImage.operation === UploadOperation.Insert) {
-              cardImageSelfHostedFilePath = await fileUploadPromiseToCdn({
-                fileUploadPromise: args.input.cardImage.upload!,
-                maxSizeBytes: 5 * DataSize.MB,
-              });
-            }
+              if (args.input.cardImage.operation === UploadOperation.Insert) {
+                cardImageSelfHostedFilePath = await fileUploadPromiseToCdn({
+                  fileUploadPromise: args.input.cardImage.upload!,
+                  maxSizeBytes: 5 * DataSize.MB,
+                });
+              }
+            });
           }
 
           let bannerSelfHostedFilePath = null;
           if (isDefined(args.input.banner)) {
-            if (
-              args.input.banner.operation === UploadOperation.Insert ||
-              args.input.banner.operation === UploadOperation.Delete
-            )
-              tryDeleteFileIfSelfHosted(project.bannerLink);
+            updateProjectLock.acquire('banner', async () => {
+              if (!isDefined(args.input.banner)) return;
+              if (
+                args.input.banner.operation === UploadOperation.Insert ||
+                args.input.banner.operation === UploadOperation.Delete
+              )
+                tryDeleteFileIfSelfHosted(project.bannerLink);
 
-            if (args.input.banner.operation === UploadOperation.Insert) {
-              bannerSelfHostedFilePath = await fileUploadPromiseToCdn({
-                fileUploadPromise: args.input.banner.upload!,
-                maxSizeBytes: 10 * DataSize.MB,
-              });
-            }
+              if (args.input.banner.operation === UploadOperation.Insert) {
+                bannerSelfHostedFilePath = await fileUploadPromiseToCdn({
+                  fileUploadPromise: args.input.banner.upload!,
+                  maxSizeBytes: 10 * DataSize.MB,
+                });
+              }
+            });
           }
 
           let galleryImageLinks: string[] = [];
           if (isDefined(args.input.galleryImages)) {
-            // Delete files that weren't found in the new galleryImages but existed in the old galleryImages
-            if (project.galleryImageLinks) {
-              for (const oldLink of project.galleryImageLinks) {
-                if (!args.input.galleryImages.some((x) => x.source === oldLink)) {
-                  // Delete this
-                  if (isSelfHostedFile(oldLink)) tryDeleteFileIfSelfHosted(oldLink);
+            updateProjectLock.acquire('galleryImages', async () => {
+              if (!isDefined(args.input.galleryImages)) return;
+              // Delete files that weren't found in the new galleryImages but existed in the old galleryImages
+              if (project.galleryImageLinks) {
+                for (const oldLink of project.galleryImageLinks) {
+                  if (!args.input.galleryImages.some((x) => x.source === oldLink)) {
+                    // Delete this
+                    if (isSelfHostedFile(oldLink)) tryDeleteFileIfSelfHosted(oldLink);
+                  }
                 }
               }
-            }
 
-            // Upload the new files, and build the list of links to those files
-            for (const image of args.input.galleryImages) {
-              let relativePath = image.source ?? '';
-              if (image.upload) {
-                relativePath = await fileUploadPromiseToCdn({
-                  fileUploadPromise: image.upload,
-                  maxSizeBytes: 10 * DataSize.MB,
-                });
+              // Upload the new files, and build the list of links to those files
+              for (const image of args.input.galleryImages) {
+                let relativePath = image.source ?? '';
+                if (image.upload) {
+                  relativePath = await fileUploadPromiseToCdn({
+                    fileUploadPromise: image.upload,
+                    maxSizeBytes: 10 * DataSize.MB,
+                  });
+                }
+                galleryImageLinks.push(relativePath);
               }
-              galleryImageLinks.push(relativePath);
-            }
+            });
           }
           await transEntityManager.project.updateOne({
             filter: {
