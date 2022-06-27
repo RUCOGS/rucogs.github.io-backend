@@ -18,7 +18,7 @@ export type Scalars = {
 export const Access = {
   Closed: 'CLOSED',
   Invite: 'INVITE',
-  Open: 'OPEN',
+  Open: 'OPEN'
 } as const;
 
 export type Access = typeof Access[keyof typeof Access];
@@ -246,7 +246,7 @@ export type IntFilterInput = {
 
 export const InviteType = {
   Incoming: 'INCOMING',
-  Outgoing: 'OUTGOING',
+  Outgoing: 'OUTGOING'
 } as const;
 
 export type InviteType = typeof InviteType[keyof typeof InviteType];
@@ -305,7 +305,7 @@ export type Mutation = {
   newEBoard: Scalars['ID'];
   newEBoardTerm: Scalars['ID'];
   newProject: Scalars['ID'];
-  newProjectInvite: Scalars['ID'];
+  newProjectInvite?: Maybe<Scalars['ID']>;
   transferProjectOwnership?: Maybe<Scalars['Boolean']>;
   updateEBoard?: Maybe<Scalars['Boolean']>;
   updateEBoardTerm?: Maybe<Scalars['Boolean']>;
@@ -325,216 +325,267 @@ export type Mutation = {
   updateUsers?: Maybe<Scalars['Boolean']>;
 };
 
+
 export type MutationAcceptProjectInviteArgs = {
   inviteId: Scalars['ID'];
 };
+
 
 export type MutationCreateEBoardArgs = {
   record: EBoardInsertInput;
 };
 
+
 export type MutationCreateEBoardTermArgs = {
   record: EBoardTermInsertInput;
 };
+
 
 export type MutationCreateEBoardTermRoleArgs = {
   record: EBoardTermRoleInsertInput;
 };
 
+
 export type MutationCreateProjectArgs = {
   record: ProjectInsertInput;
 };
+
 
 export type MutationCreateProjectInviteArgs = {
   record: ProjectInviteInsertInput;
 };
 
+
 export type MutationCreateProjectMemberArgs = {
   record: ProjectMemberInsertInput;
 };
+
 
 export type MutationCreateProjectMemberRoleArgs = {
   record: ProjectMemberRoleInsertInput;
 };
 
+
 export type MutationCreateUserArgs = {
   record: UserInsertInput;
 };
+
 
 export type MutationCreateUserLoginIdentityArgs = {
   record: UserLoginIdentityInsertInput;
 };
 
+
 export type MutationCreateUserRoleArgs = {
   record: UserRoleInsertInput;
 };
+
 
 export type MutationCreateUserSocialArgs = {
   record: UserSocialInsertInput;
 };
 
+
 export type MutationDeleteEBoardArgs = {
   id: Scalars['ID'];
 };
+
 
 export type MutationDeleteEBoardTermArgs = {
   id: Scalars['ID'];
 };
 
+
 export type MutationDeleteEBoardTermRolesArgs = {
   filter: EBoardTermRoleFilterInput;
 };
+
 
 export type MutationDeleteEBoardTermsArgs = {
   filter: EBoardTermFilterInput;
 };
 
+
 export type MutationDeleteEBoardsArgs = {
   filter: EBoardFilterInput;
 };
+
 
 export type MutationDeleteProjectArgs = {
   id: Scalars['ID'];
 };
 
+
 export type MutationDeleteProjectInviteArgs = {
   inviteId: Scalars['ID'];
 };
+
 
 export type MutationDeleteProjectInvitesArgs = {
   filter: ProjectInviteFilterInput;
 };
 
+
 export type MutationDeleteProjectMemberArgs = {
   id: Scalars['ID'];
 };
+
 
 export type MutationDeleteProjectMemberRolesArgs = {
   filter: ProjectMemberRoleFilterInput;
 };
 
+
 export type MutationDeleteProjectMembersArgs = {
   filter: ProjectMemberFilterInput;
 };
+
 
 export type MutationDeleteProjectsArgs = {
   filter: ProjectFilterInput;
 };
 
+
 export type MutationDeleteUserArgs = {
   id: Scalars['ID'];
 };
+
 
 export type MutationDeleteUserLoginIdentitysArgs = {
   filter: UserLoginIdentityFilterInput;
 };
 
+
 export type MutationDeleteUserRolesArgs = {
   filter: UserRoleFilterInput;
 };
+
 
 export type MutationDeleteUserSocialsArgs = {
   filter: UserSocialFilterInput;
 };
 
+
 export type MutationDeleteUsersArgs = {
   filter: UserFilterInput;
 };
+
 
 export type MutationJoinOpenProjectArgs = {
   projectId: Scalars['ID'];
 };
 
+
 export type MutationNewEBoardArgs = {
   input: NewEBoardInput;
 };
+
 
 export type MutationNewEBoardTermArgs = {
   input: NewEBoardTermInput;
 };
 
+
 export type MutationNewProjectArgs = {
   input: NewProjectInput;
 };
 
+
 export type MutationNewProjectInviteArgs = {
   input: NewProjectInviteInput;
 };
+
 
 export type MutationTransferProjectOwnershipArgs = {
   memberId: Scalars['ID'];
   projectId: Scalars['ID'];
 };
 
+
 export type MutationUpdateEBoardArgs = {
   input: UpdateEBoardInput;
 };
 
+
 export type MutationUpdateEBoardTermArgs = {
   input: UpdateEBoardTermInput;
 };
+
 
 export type MutationUpdateEBoardTermRolesArgs = {
   changes: EBoardTermRoleUpdateInput;
   filter: EBoardTermRoleFilterInput;
 };
 
+
 export type MutationUpdateEBoardTermsArgs = {
   changes: EBoardTermUpdateInput;
   filter: EBoardTermFilterInput;
 };
+
 
 export type MutationUpdateEBoardsArgs = {
   changes: EBoardUpdateInput;
   filter: EBoardFilterInput;
 };
 
+
 export type MutationUpdateProjectArgs = {
   input: UpdateProjectInput;
 };
+
 
 export type MutationUpdateProjectInvitesArgs = {
   changes: ProjectInviteUpdateInput;
   filter: ProjectInviteFilterInput;
 };
 
+
 export type MutationUpdateProjectMemberArgs = {
   input: UpdateProjectMemberInput;
 };
+
 
 export type MutationUpdateProjectMemberRolesArgs = {
   changes: ProjectMemberRoleUpdateInput;
   filter: ProjectMemberRoleFilterInput;
 };
 
+
 export type MutationUpdateProjectMembersArgs = {
   changes: ProjectMemberUpdateInput;
   filter: ProjectMemberFilterInput;
 };
+
 
 export type MutationUpdateProjectsArgs = {
   changes: ProjectUpdateInput;
   filter: ProjectFilterInput;
 };
 
+
 export type MutationUpdateUserArgs = {
   input: UpdateUserInput;
 };
+
 
 export type MutationUpdateUserLoginIdentitysArgs = {
   changes: UserLoginIdentityUpdateInput;
   filter: UserLoginIdentityFilterInput;
 };
 
+
 export type MutationUpdateUserRolesArgs = {
   changes: UserRoleUpdateInput;
   filter: UserRoleFilterInput;
 };
 
+
 export type MutationUpdateUserSocialsArgs = {
   changes: UserSocialUpdateInput;
   filter: UserSocialFilterInput;
 };
+
 
 export type MutationUpdateUsersArgs = {
   changes: UserUpdateInput;
@@ -585,7 +636,7 @@ export const Permission = {
   ReadUserPrivate: 'READ_USER_PRIVATE',
   TransferProjectOwnership: 'TRANSFER_PROJECT_OWNERSHIP',
   UpdateProject: 'UPDATE_PROJECT',
-  UpdateUser: 'UPDATE_USER',
+  UpdateUser: 'UPDATE_USER'
 } as const;
 
 export type Permission = typeof Permission[keyof typeof Permission];
@@ -901,6 +952,7 @@ export type Query = {
   users: Array<User>;
 };
 
+
 export type QueryEBoardTermRolesArgs = {
   filter?: InputMaybe<EBoardTermRoleFilterInput>;
   limit?: InputMaybe<Scalars['Int']>;
@@ -908,6 +960,7 @@ export type QueryEBoardTermRolesArgs = {
   skip?: InputMaybe<Scalars['Int']>;
   sorts?: InputMaybe<Array<EBoardTermRoleSortInput>>;
 };
+
 
 export type QueryEBoardTermsArgs = {
   filter?: InputMaybe<EBoardTermFilterInput>;
@@ -917,6 +970,7 @@ export type QueryEBoardTermsArgs = {
   sorts?: InputMaybe<Array<EBoardTermSortInput>>;
 };
 
+
 export type QueryEBoardsArgs = {
   filter?: InputMaybe<EBoardFilterInput>;
   limit?: InputMaybe<Scalars['Int']>;
@@ -924,6 +978,7 @@ export type QueryEBoardsArgs = {
   skip?: InputMaybe<Scalars['Int']>;
   sorts?: InputMaybe<Array<EBoardSortInput>>;
 };
+
 
 export type QueryProjectInvitesArgs = {
   filter?: InputMaybe<ProjectInviteFilterInput>;
@@ -933,6 +988,7 @@ export type QueryProjectInvitesArgs = {
   sorts?: InputMaybe<Array<ProjectInviteSortInput>>;
 };
 
+
 export type QueryProjectMemberRolesArgs = {
   filter?: InputMaybe<ProjectMemberRoleFilterInput>;
   limit?: InputMaybe<Scalars['Int']>;
@@ -940,6 +996,7 @@ export type QueryProjectMemberRolesArgs = {
   skip?: InputMaybe<Scalars['Int']>;
   sorts?: InputMaybe<Array<ProjectMemberRoleSortInput>>;
 };
+
 
 export type QueryProjectMembersArgs = {
   filter?: InputMaybe<ProjectMemberFilterInput>;
@@ -949,6 +1006,7 @@ export type QueryProjectMembersArgs = {
   sorts?: InputMaybe<Array<ProjectMemberSortInput>>;
 };
 
+
 export type QueryProjectsArgs = {
   filter?: InputMaybe<ProjectFilterInput>;
   limit?: InputMaybe<Scalars['Int']>;
@@ -957,9 +1015,11 @@ export type QueryProjectsArgs = {
   sorts?: InputMaybe<Array<ProjectSortInput>>;
 };
 
+
 export type QuerySecurityContextArgs = {
   userId?: InputMaybe<Scalars['ID']>;
 };
+
 
 export type QueryUserLoginIdentitysArgs = {
   filter?: InputMaybe<UserLoginIdentityFilterInput>;
@@ -969,6 +1029,7 @@ export type QueryUserLoginIdentitysArgs = {
   sorts?: InputMaybe<Array<UserLoginIdentitySortInput>>;
 };
 
+
 export type QueryUserRolesArgs = {
   filter?: InputMaybe<UserRoleFilterInput>;
   limit?: InputMaybe<Scalars['Int']>;
@@ -977,6 +1038,7 @@ export type QueryUserRolesArgs = {
   sorts?: InputMaybe<Array<UserRoleSortInput>>;
 };
 
+
 export type QueryUserSocialsArgs = {
   filter?: InputMaybe<UserSocialFilterInput>;
   limit?: InputMaybe<Scalars['Int']>;
@@ -984,6 +1046,7 @@ export type QueryUserSocialsArgs = {
   skip?: InputMaybe<Scalars['Int']>;
   sorts?: InputMaybe<Array<UserSocialSortInput>>;
 };
+
 
 export type QueryUsersArgs = {
   filter?: InputMaybe<UserFilterInput>;
@@ -1014,7 +1077,7 @@ export const RoleCode = {
   User: 'USER',
   VicePresident: 'VICE_PRESIDENT',
   Webmaster: 'WEBMASTER',
-  Writer: 'WRITER',
+  Writer: 'WRITER'
 } as const;
 
 export type RoleCode = typeof RoleCode[keyof typeof RoleCode];
@@ -1032,7 +1095,7 @@ export type RoleCodeFilterInput = {
 
 export const SortDirection = {
   Asc: 'asc',
-  Desc: 'desc',
+  Desc: 'desc'
 } as const;
 
 export type SortDirection = typeof SortDirection[keyof typeof SortDirection];
@@ -1050,7 +1113,7 @@ export type StringFilterInput = {
 
 export const StringFilterMode = {
   Insensitive: 'INSENSITIVE',
-  Sensitive: 'SENSITIVE',
+  Sensitive: 'SENSITIVE'
 } as const;
 
 export type StringFilterMode = typeof StringFilterMode[keyof typeof StringFilterMode];
@@ -1075,69 +1138,86 @@ export type Subscription = {
   userUpdated?: Maybe<Scalars['ID']>;
 };
 
+
 export type SubscriptionEBoardCreatedArgs = {
   filter: EBoardSubscriptionFilter;
 };
+
 
 export type SubscriptionEBoardDeletedArgs = {
   filter: EBoardSubscriptionFilter;
 };
 
+
 export type SubscriptionEBoardTermCreatedArgs = {
   filter: EBoardTermSubscriptionFilter;
 };
+
 
 export type SubscriptionEBoardTermDeletedArgs = {
   filter: EBoardTermSubscriptionFilter;
 };
 
+
 export type SubscriptionEBoardTermUpdatedArgs = {
   filter: EBoardTermSubscriptionFilter;
 };
+
 
 export type SubscriptionEBoardUpdatedArgs = {
   filter: EBoardSubscriptionFilter;
 };
 
+
 export type SubscriptionProjectCreatedArgs = {
   filter: ProjectSubscriptionFilter;
 };
+
 
 export type SubscriptionProjectDeletedArgs = {
   filter: ProjectSubscriptionFilter;
 };
 
+
 export type SubscriptionProjectInviteCreatedArgs = {
   filter: ProjectInviteSubscriptionFilter;
 };
+
 
 export type SubscriptionProjectInviteDeletedArgs = {
   filter: ProjectInviteSubscriptionFilter;
 };
 
+
 export type SubscriptionProjectMemberCreatedArgs = {
   filter: ProjectMemberSubscriptionFilter;
 };
+
 
 export type SubscriptionProjectMemberDeletedArgs = {
   filter: ProjectMemberSubscriptionFilter;
 };
 
+
 export type SubscriptionProjectMemberUpdatedArgs = {
   filter: ProjectMemberSubscriptionFilter;
 };
+
 
 export type SubscriptionProjectUpdatedArgs = {
   filter: ProjectSubscriptionFilter;
 };
 
+
 export type SubscriptionUserCreatedArgs = {
   filter: UserSubscriptionFilter;
 };
 
+
 export type SubscriptionUserDeletedArgs = {
   filter: UserSubscriptionFilter;
 };
+
 
 export type SubscriptionUserUpdatedArgs = {
   filter: UserSubscriptionFilter;
@@ -1263,7 +1343,7 @@ export type UploadFilterInput = {
 
 export const UploadOperation = {
   Delete: 'DELETE',
-  Insert: 'INSERT',
+  Insert: 'INSERT'
 } as const;
 
 export type UploadOperation = typeof UploadOperation[keyof typeof UploadOperation];
