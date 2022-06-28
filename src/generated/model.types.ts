@@ -277,6 +277,7 @@ export type Mutation = {
   createEBoardTerm: EBoardTerm;
   createEBoardTermRole: EBoardTermRole;
   createProject: Project;
+  createProjectDiscordSettings: ProjectDiscordSettings;
   createProjectInvite: ProjectInvite;
   createProjectMember: ProjectMember;
   createProjectMemberRole: ProjectMemberRole;
@@ -290,6 +291,7 @@ export type Mutation = {
   deleteEBoardTerms?: Maybe<Scalars['Boolean']>;
   deleteEBoards?: Maybe<Scalars['Boolean']>;
   deleteProject?: Maybe<Scalars['Boolean']>;
+  deleteProjectDiscordSettingss?: Maybe<Scalars['Boolean']>;
   deleteProjectInvite?: Maybe<Scalars['Boolean']>;
   deleteProjectInvites?: Maybe<Scalars['Boolean']>;
   deleteProjectMember?: Maybe<Scalars['Boolean']>;
@@ -313,6 +315,7 @@ export type Mutation = {
   updateEBoardTerms?: Maybe<Scalars['Boolean']>;
   updateEBoards?: Maybe<Scalars['Boolean']>;
   updateProject?: Maybe<Scalars['Boolean']>;
+  updateProjectDiscordSettingss?: Maybe<Scalars['Boolean']>;
   updateProjectInvites?: Maybe<Scalars['Boolean']>;
   updateProjectMember?: Maybe<Scalars['Boolean']>;
   updateProjectMemberRoles?: Maybe<Scalars['Boolean']>;
@@ -348,6 +351,11 @@ export type MutationCreateEBoardTermRoleArgs = {
 
 export type MutationCreateProjectArgs = {
   record: ProjectInsertInput;
+};
+
+
+export type MutationCreateProjectDiscordSettingsArgs = {
+  record: ProjectDiscordSettingsInsertInput;
 };
 
 
@@ -413,6 +421,11 @@ export type MutationDeleteEBoardsArgs = {
 
 export type MutationDeleteProjectArgs = {
   id: Scalars['ID'];
+};
+
+
+export type MutationDeleteProjectDiscordSettingssArgs = {
+  filter: ProjectDiscordSettingsFilterInput;
 };
 
 
@@ -532,6 +545,12 @@ export type MutationUpdateEBoardsArgs = {
 
 export type MutationUpdateProjectArgs = {
   input: UpdateProjectInput;
+};
+
+
+export type MutationUpdateProjectDiscordSettingssArgs = {
+  changes: ProjectDiscordSettingsUpdateInput;
+  filter: ProjectDiscordSettingsFilterInput;
 };
 
 
@@ -660,6 +679,7 @@ export type Project = {
   completedAt?: Maybe<Scalars['Date']>;
   createdAt?: Maybe<Scalars['Date']>;
   description?: Maybe<Scalars['String']>;
+  discordSettings?: Maybe<ProjectDiscordSettings>;
   downloadLinks?: Maybe<Array<Scalars['String']>>;
   galleryImageLinks?: Maybe<Array<Scalars['String']>>;
   id: Scalars['ID'];
@@ -670,6 +690,71 @@ export type Project = {
   soundcloudEmbedSrc?: Maybe<Scalars['String']>;
   tags?: Maybe<Array<Scalars['String']>>;
   updatedAt?: Maybe<Scalars['Date']>;
+};
+
+export type ProjectDiscordSettings = {
+  __typename?: 'ProjectDiscordSettings';
+  categoryId?: Maybe<Scalars['String']>;
+  createdAt?: Maybe<Scalars['Date']>;
+  id: Scalars['ID'];
+  project: Project;
+  projectId: Scalars['ID'];
+  textChannelIds?: Maybe<Array<Scalars['String']>>;
+  updatedAt?: Maybe<Scalars['Date']>;
+  voiceChannelIds?: Maybe<Array<Scalars['String']>>;
+};
+
+export type ProjectDiscordSettingsFilterInput = {
+  and_?: InputMaybe<Array<ProjectDiscordSettingsFilterInput>>;
+  categoryId?: InputMaybe<StringFilterInput>;
+  createdAt?: InputMaybe<DateFilterInput>;
+  id?: InputMaybe<IdFilterInput>;
+  nor_?: InputMaybe<Array<ProjectDiscordSettingsFilterInput>>;
+  or_?: InputMaybe<Array<ProjectDiscordSettingsFilterInput>>;
+  projectId?: InputMaybe<IdFilterInput>;
+  textChannelIds?: InputMaybe<StringFilterInput>;
+  updatedAt?: InputMaybe<DateFilterInput>;
+  voiceChannelIds?: InputMaybe<StringFilterInput>;
+};
+
+export type ProjectDiscordSettingsFindInput = {
+  filter?: InputMaybe<ProjectDiscordSettingsFilterInput>;
+  limit?: InputMaybe<Scalars['Int']>;
+  relations?: InputMaybe<ProjectDiscordSettingsRelationsFilterInput>;
+  skip?: InputMaybe<Scalars['Int']>;
+  sorts?: InputMaybe<Array<ProjectDiscordSettingsSortInput>>;
+};
+
+export type ProjectDiscordSettingsInsertInput = {
+  categoryId?: InputMaybe<Scalars['String']>;
+  createdAt?: InputMaybe<Scalars['Date']>;
+  projectId: Scalars['ID'];
+  textChannelIds?: InputMaybe<Array<Scalars['String']>>;
+  updatedAt?: InputMaybe<Scalars['Date']>;
+  voiceChannelIds?: InputMaybe<Array<Scalars['String']>>;
+};
+
+export type ProjectDiscordSettingsRelationsFilterInput = {
+  project?: InputMaybe<ProjectFindInput>;
+};
+
+export type ProjectDiscordSettingsSortInput = {
+  categoryId?: InputMaybe<SortDirection>;
+  createdAt?: InputMaybe<SortDirection>;
+  id?: InputMaybe<SortDirection>;
+  projectId?: InputMaybe<SortDirection>;
+  textChannelIds?: InputMaybe<SortDirection>;
+  updatedAt?: InputMaybe<SortDirection>;
+  voiceChannelIds?: InputMaybe<SortDirection>;
+};
+
+export type ProjectDiscordSettingsUpdateInput = {
+  categoryId?: InputMaybe<Scalars['String']>;
+  createdAt?: InputMaybe<Scalars['Date']>;
+  projectId?: InputMaybe<Scalars['ID']>;
+  textChannelIds?: InputMaybe<Array<Scalars['String']>>;
+  updatedAt?: InputMaybe<Scalars['Date']>;
+  voiceChannelIds?: InputMaybe<Array<Scalars['String']>>;
 };
 
 export type ProjectFilterInput = {
@@ -893,6 +978,7 @@ export type ProjectMemberUpdateInput = {
 };
 
 export type ProjectRelationsFilterInput = {
+  discordSettings?: InputMaybe<ProjectDiscordSettingsFindInput>;
   invites?: InputMaybe<ProjectInviteFindInput>;
   members?: InputMaybe<ProjectMemberFindInput>;
 };
@@ -940,6 +1026,7 @@ export type Query = {
   eBoardTerms: Array<EBoardTerm>;
   eBoards: Array<EBoard>;
   isAuthTokenValid?: Maybe<Scalars['Boolean']>;
+  projectDiscordSettingss: Array<ProjectDiscordSettings>;
   projectInvites: Array<ProjectInvite>;
   projectMemberRoles: Array<ProjectMemberRole>;
   projectMembers: Array<ProjectMember>;
@@ -977,6 +1064,15 @@ export type QueryEBoardsArgs = {
   relations?: InputMaybe<EBoardRelationsFilterInput>;
   skip?: InputMaybe<Scalars['Int']>;
   sorts?: InputMaybe<Array<EBoardSortInput>>;
+};
+
+
+export type QueryProjectDiscordSettingssArgs = {
+  filter?: InputMaybe<ProjectDiscordSettingsFilterInput>;
+  limit?: InputMaybe<Scalars['Int']>;
+  relations?: InputMaybe<ProjectDiscordSettingsRelationsFilterInput>;
+  skip?: InputMaybe<Scalars['Int']>;
+  sorts?: InputMaybe<Array<ProjectDiscordSettingsSortInput>>;
 };
 
 
