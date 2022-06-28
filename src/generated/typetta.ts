@@ -688,6 +688,30 @@ userDeleted: { type: 'scalar',
       isExcluded: false,
       isId: false,
       generationStrategy: 'undefined' },
+userLoginIdentityCreated: { type: 'scalar', 
+      isList: false, 
+      astName: 'ID', 
+      isRequired: false, 
+      isListElementRequired: false,
+      isExcluded: false,
+      isId: false,
+      generationStrategy: 'undefined' },
+userLoginIdentityDeleted: { type: 'scalar', 
+      isList: false, 
+      astName: 'ID', 
+      isRequired: false, 
+      isListElementRequired: false,
+      isExcluded: false,
+      isId: false,
+      generationStrategy: 'undefined' },
+userLoginIdentityUpdated: { type: 'scalar', 
+      isList: false, 
+      astName: 'ID', 
+      isRequired: false, 
+      isListElementRequired: false,
+      isExcluded: false,
+      isId: false,
+      generationStrategy: 'undefined' },
 userUpdated: { type: 'scalar', 
       isList: false, 
       astName: 'ID', 
@@ -745,7 +769,7 @@ createdAt: { type: 'scalar',
 displayName: { type: 'scalar', 
       isList: false, 
       astName: 'String', 
-      isRequired: false, 
+      isRequired: true, 
       isListElementRequired: false,
       isExcluded: false,
       isId: false,
@@ -761,7 +785,7 @@ eBoard: { type: 'relation', relation: 'foreign',
 email: { type: 'scalar', 
       isList: false, 
       astName: 'String', 
-      isRequired: true, 
+      isRequired: false, 
       isListElementRequired: false,
       isExcluded: false,
       isId: false,
@@ -825,7 +849,7 @@ updatedAt: { type: 'scalar',
 username: { type: 'scalar', 
       isList: false, 
       astName: 'String', 
-      isRequired: false, 
+      isRequired: true, 
       isListElementRequired: false,
       isExcluded: false,
       isId: false,
@@ -1864,6 +1888,21 @@ export function subscriptionSchema(): T.Schema<ScalarsSpecification> {
               scalar: 'ID',
               
             },
+  'userLoginIdentityCreated': {
+              type: 'scalar',
+              scalar: 'ID',
+              
+            },
+  'userLoginIdentityDeleted': {
+              type: 'scalar',
+              scalar: 'ID',
+              
+            },
+  'userLoginIdentityUpdated': {
+              type: 'scalar',
+              scalar: 'ID',
+              
+            },
   'userUpdated': {
               type: 'scalar',
               scalar: 'ID',
@@ -1901,7 +1940,7 @@ export function userSchema(): T.Schema<ScalarsSpecification> {
   'displayName': {
               type: 'scalar',
               scalar: 'String',
-              
+              required: true,
             },
   'eBoard':{
                 type: 'relation',
@@ -1915,7 +1954,7 @@ export function userSchema(): T.Schema<ScalarsSpecification> {
   'email': {
               type: 'scalar',
               scalar: 'String',
-              required: true,
+              
             },
   'id': {
               type: 'scalar',
@@ -1975,7 +2014,7 @@ export function userSchema(): T.Schema<ScalarsSpecification> {
   'username': {
               type: 'scalar',
               scalar: 'String',
-              
+              required: true,
             }
   }
 }

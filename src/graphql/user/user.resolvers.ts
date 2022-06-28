@@ -8,7 +8,7 @@ import {
   UpdateUserSocialInput,
   UploadOperation,
 } from '@src/generated/graphql-endpoint.types';
-import { EntityManager, UserSocialFilter, UserSocialInsert } from '@src/generated/typetta';
+import { EntityManager, UserInsert, UserSocialFilter, UserSocialInsert } from '@src/generated/typetta';
 import { deleteProjectInvites } from '@src/graphql/project-invite/project-invite.resolvers';
 import pubsub, { PubSubEvents } from '@src/graphql/pubsub';
 import { makeSubscriptionResolver } from '@src/graphql/subscription-resolver-builder';
@@ -39,15 +39,18 @@ export default {
     newUser: async (parent, args, context: ApolloResolversContext, info) => {
       makePermsCalc().withContext(context.securityContext).assertPermission(Permission.CreateUser);
 
-      const user = await context.unsecureEntityManager.user.insertOne({
-        record: {
-          ...args.input,
-          email: '',
+      let userId: string | undefined;
+      const error = await startEntityManagerTransaction(
+        context.unsecureEntityManager,
+        context.mongoClient,
+        async (transEntityManager) => {
+          const user = await makeUser(transEntityManager, args.input);
+          userId = user.id;
         },
-      });
-      pubsub.publish(PubSubEvents.UserCreated, user);
+      );
+      if (error) throw error;
 
-      return user.id;
+      return userId;
     },
     updateUser: async (parent, args, context: ApolloResolversContext, info) => {
       await updateUserLock.acquire('lock', async () => {
@@ -58,6 +61,7 @@ export default {
           });
 
         permCalc.assertPermission(Permission.UpdateUser);
+        if (args.input.createdAt) permCalc.assertPermission(Permission.ManageMetadata);
 
         const user = await context.unsecureEntityManager.user.findOne({
           filter: {
@@ -181,6 +185,9 @@ export default {
                 id: args.input.id,
               },
               changes: {
+                ...(isDefined(args.input.createdAt) && {
+                  createdAt: args.input.createdAt,
+                }),
                 ...(isDefined(args.input.classYear) && {
                   classYear: args.input.classYear,
                 }),
@@ -285,3 +292,21 @@ export default {
   Mutation: MutationResolvers;
   Subscription: SubscriptionResolvers;
 };
+
+export async function makeUser(entityManager: EntityManager, record: UserInsert, emitSubscription: boolean = true) {
+  const user = await entityManager.user.insertOne({
+    record,
+  });
+
+  await entityManager.userRole.insertOne({
+    record: {
+      roleCode: RoleCode.User,
+      userId: user.id,
+    },
+  });
+
+  if (emitSubscription) {
+    pubsub.publish(PubSubEvents.UserCreated, user);
+  }
+  return user;
+}

@@ -299,6 +299,7 @@ export type Mutation = {
   deleteProjectMembers?: Maybe<Scalars['Boolean']>;
   deleteProjects?: Maybe<Scalars['Boolean']>;
   deleteUser?: Maybe<Scalars['Boolean']>;
+  deleteUserLoginIdentity?: Maybe<Scalars['Boolean']>;
   deleteUserLoginIdentitys?: Maybe<Scalars['Boolean']>;
   deleteUserRoles?: Maybe<Scalars['Boolean']>;
   deleteUserSocials?: Maybe<Scalars['Boolean']>;
@@ -310,6 +311,7 @@ export type Mutation = {
   newProjectInvite?: Maybe<Scalars['ID']>;
   newProjectMember?: Maybe<Scalars['ID']>;
   newUser?: Maybe<Scalars['ID']>;
+  newUserLoginIdentity?: Maybe<Scalars['ID']>;
   requestProjectDiscord?: Maybe<Scalars['Boolean']>;
   transferProjectOwnership?: Maybe<Scalars['Boolean']>;
   updateEBoard?: Maybe<Scalars['Boolean']>;
@@ -325,6 +327,7 @@ export type Mutation = {
   updateProjectMembers?: Maybe<Scalars['Boolean']>;
   updateProjects?: Maybe<Scalars['Boolean']>;
   updateUser?: Maybe<Scalars['Boolean']>;
+  updateUserLoginIdentity?: Maybe<Scalars['Boolean']>;
   updateUserLoginIdentitys?: Maybe<Scalars['Boolean']>;
   updateUserRoles?: Maybe<Scalars['Boolean']>;
   updateUserSocials?: Maybe<Scalars['Boolean']>;
@@ -467,6 +470,11 @@ export type MutationDeleteUserArgs = {
 };
 
 
+export type MutationDeleteUserLoginIdentityArgs = {
+  id: Scalars['ID'];
+};
+
+
 export type MutationDeleteUserLoginIdentitysArgs = {
   filter: UserLoginIdentityFilterInput;
 };
@@ -519,6 +527,11 @@ export type MutationNewProjectMemberArgs = {
 
 export type MutationNewUserArgs = {
   input: NewUserInput;
+};
+
+
+export type MutationNewUserLoginIdentityArgs = {
+  input: NewUserLoginIdentityInput;
 };
 
 
@@ -606,6 +619,11 @@ export type MutationUpdateUserArgs = {
 };
 
 
+export type MutationUpdateUserLoginIdentityArgs = {
+  input: UpdateUserLoginIdentityInput;
+};
+
+
 export type MutationUpdateUserLoginIdentitysArgs = {
   changes: UserLoginIdentityUpdateInput;
   filter: UserLoginIdentityFilterInput;
@@ -661,8 +679,15 @@ export type NewProjectMemberRoleInput = {
 };
 
 export type NewUserInput = {
-  displayName?: InputMaybe<Scalars['String']>;
+  displayName: Scalars['String'];
+  email?: InputMaybe<Scalars['String']>;
   username: Scalars['String'];
+};
+
+export type NewUserLoginIdentityInput = {
+  identityId: Scalars['ID'];
+  name: Scalars['String'];
+  userId: Scalars['ID'];
 };
 
 export type NewUserRoleInput = {
@@ -1263,6 +1288,9 @@ export type Subscription = {
   projectUpdated?: Maybe<Scalars['ID']>;
   userCreated?: Maybe<Scalars['ID']>;
   userDeleted?: Maybe<Scalars['ID']>;
+  userLoginIdentityCreated?: Maybe<Scalars['ID']>;
+  userLoginIdentityDeleted?: Maybe<Scalars['ID']>;
+  userLoginIdentityUpdated?: Maybe<Scalars['ID']>;
   userUpdated?: Maybe<Scalars['ID']>;
 };
 
@@ -1352,6 +1380,21 @@ export type SubscriptionUserDeletedArgs = {
 };
 
 
+export type SubscriptionUserLoginIdentityCreatedArgs = {
+  filter: UserLoginIdentitySubscriptionFilter;
+};
+
+
+export type SubscriptionUserLoginIdentityDeletedArgs = {
+  filter: UserLoginIdentitySubscriptionFilter;
+};
+
+
+export type SubscriptionUserLoginIdentityUpdatedArgs = {
+  filter: UserLoginIdentitySubscriptionFilter;
+};
+
+
 export type SubscriptionUserUpdatedArgs = {
   filter: UserSubscriptionFilter;
 };
@@ -1374,6 +1417,9 @@ export type SubscriptionInsertInput = {
   projectUpdated?: InputMaybe<Scalars['ID']>;
   userCreated?: InputMaybe<Scalars['ID']>;
   userDeleted?: InputMaybe<Scalars['ID']>;
+  userLoginIdentityCreated?: InputMaybe<Scalars['ID']>;
+  userLoginIdentityDeleted?: InputMaybe<Scalars['ID']>;
+  userLoginIdentityUpdated?: InputMaybe<Scalars['ID']>;
   userUpdated?: InputMaybe<Scalars['ID']>;
 };
 
@@ -1395,6 +1441,9 @@ export type SubscriptionSortInput = {
   projectUpdated?: InputMaybe<SortDirection>;
   userCreated?: InputMaybe<SortDirection>;
   userDeleted?: InputMaybe<SortDirection>;
+  userLoginIdentityCreated?: InputMaybe<SortDirection>;
+  userLoginIdentityDeleted?: InputMaybe<SortDirection>;
+  userLoginIdentityUpdated?: InputMaybe<SortDirection>;
   userUpdated?: InputMaybe<SortDirection>;
 };
 
@@ -1416,6 +1465,9 @@ export type SubscriptionUpdateInput = {
   projectUpdated?: InputMaybe<Scalars['ID']>;
   userCreated?: InputMaybe<Scalars['ID']>;
   userDeleted?: InputMaybe<Scalars['ID']>;
+  userLoginIdentityCreated?: InputMaybe<Scalars['ID']>;
+  userLoginIdentityDeleted?: InputMaybe<Scalars['ID']>;
+  userLoginIdentityUpdated?: InputMaybe<Scalars['ID']>;
   userUpdated?: InputMaybe<Scalars['ID']>;
 };
 
@@ -1459,10 +1511,17 @@ export type UpdateUserInput = {
   banner?: InputMaybe<UploadWithOperation>;
   bio?: InputMaybe<Scalars['String']>;
   classYear?: InputMaybe<Scalars['Int']>;
+  createdAt?: InputMaybe<Scalars['Date']>;
   displayName?: InputMaybe<Scalars['String']>;
   id: Scalars['ID'];
   roles?: InputMaybe<Array<RoleCode>>;
   socials?: InputMaybe<Array<UpdateUserSocialInput>>;
+};
+
+export type UpdateUserLoginIdentityInput = {
+  data?: InputMaybe<Scalars['Json']>;
+  identityId?: InputMaybe<Scalars['ID']>;
+  name?: InputMaybe<Scalars['String']>;
 };
 
 export type UpdateUserSocialInput = {
@@ -1514,9 +1573,9 @@ export type User = {
   bio?: Maybe<Scalars['String']>;
   classYear?: Maybe<Scalars['Int']>;
   createdAt?: Maybe<Scalars['Date']>;
-  displayName?: Maybe<Scalars['String']>;
+  displayName: Scalars['String'];
   eBoard?: Maybe<EBoard>;
-  email: Scalars['String'];
+  email?: Maybe<Scalars['String']>;
   id: Scalars['ID'];
   loginIdentities: Array<UserLoginIdentity>;
   projectInvites: Array<ProjectInvite>;
@@ -1524,7 +1583,7 @@ export type User = {
   roles: Array<UserRole>;
   socials: Array<UserSocial>;
   updatedAt?: Maybe<Scalars['Date']>;
-  username?: Maybe<Scalars['String']>;
+  username: Scalars['String'];
 };
 
 export type UserFilterInput = {
@@ -1557,10 +1616,10 @@ export type UserInsertInput = {
   bio?: InputMaybe<Scalars['String']>;
   classYear?: InputMaybe<Scalars['Int']>;
   createdAt?: InputMaybe<Scalars['Date']>;
-  displayName?: InputMaybe<Scalars['String']>;
-  email: Scalars['String'];
+  displayName: Scalars['String'];
+  email?: InputMaybe<Scalars['String']>;
   updatedAt?: InputMaybe<Scalars['Date']>;
-  username?: InputMaybe<Scalars['String']>;
+  username: Scalars['String'];
 };
 
 export type UserLoginIdentity = {
@@ -1609,6 +1668,10 @@ export type UserLoginIdentitySortInput = {
   identityId?: InputMaybe<SortDirection>;
   name?: InputMaybe<SortDirection>;
   userId?: InputMaybe<SortDirection>;
+};
+
+export type UserLoginIdentitySubscriptionFilter = {
+  id?: InputMaybe<Scalars['ID']>;
 };
 
 export type UserLoginIdentityUpdateInput = {
@@ -1741,7 +1804,7 @@ export type UserSortInput = {
 };
 
 export type UserSubscriptionFilter = {
-  userId?: InputMaybe<Scalars['ID']>;
+  id?: InputMaybe<Scalars['ID']>;
 };
 
 export type UserUpdateInput = {

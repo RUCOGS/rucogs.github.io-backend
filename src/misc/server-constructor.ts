@@ -23,7 +23,13 @@ import { Db, MongoClient } from 'mongodb';
 import passport from 'passport';
 import { WebSocketServer } from 'ws';
 
+let globalDebug = false;
+export function isDebug() {
+  return globalDebug;
+}
+
 export async function startServer(debug: boolean, mock: boolean = false) {
+  globalDebug = debug;
   const mongoClient = new MongoClient(ServerConfig.mongodbUrl);
   const mongoDb = mock ? 'mock' : mongoClient.db(ServerConfig.mongodbDbName);
 

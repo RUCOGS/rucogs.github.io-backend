@@ -118,6 +118,7 @@ export type ResolversTypes = {
   NewProjectMemberInput: types.NewProjectMemberInput;
   NewProjectMemberRoleInput: types.NewProjectMemberRoleInput;
   NewUserInput: types.NewUserInput;
+  NewUserLoginIdentityInput: types.NewUserLoginIdentityInput;
   NewUserRoleInput: types.NewUserRoleInput;
   Permission: types.Permission;
   PermissionFilterInput: types.PermissionFilterInput;
@@ -175,6 +176,7 @@ export type ResolversTypes = {
   UpdateProjectInput: types.UpdateProjectInput;
   UpdateProjectMemberInput: types.UpdateProjectMemberInput;
   UpdateUserInput: types.UpdateUserInput;
+  UpdateUserLoginIdentityInput: types.UpdateUserLoginIdentityInput;
   UpdateUserSocialInput: types.UpdateUserSocialInput;
   Upload: ResolverTypeWrapper<types.Scalars['Upload']>;
   UploadFilterInput: types.UploadFilterInput;
@@ -192,6 +194,7 @@ export type ResolversTypes = {
   UserLoginIdentityInsertInput: types.UserLoginIdentityInsertInput;
   UserLoginIdentityRelationsFilterInput: types.UserLoginIdentityRelationsFilterInput;
   UserLoginIdentitySortInput: types.UserLoginIdentitySortInput;
+  UserLoginIdentitySubscriptionFilter: types.UserLoginIdentitySubscriptionFilter;
   UserLoginIdentityUpdateInput: types.UserLoginIdentityUpdateInput;
   UserRelationsFilterInput: types.UserRelationsFilterInput;
   UserRole: ResolverTypeWrapper<types.UserRole>;
@@ -260,6 +263,7 @@ export type ResolversParentTypes = {
   NewProjectMemberInput: types.NewProjectMemberInput;
   NewProjectMemberRoleInput: types.NewProjectMemberRoleInput;
   NewUserInput: types.NewUserInput;
+  NewUserLoginIdentityInput: types.NewUserLoginIdentityInput;
   NewUserRoleInput: types.NewUserRoleInput;
   PermissionFilterInput: types.PermissionFilterInput;
   Project: types.Project;
@@ -313,6 +317,7 @@ export type ResolversParentTypes = {
   UpdateProjectInput: types.UpdateProjectInput;
   UpdateProjectMemberInput: types.UpdateProjectMemberInput;
   UpdateUserInput: types.UpdateUserInput;
+  UpdateUserLoginIdentityInput: types.UpdateUserLoginIdentityInput;
   UpdateUserSocialInput: types.UpdateUserSocialInput;
   Upload: types.Scalars['Upload'];
   UploadFilterInput: types.UploadFilterInput;
@@ -329,6 +334,7 @@ export type ResolversParentTypes = {
   UserLoginIdentityInsertInput: types.UserLoginIdentityInsertInput;
   UserLoginIdentityRelationsFilterInput: types.UserLoginIdentityRelationsFilterInput;
   UserLoginIdentitySortInput: types.UserLoginIdentitySortInput;
+  UserLoginIdentitySubscriptionFilter: types.UserLoginIdentitySubscriptionFilter;
   UserLoginIdentityUpdateInput: types.UserLoginIdentityUpdateInput;
   UserRelationsFilterInput: types.UserRelationsFilterInput;
   UserRole: types.UserRole;
@@ -415,6 +421,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   deleteProjectMembers?: Resolver<types.Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<types.MutationDeleteProjectMembersArgs, 'filter'>>;
   deleteProjects?: Resolver<types.Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<types.MutationDeleteProjectsArgs, 'filter'>>;
   deleteUser?: Resolver<types.Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<types.MutationDeleteUserArgs, 'id'>>;
+  deleteUserLoginIdentity?: Resolver<types.Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<types.MutationDeleteUserLoginIdentityArgs, 'id'>>;
   deleteUserLoginIdentitys?: Resolver<types.Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<types.MutationDeleteUserLoginIdentitysArgs, 'filter'>>;
   deleteUserRoles?: Resolver<types.Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<types.MutationDeleteUserRolesArgs, 'filter'>>;
   deleteUserSocials?: Resolver<types.Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<types.MutationDeleteUserSocialsArgs, 'filter'>>;
@@ -426,6 +433,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   newProjectInvite?: Resolver<types.Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<types.MutationNewProjectInviteArgs, 'input'>>;
   newProjectMember?: Resolver<types.Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<types.MutationNewProjectMemberArgs, 'input'>>;
   newUser?: Resolver<types.Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<types.MutationNewUserArgs, 'input'>>;
+  newUserLoginIdentity?: Resolver<types.Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<types.MutationNewUserLoginIdentityArgs, 'input'>>;
   requestProjectDiscord?: Resolver<types.Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<types.MutationRequestProjectDiscordArgs, 'projectId'>>;
   transferProjectOwnership?: Resolver<types.Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<types.MutationTransferProjectOwnershipArgs, 'memberId' | 'projectId'>>;
   updateEBoard?: Resolver<types.Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<types.MutationUpdateEBoardArgs, 'input'>>;
@@ -441,6 +449,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   updateProjectMembers?: Resolver<types.Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<types.MutationUpdateProjectMembersArgs, 'changes' | 'filter'>>;
   updateProjects?: Resolver<types.Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<types.MutationUpdateProjectsArgs, 'changes' | 'filter'>>;
   updateUser?: Resolver<types.Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<types.MutationUpdateUserArgs, 'input'>>;
+  updateUserLoginIdentity?: Resolver<types.Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<types.MutationUpdateUserLoginIdentityArgs, 'input'>>;
   updateUserLoginIdentitys?: Resolver<types.Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<types.MutationUpdateUserLoginIdentitysArgs, 'changes' | 'filter'>>;
   updateUserRoles?: Resolver<types.Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<types.MutationUpdateUserRolesArgs, 'changes' | 'filter'>>;
   updateUserSocials?: Resolver<types.Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<types.MutationUpdateUserSocialsArgs, 'changes' | 'filter'>>;
@@ -548,6 +557,9 @@ export type SubscriptionResolvers<ContextType = any, ParentType extends Resolver
   projectUpdated?: SubscriptionResolver<types.Maybe<ResolversTypes['ID']>, "projectUpdated", ParentType, ContextType, RequireFields<types.SubscriptionProjectUpdatedArgs, 'filter'>>;
   userCreated?: SubscriptionResolver<types.Maybe<ResolversTypes['ID']>, "userCreated", ParentType, ContextType, RequireFields<types.SubscriptionUserCreatedArgs, 'filter'>>;
   userDeleted?: SubscriptionResolver<types.Maybe<ResolversTypes['ID']>, "userDeleted", ParentType, ContextType, RequireFields<types.SubscriptionUserDeletedArgs, 'filter'>>;
+  userLoginIdentityCreated?: SubscriptionResolver<types.Maybe<ResolversTypes['ID']>, "userLoginIdentityCreated", ParentType, ContextType, RequireFields<types.SubscriptionUserLoginIdentityCreatedArgs, 'filter'>>;
+  userLoginIdentityDeleted?: SubscriptionResolver<types.Maybe<ResolversTypes['ID']>, "userLoginIdentityDeleted", ParentType, ContextType, RequireFields<types.SubscriptionUserLoginIdentityDeletedArgs, 'filter'>>;
+  userLoginIdentityUpdated?: SubscriptionResolver<types.Maybe<ResolversTypes['ID']>, "userLoginIdentityUpdated", ParentType, ContextType, RequireFields<types.SubscriptionUserLoginIdentityUpdatedArgs, 'filter'>>;
   userUpdated?: SubscriptionResolver<types.Maybe<ResolversTypes['ID']>, "userUpdated", ParentType, ContextType, RequireFields<types.SubscriptionUserUpdatedArgs, 'filter'>>;
 };
 
@@ -561,9 +573,9 @@ export type UserResolvers<ContextType = any, ParentType extends ResolversParentT
   bio?: Resolver<types.Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   classYear?: Resolver<types.Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   createdAt?: Resolver<types.Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
-  displayName?: Resolver<types.Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  displayName?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   eBoard?: Resolver<types.Maybe<ResolversTypes['EBoard']>, ParentType, ContextType>;
-  email?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  email?: Resolver<types.Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   loginIdentities?: Resolver<Array<ResolversTypes['UserLoginIdentity']>, ParentType, ContextType>;
   projectInvites?: Resolver<Array<ResolversTypes['ProjectInvite']>, ParentType, ContextType>;
@@ -571,7 +583,7 @@ export type UserResolvers<ContextType = any, ParentType extends ResolversParentT
   roles?: Resolver<Array<ResolversTypes['UserRole']>, ParentType, ContextType>;
   socials?: Resolver<Array<ResolversTypes['UserSocial']>, ParentType, ContextType>;
   updatedAt?: Resolver<types.Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
-  username?: Resolver<types.Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  username?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 

@@ -14,11 +14,12 @@ export default gql`
   }
 
   input UserSubscriptionFilter {
-    userId: ID
+    id: ID
   }
 
   input NewUserInput {
-    displayName: String
+    email: String
+    displayName: String!
     username: String!
   }
 
@@ -36,6 +37,8 @@ export default gql`
     banner: UploadWithOperation
     socials: [UpdateUserSocialInput!]
     roles: [RoleCode!]
+
+    createdAt: Date
   }
 
   input UpdateUserSocialInput {

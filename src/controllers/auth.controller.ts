@@ -1,9 +1,11 @@
 import AuthConfig from '@src/config/auth.config.json';
 import { downloadToCdn } from '@src/controllers/cdn.controller';
 import { getCompleteSecurityContext } from '@src/controllers/security.controller/security-context';
-import { User } from '@src/generated/model.types';
+import { RoleCode, User } from '@src/generated/model.types';
 import { EntityManager, UserInsert } from '@src/generated/typetta';
+import { makeUser } from '@src/graphql/user/user.resolvers';
 import { RequestWithDefaultContext } from '@src/misc/context';
+import { isDebug } from '@src/misc/server-constructor';
 import { HttpError } from '@src/shared/utils';
 import express from 'express';
 import jwt from 'jsonwebtoken';
@@ -112,16 +114,19 @@ function getOAuthStrategyPassportCallback<TProfile extends passport.Profile>(
         return user;
       }
 
-      const newUser = await entityManager.user.insertOne({
-        record: await profileToNewUser(profile),
-      });
+      const newUser = await makeUser(entityManager, await profileToNewUser(profile));
 
-      await entityManager.userRole.insertOne({
-        record: {
-          roleCode: 'USER',
-          userId: newUser.id,
-        },
-      });
+      if (isDebug()) {
+        // Self-promote in debug mode to make testing easier
+        if (newUser.username === 'atlinx') {
+          await entityManager.userRole.insertOne({
+            record: {
+              roleCode: RoleCode.SuperAdmin,
+              userId: newUser.id,
+            },
+          });
+        }
+      }
 
       await entityManager.userLoginIdentity.insertOne({
         record: {

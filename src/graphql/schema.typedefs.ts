@@ -73,9 +73,9 @@ export default gql`
     createdAt: Date @schema(metadata: [{ key: "createdAt", value: true }])
     updatedAt: Date @schema(metadata: [{ key: "updatedAt", value: true }])
 
-    email: String!
-    username: String
-    displayName: String
+    email: String
+    username: String!
+    displayName: String!
     classYear: Int
     bio: String
     bannerLink: String
