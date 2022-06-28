@@ -616,6 +616,14 @@ projectDeleted: { type: 'scalar',
       isExcluded: false,
       isId: false,
       generationStrategy: 'undefined' },
+projectDiscordRequested: { type: 'scalar', 
+      isList: false, 
+      astName: 'ID', 
+      isRequired: false, 
+      isListElementRequired: false,
+      isExcluded: false,
+      isId: false,
+      generationStrategy: 'undefined' },
 projectInviteCreated: { type: 'scalar', 
       isList: false, 
       astName: 'ID', 
@@ -1807,6 +1815,11 @@ export function subscriptionSchema(): T.Schema<ScalarsSpecification> {
               
             },
   'projectDeleted': {
+              type: 'scalar',
+              scalar: 'ID',
+              
+            },
+  'projectDiscordRequested': {
               type: 'scalar',
               scalar: 'ID',
               

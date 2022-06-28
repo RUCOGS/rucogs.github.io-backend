@@ -426,6 +426,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   newProjectInvite?: Resolver<types.Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<types.MutationNewProjectInviteArgs, 'input'>>;
   newProjectMember?: Resolver<types.Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<types.MutationNewProjectMemberArgs, 'input'>>;
   newUser?: Resolver<types.Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<types.MutationNewUserArgs, 'input'>>;
+  requestProjectDiscord?: Resolver<types.Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<types.MutationRequestProjectDiscordArgs, 'projectId'>>;
   transferProjectOwnership?: Resolver<types.Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<types.MutationTransferProjectOwnershipArgs, 'memberId' | 'projectId'>>;
   updateEBoard?: Resolver<types.Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<types.MutationUpdateEBoardArgs, 'input'>>;
   updateEBoardTerm?: Resolver<types.Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<types.MutationUpdateEBoardTermArgs, 'input'>>;
@@ -538,6 +539,7 @@ export type SubscriptionResolvers<ContextType = any, ParentType extends Resolver
   eBoardUpdated?: SubscriptionResolver<types.Maybe<ResolversTypes['ID']>, "eBoardUpdated", ParentType, ContextType, RequireFields<types.SubscriptionEBoardUpdatedArgs, 'filter'>>;
   projectCreated?: SubscriptionResolver<types.Maybe<ResolversTypes['ID']>, "projectCreated", ParentType, ContextType, RequireFields<types.SubscriptionProjectCreatedArgs, 'filter'>>;
   projectDeleted?: SubscriptionResolver<types.Maybe<ResolversTypes['ID']>, "projectDeleted", ParentType, ContextType, RequireFields<types.SubscriptionProjectDeletedArgs, 'filter'>>;
+  projectDiscordRequested?: SubscriptionResolver<types.Maybe<ResolversTypes['ID']>, "projectDiscordRequested", ParentType, ContextType, RequireFields<types.SubscriptionProjectDiscordRequestedArgs, 'filter'>>;
   projectInviteCreated?: SubscriptionResolver<types.Maybe<ResolversTypes['ID']>, "projectInviteCreated", ParentType, ContextType, RequireFields<types.SubscriptionProjectInviteCreatedArgs, 'filter'>>;
   projectInviteDeleted?: SubscriptionResolver<types.Maybe<ResolversTypes['ID']>, "projectInviteDeleted", ParentType, ContextType, RequireFields<types.SubscriptionProjectInviteDeletedArgs, 'filter'>>;
   projectMemberCreated?: SubscriptionResolver<types.Maybe<ResolversTypes['ID']>, "projectMemberCreated", ParentType, ContextType, RequireFields<types.SubscriptionProjectMemberCreatedArgs, 'filter'>>;

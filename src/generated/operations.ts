@@ -534,6 +534,7 @@ eBoardTermUpdated: ID
 eBoardUpdated: ID
 projectCreated: ID
 projectDeleted: ID
+projectDiscordRequested: ID
 projectInviteCreated: ID
 projectInviteDeleted: ID
 projectMemberCreated: ID
@@ -553,6 +554,7 @@ eBoardTermUpdated: ID
 eBoardUpdated: ID
 projectCreated: ID
 projectDeleted: ID
+projectDiscordRequested: ID
 projectInviteCreated: ID
 projectInviteDeleted: ID
 projectMemberCreated: ID
@@ -572,6 +574,7 @@ eBoardTermUpdated: SortDirection
 eBoardUpdated: SortDirection
 projectCreated: SortDirection
 projectDeleted: SortDirection
+projectDiscordRequested: SortDirection
 projectInviteCreated: SortDirection
 projectInviteDeleted: SortDirection
 projectMemberCreated: SortDirection

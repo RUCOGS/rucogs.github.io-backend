@@ -310,6 +310,7 @@ export type Mutation = {
   newProjectInvite?: Maybe<Scalars['ID']>;
   newProjectMember?: Maybe<Scalars['ID']>;
   newUser?: Maybe<Scalars['ID']>;
+  requestProjectDiscord?: Maybe<Scalars['Boolean']>;
   transferProjectOwnership?: Maybe<Scalars['Boolean']>;
   updateEBoard?: Maybe<Scalars['Boolean']>;
   updateEBoardTerm?: Maybe<Scalars['Boolean']>;
@@ -518,6 +519,11 @@ export type MutationNewProjectMemberArgs = {
 
 export type MutationNewUserArgs = {
   input: NewUserInput;
+};
+
+
+export type MutationRequestProjectDiscordArgs = {
+  projectId: Scalars['ID'];
 };
 
 
@@ -1248,6 +1254,7 @@ export type Subscription = {
   eBoardUpdated?: Maybe<Scalars['ID']>;
   projectCreated?: Maybe<Scalars['ID']>;
   projectDeleted?: Maybe<Scalars['ID']>;
+  projectDiscordRequested?: Maybe<Scalars['ID']>;
   projectInviteCreated?: Maybe<Scalars['ID']>;
   projectInviteDeleted?: Maybe<Scalars['ID']>;
   projectMemberCreated?: Maybe<Scalars['ID']>;
@@ -1296,6 +1303,11 @@ export type SubscriptionProjectCreatedArgs = {
 
 
 export type SubscriptionProjectDeletedArgs = {
+  filter: ProjectSubscriptionFilter;
+};
+
+
+export type SubscriptionProjectDiscordRequestedArgs = {
   filter: ProjectSubscriptionFilter;
 };
 
@@ -1353,6 +1365,7 @@ export type SubscriptionInsertInput = {
   eBoardUpdated?: InputMaybe<Scalars['ID']>;
   projectCreated?: InputMaybe<Scalars['ID']>;
   projectDeleted?: InputMaybe<Scalars['ID']>;
+  projectDiscordRequested?: InputMaybe<Scalars['ID']>;
   projectInviteCreated?: InputMaybe<Scalars['ID']>;
   projectInviteDeleted?: InputMaybe<Scalars['ID']>;
   projectMemberCreated?: InputMaybe<Scalars['ID']>;
@@ -1373,6 +1386,7 @@ export type SubscriptionSortInput = {
   eBoardUpdated?: InputMaybe<SortDirection>;
   projectCreated?: InputMaybe<SortDirection>;
   projectDeleted?: InputMaybe<SortDirection>;
+  projectDiscordRequested?: InputMaybe<SortDirection>;
   projectInviteCreated?: InputMaybe<SortDirection>;
   projectInviteDeleted?: InputMaybe<SortDirection>;
   projectMemberCreated?: InputMaybe<SortDirection>;
@@ -1393,6 +1407,7 @@ export type SubscriptionUpdateInput = {
   eBoardUpdated?: InputMaybe<Scalars['ID']>;
   projectCreated?: InputMaybe<Scalars['ID']>;
   projectDeleted?: InputMaybe<Scalars['ID']>;
+  projectDiscordRequested?: InputMaybe<Scalars['ID']>;
   projectInviteCreated?: InputMaybe<Scalars['ID']>;
   projectInviteDeleted?: InputMaybe<Scalars['ID']>;
   projectMemberCreated?: InputMaybe<Scalars['ID']>;
