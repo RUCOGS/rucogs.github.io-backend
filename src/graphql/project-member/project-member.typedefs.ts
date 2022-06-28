@@ -2,6 +2,7 @@ import { gql } from 'apollo-server';
 
 export default gql`
   extend type Mutation {
+    newProjectMember(input: NewProjectMemberInput!): ID
     updateProjectMember(input: UpdateProjectMemberInput!): Boolean
     deleteProjectMember(id: ID!): Boolean
   }
@@ -15,6 +16,11 @@ export default gql`
   input ProjectMemberSubscriptionFilter {
     projectId: ID
     userId: ID
+  }
+
+  input NewProjectMemberInput {
+    projectId: ID!
+    userId: ID!
   }
 
   input NewProjectInviteInput {

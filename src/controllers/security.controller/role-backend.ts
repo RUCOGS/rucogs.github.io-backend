@@ -53,6 +53,9 @@ export const RoleBackendDataDict: {
         MANAGE_EBOARD: true,
         MANAGE_EBOARD_ROLES: true,
         TRANSFER_PROJECT_OWNERSHIP: true,
+        CREATE_USER: true,
+        CREATE_PROJECT_MEMBER: true,
+        MANAGE_METADATA: true,
       };
     },
   },

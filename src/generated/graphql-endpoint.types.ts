@@ -82,6 +82,8 @@ export type Mutation = {
   newProject: Scalars['ID'];
   newProjectInvite?: Maybe<Scalars['ID']>;
   requestProjectDiscord?: Maybe<Scalars['Boolean']>;
+  newProjectMember?: Maybe<Scalars['ID']>;
+  newUser?: Maybe<Scalars['ID']>;
   transferProjectOwnership?: Maybe<Scalars['Boolean']>;
   updateEBoard?: Maybe<Scalars['Boolean']>;
   updateEBoardTerm?: Maybe<Scalars['Boolean']>;
@@ -153,6 +155,14 @@ export type MutationNewProjectInviteArgs = {
 
 export type MutationRequestProjectDiscordArgs = {
   projectId: Scalars['ID'];
+}
+
+export type MutationNewProjectMemberArgs = {
+  input: NewProjectMemberInput;
+};
+
+export type MutationNewUserArgs = {
+  input: NewUserInput;
 };
 
 
@@ -207,9 +217,19 @@ export type NewProjectInviteInput = {
   userId: Scalars['ID'];
 };
 
+export type NewProjectMemberInput = {
+  projectId: Scalars['ID'];
+  userId: Scalars['ID'];
+};
+
 export type NewProjectMemberRoleInput = {
   projectMemberId: Scalars['ID'];
   roleCode: RoleCode;
+};
+
+export type NewUserInput = {
+  displayName?: InputMaybe<Scalars['String']>;
+  username: Scalars['String'];
 };
 
 export type NewUserRoleInput = {
@@ -219,10 +239,13 @@ export type NewUserRoleInput = {
 
 export const Permission = {
   CreateProject: 'CREATE_PROJECT',
+  CreateProjectMember: 'CREATE_PROJECT_MEMBER',
+  CreateUser: 'CREATE_USER',
   DeleteProject: 'DELETE_PROJECT',
   DeleteUser: 'DELETE_USER',
   ManageEboard: 'MANAGE_EBOARD',
   ManageEboardRoles: 'MANAGE_EBOARD_ROLES',
+  ManageMetadata: 'MANAGE_METADATA',
   ManageProjectInvites: 'MANAGE_PROJECT_INVITES',
   ManageProjectMember: 'MANAGE_PROJECT_MEMBER',
   ManageProjectMemberRoles: 'MANAGE_PROJECT_MEMBER_ROLES',
@@ -479,6 +502,8 @@ export type UpdateProjectInput = {
   banner?: InputMaybe<UploadWithOperation>;
   cardImage?: InputMaybe<UploadWithOperation>;
   completed?: InputMaybe<Scalars['Boolean']>;
+  completedAt?: InputMaybe<Scalars['Date']>;
+  createdAt?: InputMaybe<Scalars['Date']>;
   description?: InputMaybe<Scalars['String']>;
   downloadLinks?: InputMaybe<Array<Scalars['String']>>;
   galleryImages?: InputMaybe<Array<UploadOrSource>>;
@@ -666,7 +691,9 @@ export type ResolversTypes = {
   NewEBoardTermInput: NewEBoardTermInput;
   NewProjectInput: NewProjectInput;
   NewProjectInviteInput: NewProjectInviteInput;
+  NewProjectMemberInput: NewProjectMemberInput;
   NewProjectMemberRoleInput: NewProjectMemberRoleInput;
+  NewUserInput: NewUserInput;
   NewUserRoleInput: NewUserRoleInput;
   Permission: Permission;
   Project: ResolverTypeWrapper<Project>;
@@ -715,7 +742,9 @@ export type ResolversParentTypes = {
   NewEBoardTermInput: NewEBoardTermInput;
   NewProjectInput: NewProjectInput;
   NewProjectInviteInput: NewProjectInviteInput;
+  NewProjectMemberInput: NewProjectMemberInput;
   NewProjectMemberRoleInput: NewProjectMemberRoleInput;
+  NewUserInput: NewUserInput;
   NewUserRoleInput: NewUserRoleInput;
   Project: Project;
   ProjectDiscordSettings: ProjectDiscordSettings;
@@ -795,6 +824,8 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   newProject?: Resolver<ResolversTypes['ID'], ParentType, ContextType, RequireFields<MutationNewProjectArgs, 'input'>>;
   newProjectInvite?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationNewProjectInviteArgs, 'input'>>;
   requestProjectDiscord?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationRequestProjectDiscordArgs, 'projectId'>>;
+  newProjectMember?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationNewProjectMemberArgs, 'input'>>;
+  newUser?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationNewUserArgs, 'input'>>;
   transferProjectOwnership?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationTransferProjectOwnershipArgs, 'memberId' | 'projectId'>>;
   updateEBoard?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationUpdateEBoardArgs, 'input'>>;
   updateEBoardTerm?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationUpdateEBoardTermArgs, 'input'>>;

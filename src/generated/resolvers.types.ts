@@ -115,7 +115,9 @@ export type ResolversTypes = {
   NewEBoardTermInput: types.NewEBoardTermInput;
   NewProjectInput: types.NewProjectInput;
   NewProjectInviteInput: types.NewProjectInviteInput;
+  NewProjectMemberInput: types.NewProjectMemberInput;
   NewProjectMemberRoleInput: types.NewProjectMemberRoleInput;
+  NewUserInput: types.NewUserInput;
   NewUserRoleInput: types.NewUserRoleInput;
   Permission: types.Permission;
   PermissionFilterInput: types.PermissionFilterInput;
@@ -255,7 +257,9 @@ export type ResolversParentTypes = {
   NewEBoardTermInput: types.NewEBoardTermInput;
   NewProjectInput: types.NewProjectInput;
   NewProjectInviteInput: types.NewProjectInviteInput;
+  NewProjectMemberInput: types.NewProjectMemberInput;
   NewProjectMemberRoleInput: types.NewProjectMemberRoleInput;
+  NewUserInput: types.NewUserInput;
   NewUserRoleInput: types.NewUserRoleInput;
   PermissionFilterInput: types.PermissionFilterInput;
   Project: types.Project;
@@ -420,6 +424,8 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   newEBoardTerm?: Resolver<ResolversTypes['ID'], ParentType, ContextType, RequireFields<types.MutationNewEBoardTermArgs, 'input'>>;
   newProject?: Resolver<ResolversTypes['ID'], ParentType, ContextType, RequireFields<types.MutationNewProjectArgs, 'input'>>;
   newProjectInvite?: Resolver<types.Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<types.MutationNewProjectInviteArgs, 'input'>>;
+  newProjectMember?: Resolver<types.Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<types.MutationNewProjectMemberArgs, 'input'>>;
+  newUser?: Resolver<types.Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<types.MutationNewUserArgs, 'input'>>;
   transferProjectOwnership?: Resolver<types.Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<types.MutationTransferProjectOwnershipArgs, 'memberId' | 'projectId'>>;
   updateEBoard?: Resolver<types.Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<types.MutationUpdateEBoardArgs, 'input'>>;
   updateEBoardTerm?: Resolver<types.Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<types.MutationUpdateEBoardTermArgs, 'input'>>;

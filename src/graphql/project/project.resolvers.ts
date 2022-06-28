@@ -30,10 +30,7 @@ export default {
     newProject: async (parent, args, context: ApolloResolversContext, info) => {
       if (!context.securityContext.userId) throw new HttpError(200, 'Expected context.securityContext.userId.');
 
-      // Check permissions
-      if (!makePermsCalc().withContext(context.securityContext).hasPermission(Permission.CreateProject)) {
-        throw new HttpError(401, 'Not authorized!');
-      }
+      makePermsCalc().withContext(context.securityContext).assertPermission(Permission.CreateProject);
 
       const userId = context.securityContext.userId;
 
@@ -75,15 +72,14 @@ export default {
 
     updateProject: async (parent, args, context: ApolloResolversContext, info) => {
       await updateProjectLock.acquire('lock', async () => {
-        if (
-          !makePermsCalc()
-            .withContext(context.securityContext)
-            .withDomain({
-              projectId: [args.input.id],
-            })
-            .hasPermission(Permission.UpdateProject)
-        ) {
-          throw new HttpError(401, 'Not authorized!');
+        const permsCalc = makePermsCalc().withContext(context.securityContext);
+        permsCalc
+          .withDomain({
+            projectId: [args.input.id],
+          })
+          .assertPermission(Permission.UpdateProject);
+        if (isDefined(args.input.createdAt) || isDefined(args.input.completedAt)) {
+          permsCalc.assertPermission(Permission.ManageMetadata);
         }
 
         const project = await context.unsecureEntityManager.project.findOne({
@@ -158,6 +154,7 @@ export default {
                 galleryImageLinks.push(relativePath);
               }
             }
+
             await transEntityManager.project.updateOne({
               filter: {
                 id: args.input.id,
@@ -165,6 +162,12 @@ export default {
               changes: {
                 ...(isDefined(args.input.completed) && {
                   completedAt: args.input.completed ? Date.now() : null,
+                }),
+                ...(isDefined(args.input.completedAt) && {
+                  completedAt: args.input.completedAt,
+                }),
+                ...(isDefined(args.input.createdAt) && {
+                  createdAt: args.input.createdAt,
                 }),
                 ...(isDefined(args.input.tags) && { tags: args.input.tags }),
                 ...(isDefined(args.input.access) && {

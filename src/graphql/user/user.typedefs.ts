@@ -2,6 +2,7 @@ import { gql } from 'apollo-server';
 
 export default gql`
   extend type Mutation {
+    newUser(input: NewUserInput!): ID
     updateUser(input: UpdateUserInput!): Boolean
     deleteUser(id: ID!): Boolean
   }
@@ -14,6 +15,11 @@ export default gql`
 
   input UserSubscriptionFilter {
     userId: ID
+  }
+
+  input NewUserInput {
+    displayName: String
+    username: String!
   }
 
   input NewUserRoleInput {

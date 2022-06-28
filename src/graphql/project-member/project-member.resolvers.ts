@@ -13,6 +13,7 @@ import {
   startEntityManagerTransaction,
 } from '@src/utils';
 import { PartialDeep } from 'type-fest';
+import { makeProjectMember } from '../project-invite/project-invite.resolvers';
 import pubsub, { PubSubEvents } from '../pubsub';
 import { makeSubscriptionResolver } from '../subscription-resolver-builder';
 
@@ -57,6 +58,15 @@ async function getRequesterRoles(unsecureEntityManager: EntityManager, requester
 
 export default {
   Mutation: {
+    newProjectMember: async (parent, args, context: ApolloResolversContext, info) => {
+      makePermsCalc().withContext(context.securityContext).assertPermission(Permission.CreateProjectMember);
+
+      const projectMember = await makeProjectMember(context.unsecureEntityManager, {
+        ...args.input,
+      });
+
+      return projectMember.id;
+    },
     updateProjectMember: async (parent, args, context: ApolloResolversContext, info) => {
       const permCalc = makePermsCalc()
         .withContext(context.securityContext)

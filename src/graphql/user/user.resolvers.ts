@@ -36,6 +36,19 @@ const updateUserLock = new AsyncLock();
 
 export default {
   Mutation: {
+    newUser: async (parent, args, context: ApolloResolversContext, info) => {
+      makePermsCalc().withContext(context.securityContext).assertPermission(Permission.CreateUser);
+
+      const user = await context.unsecureEntityManager.user.insertOne({
+        record: {
+          ...args.input,
+          email: '',
+        },
+      });
+      pubsub.publish(PubSubEvents.UserCreated, user);
+
+      return user.id;
+    },
     updateUser: async (parent, args, context: ApolloResolversContext, info) => {
       await updateUserLock.acquire('lock', async () => {
         const permCalc = makePermsCalc()

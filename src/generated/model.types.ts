@@ -308,6 +308,8 @@ export type Mutation = {
   newEBoardTerm: Scalars['ID'];
   newProject: Scalars['ID'];
   newProjectInvite?: Maybe<Scalars['ID']>;
+  newProjectMember?: Maybe<Scalars['ID']>;
+  newUser?: Maybe<Scalars['ID']>;
   transferProjectOwnership?: Maybe<Scalars['Boolean']>;
   updateEBoard?: Maybe<Scalars['Boolean']>;
   updateEBoardTerm?: Maybe<Scalars['Boolean']>;
@@ -509,6 +511,16 @@ export type MutationNewProjectInviteArgs = {
 };
 
 
+export type MutationNewProjectMemberArgs = {
+  input: NewProjectMemberInput;
+};
+
+
+export type MutationNewUserArgs = {
+  input: NewUserInput;
+};
+
+
 export type MutationTransferProjectOwnershipArgs = {
   memberId: Scalars['ID'];
   projectId: Scalars['ID'];
@@ -632,9 +644,19 @@ export type NewProjectInviteInput = {
   userId: Scalars['ID'];
 };
 
+export type NewProjectMemberInput = {
+  projectId: Scalars['ID'];
+  userId: Scalars['ID'];
+};
+
 export type NewProjectMemberRoleInput = {
   projectMemberId: Scalars['ID'];
   roleCode: RoleCode;
+};
+
+export type NewUserInput = {
+  displayName?: InputMaybe<Scalars['String']>;
+  username: Scalars['String'];
 };
 
 export type NewUserRoleInput = {
@@ -644,10 +666,13 @@ export type NewUserRoleInput = {
 
 export const Permission = {
   CreateProject: 'CREATE_PROJECT',
+  CreateProjectMember: 'CREATE_PROJECT_MEMBER',
+  CreateUser: 'CREATE_USER',
   DeleteProject: 'DELETE_PROJECT',
   DeleteUser: 'DELETE_USER',
   ManageEboard: 'MANAGE_EBOARD',
   ManageEboardRoles: 'MANAGE_EBOARD_ROLES',
+  ManageMetadata: 'MANAGE_METADATA',
   ManageProjectInvites: 'MANAGE_PROJECT_INVITES',
   ManageProjectMember: 'MANAGE_PROJECT_MEMBER',
   ManageProjectMemberRoles: 'MANAGE_PROJECT_MEMBER_ROLES',
@@ -1396,6 +1421,8 @@ export type UpdateProjectInput = {
   banner?: InputMaybe<UploadWithOperation>;
   cardImage?: InputMaybe<UploadWithOperation>;
   completed?: InputMaybe<Scalars['Boolean']>;
+  completedAt?: InputMaybe<Scalars['Date']>;
+  createdAt?: InputMaybe<Scalars['Date']>;
   description?: InputMaybe<Scalars['String']>;
   downloadLinks?: InputMaybe<Array<Scalars['String']>>;
   galleryImages?: InputMaybe<Array<UploadOrSource>>;

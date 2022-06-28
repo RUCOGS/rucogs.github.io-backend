@@ -1,4 +1,5 @@
 import { UPLOAD_DIRECTORY } from '@src/controllers/cdn.controller';
+import { ShapeUtil } from '@src/utils/shape-util';
 import express from 'express';
 import got from 'got-cjs';
 import sharp from 'sharp';
@@ -19,7 +20,7 @@ router.use(function (req, res, next) {
 // ----- REFRESH TOKENS ----- //
 // router.post('/token', authController.processRefreshToken);
 
-router.use('/dynamic', (req, res, next) => {
+router.use('/dynamic', async (req, res, next) => {
   let image =
     req.query.src && typeof req.query.src === 'string'
       ? req.query.src
@@ -27,11 +28,12 @@ router.use('/dynamic', (req, res, next) => {
 
   let width = parseInt(req.query.width && typeof req.query.width === 'string' ? req.query.width : '100');
   let height = parseInt(req.query.height && typeof req.query.height === 'string' ? req.query.height : '100');
+  let crop = req.query.crop && typeof req.query.crop === 'string' ? req.query.crop : '';
 
   width = Math.min(width, 600);
   height = Math.min(height, 600);
 
-  var transformer = sharp()
+  let transformer = sharp()
     .resize(width, height, {
       fit: 'cover',
     })
@@ -39,7 +41,21 @@ router.use('/dynamic', (req, res, next) => {
       console.log(`⬆️ Resized image to [${info.width}, ${info.height}]`);
     });
 
-  got.stream(image).pipe(transformer).pipe(res);
+  if (crop === 'circle') {
+    const circleImage = await ShapeUtil.drawCircle(width, height);
+    transformer = transformer.png().composite([
+      {
+        input: Buffer.from(circleImage),
+        blend: 'dest-in',
+      },
+    ]);
+  }
+
+  try {
+    got.stream(image).pipe(transformer).pipe(res);
+  } catch (err) {
+    res.status(400);
+  }
 });
 router.use('/', express.static(UPLOAD_DIRECTORY));
 

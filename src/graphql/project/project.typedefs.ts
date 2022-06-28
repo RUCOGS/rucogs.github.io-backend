@@ -31,6 +31,9 @@ export default gql`
     soundcloudEmbedSrc: String
     downloadLinks: [String!]
     completed: Boolean
+
+    createdAt: Date
+    completedAt: Date
   }
 
   input NewProjectInput {
