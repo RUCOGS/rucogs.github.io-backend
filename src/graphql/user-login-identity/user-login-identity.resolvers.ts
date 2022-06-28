@@ -1,26 +1,103 @@
-import {
-  MutationResolvers,
-  QueryResolvers,
-  RoleCode,
-  SubscriptionResolvers,
-} from '@src/generated/graphql-endpoint.types';
-import { EntityManager, UserInsert } from '@src/generated/typetta';
+import { MutationResolvers, QueryResolvers, SubscriptionResolvers } from '@src/generated/graphql-endpoint.types';
+import { Permission } from '@src/generated/model.types';
 import pubsub, { PubSubEvents } from '@src/graphql/pubsub';
 import { makeSubscriptionResolver } from '@src/graphql/subscription-resolver-builder';
 import { ApolloResolversContext } from '@src/misc/context';
-import { getEntityRoleCodes } from '@src/utils';
-import AsyncLock from 'async-lock';
-
-async function getRequesterRoles(unsecureEntityManager: EntityManager, requesterUserId: string, roleEntityId: string) {
-  return getEntityRoleCodes(unsecureEntityManager.userRole, 'userId', requesterUserId);
-}
-
-const updateUserLock = new AsyncLock();
+import { makePermsCalc } from '@src/shared/security';
+import { HttpError } from '@src/shared/utils';
+import { isDefined } from '@src/utils';
 
 export default {
   Mutation: {
     newUserLoginIdentity: async (parent, args, context: ApolloResolversContext, info) => {
-      // TODO NOW: Finish user login identity crud graphql endpiont
+      makePermsCalc()
+        .withContext(context.securityContext)
+        .withDomain({
+          userId: [args.input.userId],
+        })
+        .assertPermission(Permission.UpdateUserPrivate);
+
+      const userExists = context.unsecureEntityManager.user.exists({
+        filter: { id: args.input.userId },
+      });
+      if (!userExists) throw new HttpError(400, `User doesn't exist!`);
+
+      const loginIdentityExists = await context.unsecureEntityManager.userLoginIdentity.exists({
+        filter: {
+          userId: args.input.userId,
+          name: args.input.name,
+        },
+      });
+      if (loginIdentityExists)
+        throw new HttpError(400, `User already has a login identity of name "${args.input.name}"!`);
+
+      const loginIdentity = await context.unsecureEntityManager.userLoginIdentity.insertOne({
+        record: args.input,
+      });
+
+      pubsub.publish(PubSubEvents.UserLoginIdentityCreated, loginIdentity);
+      return loginIdentity.id;
+    },
+
+    updateUserLoginIdentity: async (parent, args, context: ApolloResolversContext, info) => {
+      const loginIdentity = await context.unsecureEntityManager.userLoginIdentity.findOne({
+        filter: { id: args.input.id },
+      });
+      if (!loginIdentity) throw new HttpError(400, "Login identity doesn't exist!");
+
+      makePermsCalc()
+        .withContext(context.securityContext)
+        .withDomain({
+          userId: [loginIdentity.userId],
+        })
+        .assertPermission(Permission.UpdateUserPrivate);
+
+      if (args.input.name) {
+        const identityWithSameNameExists = await context.unsecureEntityManager.userLoginIdentity.exists({
+          filter: {
+            userId: loginIdentity.userId,
+            name: args.input.name,
+          },
+        });
+        if (identityWithSameNameExists) throw new HttpError(400, `Identity with same name exists for the same user!`);
+      }
+
+      await context.unsecureEntityManager.userLoginIdentity.updateOne({
+        filter: { id: args.input.id },
+        changes: {
+          ...(isDefined(args.input.name) && { name: args.input.name }),
+          ...(isDefined(args.input.data) && { data: args.input.data }),
+          ...(isDefined(args.input.identityId) && { identityId: args.input.identityId }),
+        },
+      });
+
+      const updatedLoginIdentity = await context.unsecureEntityManager.userLoginIdentity.findOne({
+        filter: { id: args.input.id },
+      });
+
+      pubsub.publish(PubSubEvents.UserLoginIdentityUpdated, updatedLoginIdentity);
+      return true;
+    },
+
+    deleteUserLoginIdentity: async (parent, args, context: ApolloResolversContext, info) => {
+      const loginIdentity = await context.unsecureEntityManager.userLoginIdentity.findOne({
+        filter: { id: args.id },
+      });
+      if (!loginIdentity) throw new HttpError(400, "Login identity doesn't exist!");
+
+      makePermsCalc()
+        .withContext(context.securityContext)
+        .withDomain({
+          userId: [loginIdentity.userId],
+        })
+        .assertPermission(Permission.UpdateUserPrivate);
+
+      await context.unsecureEntityManager.userLoginIdentity.deleteOne({
+        filter: { id: args.id },
+      });
+
+      pubsub.publish(PubSubEvents.UserLoginIdentityDeleted, loginIdentity);
+      return true;
     },
   },
 
@@ -48,21 +125,3 @@ export default {
   Mutation: MutationResolvers;
   Subscription: SubscriptionResolvers;
 };
-
-export async function makeUser(entityManager: EntityManager, record: UserInsert, emitSubscription: boolean = true) {
-  const user = await entityManager.user.insertOne({
-    record,
-  });
-
-  await entityManager.userRole.insertOne({
-    record: {
-      roleCode: RoleCode.User,
-      userId: user.id,
-    },
-  });
-
-  if (emitSubscription) {
-    pubsub.publish(PubSubEvents.UserCreated, user);
-  }
-  return user;
-}

@@ -52,6 +52,7 @@ export default {
 
       return userId;
     },
+
     updateUser: async (parent, args, context: ApolloResolversContext, info) => {
       await updateUserLock.acquire('lock', async () => {
         const permCalc = makePermsCalc()
@@ -62,6 +63,7 @@ export default {
 
         permCalc.assertPermission(Permission.UpdateUser);
         if (args.input.createdAt) permCalc.assertPermission(Permission.ManageMetadata);
+        if (args.input.email) permCalc.assertPermission(Permission.UpdateUserPrivate);
 
         const user = await context.unsecureEntityManager.user.findOne({
           filter: {
@@ -185,6 +187,9 @@ export default {
                 id: args.input.id,
               },
               changes: {
+                ...(isDefined(args.input.email) && {
+                  email: args.input.email,
+                }),
                 ...(isDefined(args.input.createdAt) && {
                   createdAt: args.input.createdAt,
                 }),

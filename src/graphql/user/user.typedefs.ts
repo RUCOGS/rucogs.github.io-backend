@@ -38,6 +38,8 @@ export default gql`
     socials: [UpdateUserSocialInput!]
     roles: [RoleCode!]
 
+    email: String
+
     createdAt: Date
   }
 

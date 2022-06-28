@@ -24,6 +24,7 @@ export default gql`
   }
 
   input UpdateUserLoginIdentityInput {
+    id: ID!
     name: String
     identityId: ID
     data: Json

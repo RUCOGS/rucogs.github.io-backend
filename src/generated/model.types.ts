@@ -711,7 +711,8 @@ export const Permission = {
   ReadUserPrivate: 'READ_USER_PRIVATE',
   TransferProjectOwnership: 'TRANSFER_PROJECT_OWNERSHIP',
   UpdateProject: 'UPDATE_PROJECT',
-  UpdateUser: 'UPDATE_USER'
+  UpdateUser: 'UPDATE_USER',
+  UpdateUserPrivate: 'UPDATE_USER_PRIVATE'
 } as const;
 
 export type Permission = typeof Permission[keyof typeof Permission];
@@ -1513,6 +1514,7 @@ export type UpdateUserInput = {
   classYear?: InputMaybe<Scalars['Int']>;
   createdAt?: InputMaybe<Scalars['Date']>;
   displayName?: InputMaybe<Scalars['String']>;
+  email?: InputMaybe<Scalars['String']>;
   id: Scalars['ID'];
   roles?: InputMaybe<Array<RoleCode>>;
   socials?: InputMaybe<Array<UpdateUserSocialInput>>;
@@ -1520,6 +1522,7 @@ export type UpdateUserInput = {
 
 export type UpdateUserLoginIdentityInput = {
   data?: InputMaybe<Scalars['Json']>;
+  id: Scalars['ID'];
   identityId?: InputMaybe<Scalars['ID']>;
   name?: InputMaybe<Scalars['String']>;
 };

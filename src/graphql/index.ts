@@ -19,6 +19,8 @@ import projectResolvers from './project/project.resolvers';
 import projectTypedefs from './project/project.typedefs';
 import scalarResolvers from './scalar.resolvers';
 import schemaTypeDefs from './schema.typedefs';
+import userLoginIdentityResolvers from './user-login-identity/user-login-identity.resolvers';
+import userLoginIdentityTypedefs from './user-login-identity/user-login-identity.typedefs';
 import userResolvers from './user/user.resolvers';
 import userTypedefs from './user/user.typedefs';
 import { mergeResolvers } from './utils';
@@ -37,6 +39,7 @@ export const typeDefs = mergeTypeDefs([
   projectTypedefs,
   eBoardTypedefs,
   projectDiscordSettingsTypedefs,
+  userLoginIdentityTypedefs,
 ]);
 
 export const resolvers = mergeResolvers([
@@ -50,6 +53,7 @@ export const resolvers = mergeResolvers([
   projectResolvers,
   eBoardResolvers,
   projectDiscordSettingsResolvers,
+  userLoginIdentityResolvers,
   {
     Upload: GraphQLUpload,
   },

@@ -56,6 +56,7 @@ export const RoleBackendDataDict: {
         CREATE_USER: true,
         CREATE_PROJECT_MEMBER: true,
         MANAGE_METADATA: true,
+        UPDATE_USER_PRIVATE: true,
       };
     },
   },
