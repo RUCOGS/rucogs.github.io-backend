@@ -1,6 +1,8 @@
 import { MutationResolvers, QueryResolvers, SubscriptionResolvers } from '@src/generated/graphql-endpoint.types';
 import { Permission, Project, RoleCode } from '@src/generated/model.types';
 import { EntityManager, ProjectDAO, ProjectMemberDAO, ProjectMemberFilter, UserDAO } from '@src/generated/typetta';
+import pubsub, { PubSubEvents } from '@src/graphql/utils/pubsub';
+import { makeSubscriptionResolver } from '@src/graphql/utils/subscription-resolver-builder';
 import { ApolloResolversContext } from '@src/misc/context';
 import { makePermsCalc, RoleType } from '@src/shared/security';
 import { HttpError } from '@src/shared/utils';
@@ -14,8 +16,6 @@ import {
 } from '@src/utils';
 import { PartialDeep } from 'type-fest';
 import { makeProjectMember } from '../project-invite/project-invite.resolvers';
-import pubsub, { PubSubEvents } from '../pubsub';
-import { makeSubscriptionResolver } from '../subscription-resolver-builder';
 
 async function getRequesterRoles(unsecureEntityManager: EntityManager, requesterUserId: string, roleEntityId: string) {
   const requesterUser = await unsecureEntityManager.user.findOne({

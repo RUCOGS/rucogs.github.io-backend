@@ -158,10 +158,10 @@ export default gql`
     downloadLinks: [String!]
     members: [ProjectMember!]! @foreignRef(refFrom: "projectId")
     invites: [ProjectInvite!]! @foreignRef(refFrom: "projectId")
-    discordSettings: ProjectDiscordSettings @foreignRef(refFrom: "projectId")
+    discordConfig: ProjectDiscordConfig @foreignRef(refFrom: "projectId")
   }
 
-  type ProjectDiscordSettings @entity @mongodb {
+  type ProjectDiscordConfig @entity @mongodb {
     id: ID! @id(from: "db") @alias(value: "_id")
     createdAt: Date @schema(metadata: [{ key: "createdAt", value: true }])
     updatedAt: Date @schema(metadata: [{ key: "updatedAt", value: true }])

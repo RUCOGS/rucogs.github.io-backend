@@ -10,8 +10,8 @@ import {
 } from '@src/generated/graphql-endpoint.types';
 import { EntityManager, UserInsert, UserSocialFilter, UserSocialInsert } from '@src/generated/typetta';
 import { deleteProjectInvites } from '@src/graphql/project-invite/project-invite.resolvers';
-import pubsub, { PubSubEvents } from '@src/graphql/pubsub';
 import { makeSubscriptionResolver } from '@src/graphql/subscription-resolver-builder';
+import pubsub, { PubSubEvents } from '@src/graphql/utils/pubsub';
 import { ApolloResolversContext } from '@src/misc/context';
 import { makePermsCalc, RoleType } from '@src/shared/security';
 import { HttpError } from '@src/shared/utils';

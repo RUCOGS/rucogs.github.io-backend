@@ -1,7 +1,7 @@
 import { MutationResolvers, QueryResolvers, SubscriptionResolvers } from '@src/generated/graphql-endpoint.types';
 import { Permission } from '@src/generated/model.types';
-import pubsub, { PubSubEvents } from '@src/graphql/pubsub';
 import { makeSubscriptionResolver } from '@src/graphql/subscription-resolver-builder';
+import pubsub, { PubSubEvents } from '@src/graphql/utils/pubsub';
 import { ApolloResolversContext } from '@src/misc/context';
 import { makePermsCalc } from '@src/shared/security';
 import { HttpError } from '@src/shared/utils';

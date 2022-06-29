@@ -47,6 +47,19 @@ export async function startServer(debug: boolean, mock: boolean = false) {
     csrfPrevention: true,
     schema,
   });
+  startDiscordApolloServer(
+    httpServer,
+    app,
+    mongoDb,
+    ServerConfig.baseUrl + '/discord/graphql',
+    unsecuredEntityManager,
+    mongoClient,
+    {
+      debug,
+      csrfPrevention: true,
+      schema,
+    },
+  );
   // Set port, listen for requests
   const port = ServerConfig.port;
   // Promisfy httpServer.listen();
@@ -176,6 +189,119 @@ async function startApolloServer(
   console.log(
     `\
 📈 GraphQL API ready at: ${server.graphqlPath}`,
+  );
+}
+
+async function startDiscordApolloServer(
+  httpServer: http.Server,
+  app: express.Application,
+  mongoDb: Db | 'mock',
+  endpointPath: string,
+  unsecureEntityManager: EntityManager,
+  mongoClient: MongoClient,
+  apolloConfig: Config<ExpressContext>,
+) {
+  async function authenticateGetContext(req: any) {
+    const authenticated = await authenticate(req);
+    if (authenticated) {
+      const [authScheme, authPayload] = authenticated;
+      switch (authScheme) {
+        case AuthScheme.BasicRoot: {
+          return {
+            entityManager: unsecureEntityManager,
+            unsecureEntityManager,
+            mongoClient,
+            securityContext: DefaultSecurityContext,
+          };
+        }
+        case AuthScheme.Bearer:
+        default: {
+          const securityContext = await getCompleteSecurityContext(
+            createUnsecureEntityManager(mongoDb),
+            authPayload.userId,
+          );
+          const metadata = getOperationMetadataFromRequest(req);
+          const entityManager = createSecureEntityManager(securityContext, mongoDb, metadata);
+          return {
+            entityManager,
+            unsecureEntityManager,
+            securityContext,
+            mongoClient,
+          };
+        }
+      }
+    } else {
+      // Fallback to public api
+      const entityManager = createSecureEntityManager(DefaultSecurityContext, mongoDb);
+      return {
+        entityManager,
+        unsecureEntityManager,
+        securityContext: DefaultSecurityContext,
+        mongoClient,
+      };
+    }
+  }
+
+  // Create websocket server for Apollo GraphQL subscriptions
+  const wsServer = new WebSocketServer({
+    server: httpServer,
+    path: endpointPath,
+  });
+  const serverCleanup = useServer(
+    {
+      schema: schema,
+      onConnect: async (ctx) => {
+        console.log(`Subscription Connected: ${ctx.subscriptions}`);
+      },
+      onDisconnect(ctx, code, reason) {
+        console.log(`Subscription Disconnected: (${code}) "${reason}"`);
+      },
+      context: async (ctx, msg, args) => {
+        console.log('Context: ' + ctx);
+        const context = await authenticateGetContext(ctx.connectionParams);
+        return context;
+      },
+    },
+    wsServer,
+  );
+
+  const server = new ExpressApolloServer({
+    ...apolloConfig,
+    plugins: [
+      // Shutdown for HTTP server.
+      ApolloServerPluginDrainHttpServer({ httpServer }),
+      // Shutdown for subscriptions WebSocket server.
+      {
+        async serverWillStart() {
+          return {
+            async drainServer() {
+              await serverCleanup.dispose();
+            },
+          };
+        },
+      },
+    ],
+    context: async ({ req }): Promise<ApolloResolversContext> => {
+      return await authenticateGetContext(req);
+    },
+  });
+
+  await server.start();
+
+  app.use(
+    graphqlUploadExpress({
+      maxFileSize: 1_000_000 * 100, // 100mb
+      maxFiles: 10,
+    }),
+  );
+  server.applyMiddleware({
+    app,
+    path: endpointPath,
+  });
+
+  console.log(
+    `\
+📈 Discord GraphQL API ready at: ${server.graphqlPath}`,
   );
 }
 

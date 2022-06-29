@@ -8,12 +8,12 @@ import {
 } from '@src/generated/graphql-endpoint.types';
 import { Access } from '@src/generated/model.types';
 import { EntityManager, ProjectDAO, ProjectInviteFilter, ProjectMemberInsert } from '@src/generated/typetta';
-import pubsub, { PubSubEvents } from '@src/graphql/pubsub';
+import pubsub, { PubSubEvents } from '@src/graphql/utils/pubsub';
+import { makeSubscriptionResolver } from '@src/graphql/utils/subscription-resolver-builder';
 import { ApolloResolversContext } from '@src/misc/context';
 import { makePermsCalc } from '@src/shared/security';
 import { HttpError } from '@src/shared/utils';
 import { daoInsertRolesBatch, startEntityManagerTransaction } from '@src/utils';
-import { makeSubscriptionResolver } from '../subscription-resolver-builder';
 
 const acceptProjectInvite: MutationResolvers['acceptProjectInvite'] = async (
   parent,

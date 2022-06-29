@@ -85,6 +85,7 @@ export type Mutation = {
   newProjectMember?: Maybe<Scalars['ID']>;
   newUser?: Maybe<Scalars['ID']>;
   newUserLoginIdentity?: Maybe<Scalars['ID']>;
+  requestArchiveProjectDiscord?: Maybe<Scalars['Boolean']>;
   requestProjectDiscord?: Maybe<Scalars['Boolean']>;
   transferProjectOwnership?: Maybe<Scalars['Boolean']>;
   updateEBoard?: Maybe<Scalars['Boolean']>;
@@ -173,6 +174,11 @@ export type MutationNewUserArgs = {
 
 export type MutationNewUserLoginIdentityArgs = {
   input: NewUserLoginIdentityInput;
+};
+
+
+export type MutationRequestArchiveProjectDiscordArgs = {
+  projectId: Scalars['ID'];
 };
 
 
@@ -403,6 +409,7 @@ export const RoleCode = {
 export type RoleCode = typeof RoleCode[keyof typeof RoleCode];
 export type Subscription = {
   __typename?: 'Subscription';
+  archiveProjectDiscordRequested?: Maybe<Scalars['ID']>;
   eBoardCreated?: Maybe<Scalars['ID']>;
   eBoardDeleted?: Maybe<Scalars['ID']>;
   eBoardTermCreated?: Maybe<Scalars['ID']>;
@@ -424,6 +431,11 @@ export type Subscription = {
   userLoginIdentityDeleted?: Maybe<Scalars['ID']>;
   userLoginIdentityUpdated?: Maybe<Scalars['ID']>;
   userUpdated?: Maybe<Scalars['ID']>;
+};
+
+
+export type SubscriptionArchiveProjectDiscordRequestedArgs = {
+  filter: ProjectSubscriptionFilter;
 };
 
 
@@ -892,6 +904,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   newProjectMember?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationNewProjectMemberArgs, 'input'>>;
   newUser?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationNewUserArgs, 'input'>>;
   newUserLoginIdentity?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationNewUserLoginIdentityArgs, 'input'>>;
+  requestArchiveProjectDiscord?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationRequestArchiveProjectDiscordArgs, 'projectId'>>;
   requestProjectDiscord?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationRequestProjectDiscordArgs, 'projectId'>>;
   transferProjectOwnership?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationTransferProjectOwnershipArgs, 'memberId' | 'projectId'>>;
   updateEBoard?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationUpdateEBoardArgs, 'input'>>;
@@ -974,6 +987,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
 };
 
 export type SubscriptionResolvers<ContextType = any, ParentType extends ResolversParentTypes['Subscription'] = ResolversParentTypes['Subscription']> = {
+  archiveProjectDiscordRequested?: SubscriptionResolver<Maybe<ResolversTypes['ID']>, "archiveProjectDiscordRequested", ParentType, ContextType, RequireFields<SubscriptionArchiveProjectDiscordRequestedArgs, 'filter'>>;
   eBoardCreated?: SubscriptionResolver<Maybe<ResolversTypes['ID']>, "eBoardCreated", ParentType, ContextType, RequireFields<SubscriptionEBoardCreatedArgs, 'filter'>>;
   eBoardDeleted?: SubscriptionResolver<Maybe<ResolversTypes['ID']>, "eBoardDeleted", ParentType, ContextType, RequireFields<SubscriptionEBoardDeletedArgs, 'filter'>>;
   eBoardTermCreated?: SubscriptionResolver<Maybe<ResolversTypes['ID']>, "eBoardTermCreated", ParentType, ContextType, RequireFields<SubscriptionEBoardTermCreatedArgs, 'filter'>>;
