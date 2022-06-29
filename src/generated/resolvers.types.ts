@@ -123,13 +123,13 @@ export type ResolversTypes = {
   Permission: types.Permission;
   PermissionFilterInput: types.PermissionFilterInput;
   Project: ResolverTypeWrapper<types.Project>;
-  ProjectDiscordSettings: ResolverTypeWrapper<types.ProjectDiscordSettings>;
-  ProjectDiscordSettingsFilterInput: types.ProjectDiscordSettingsFilterInput;
-  ProjectDiscordSettingsFindInput: types.ProjectDiscordSettingsFindInput;
-  ProjectDiscordSettingsInsertInput: types.ProjectDiscordSettingsInsertInput;
-  ProjectDiscordSettingsRelationsFilterInput: types.ProjectDiscordSettingsRelationsFilterInput;
-  ProjectDiscordSettingsSortInput: types.ProjectDiscordSettingsSortInput;
-  ProjectDiscordSettingsUpdateInput: types.ProjectDiscordSettingsUpdateInput;
+  ProjectDiscordConfig: ResolverTypeWrapper<types.ProjectDiscordConfig>;
+  ProjectDiscordConfigFilterInput: types.ProjectDiscordConfigFilterInput;
+  ProjectDiscordConfigFindInput: types.ProjectDiscordConfigFindInput;
+  ProjectDiscordConfigInsertInput: types.ProjectDiscordConfigInsertInput;
+  ProjectDiscordConfigRelationsFilterInput: types.ProjectDiscordConfigRelationsFilterInput;
+  ProjectDiscordConfigSortInput: types.ProjectDiscordConfigSortInput;
+  ProjectDiscordConfigUpdateInput: types.ProjectDiscordConfigUpdateInput;
   ProjectFilterInput: types.ProjectFilterInput;
   ProjectFindInput: types.ProjectFindInput;
   ProjectInsertInput: types.ProjectInsertInput;
@@ -267,13 +267,13 @@ export type ResolversParentTypes = {
   NewUserRoleInput: types.NewUserRoleInput;
   PermissionFilterInput: types.PermissionFilterInput;
   Project: types.Project;
-  ProjectDiscordSettings: types.ProjectDiscordSettings;
-  ProjectDiscordSettingsFilterInput: types.ProjectDiscordSettingsFilterInput;
-  ProjectDiscordSettingsFindInput: types.ProjectDiscordSettingsFindInput;
-  ProjectDiscordSettingsInsertInput: types.ProjectDiscordSettingsInsertInput;
-  ProjectDiscordSettingsRelationsFilterInput: types.ProjectDiscordSettingsRelationsFilterInput;
-  ProjectDiscordSettingsSortInput: types.ProjectDiscordSettingsSortInput;
-  ProjectDiscordSettingsUpdateInput: types.ProjectDiscordSettingsUpdateInput;
+  ProjectDiscordConfig: types.ProjectDiscordConfig;
+  ProjectDiscordConfigFilterInput: types.ProjectDiscordConfigFilterInput;
+  ProjectDiscordConfigFindInput: types.ProjectDiscordConfigFindInput;
+  ProjectDiscordConfigInsertInput: types.ProjectDiscordConfigInsertInput;
+  ProjectDiscordConfigRelationsFilterInput: types.ProjectDiscordConfigRelationsFilterInput;
+  ProjectDiscordConfigSortInput: types.ProjectDiscordConfigSortInput;
+  ProjectDiscordConfigUpdateInput: types.ProjectDiscordConfigUpdateInput;
   ProjectFilterInput: types.ProjectFilterInput;
   ProjectFindInput: types.ProjectFindInput;
   ProjectInsertInput: types.ProjectInsertInput;
@@ -399,7 +399,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   createEBoardTerm?: Resolver<ResolversTypes['EBoardTerm'], ParentType, ContextType, RequireFields<types.MutationCreateEBoardTermArgs, 'record'>>;
   createEBoardTermRole?: Resolver<ResolversTypes['EBoardTermRole'], ParentType, ContextType, RequireFields<types.MutationCreateEBoardTermRoleArgs, 'record'>>;
   createProject?: Resolver<ResolversTypes['Project'], ParentType, ContextType, RequireFields<types.MutationCreateProjectArgs, 'record'>>;
-  createProjectDiscordSettings?: Resolver<ResolversTypes['ProjectDiscordSettings'], ParentType, ContextType, RequireFields<types.MutationCreateProjectDiscordSettingsArgs, 'record'>>;
+  createProjectDiscordConfig?: Resolver<ResolversTypes['ProjectDiscordConfig'], ParentType, ContextType, RequireFields<types.MutationCreateProjectDiscordConfigArgs, 'record'>>;
   createProjectInvite?: Resolver<ResolversTypes['ProjectInvite'], ParentType, ContextType, RequireFields<types.MutationCreateProjectInviteArgs, 'record'>>;
   createProjectMember?: Resolver<ResolversTypes['ProjectMember'], ParentType, ContextType, RequireFields<types.MutationCreateProjectMemberArgs, 'record'>>;
   createProjectMemberRole?: Resolver<ResolversTypes['ProjectMemberRole'], ParentType, ContextType, RequireFields<types.MutationCreateProjectMemberRoleArgs, 'record'>>;
@@ -413,7 +413,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   deleteEBoardTerms?: Resolver<types.Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<types.MutationDeleteEBoardTermsArgs, 'filter'>>;
   deleteEBoards?: Resolver<types.Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<types.MutationDeleteEBoardsArgs, 'filter'>>;
   deleteProject?: Resolver<types.Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<types.MutationDeleteProjectArgs, 'id'>>;
-  deleteProjectDiscordSettingss?: Resolver<types.Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<types.MutationDeleteProjectDiscordSettingssArgs, 'filter'>>;
+  deleteProjectDiscordConfigs?: Resolver<types.Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<types.MutationDeleteProjectDiscordConfigsArgs, 'filter'>>;
   deleteProjectInvite?: Resolver<types.Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<types.MutationDeleteProjectInviteArgs, 'inviteId'>>;
   deleteProjectInvites?: Resolver<types.Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<types.MutationDeleteProjectInvitesArgs, 'filter'>>;
   deleteProjectMember?: Resolver<types.Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<types.MutationDeleteProjectMemberArgs, 'id'>>;
@@ -434,7 +434,8 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   newProjectMember?: Resolver<types.Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<types.MutationNewProjectMemberArgs, 'input'>>;
   newUser?: Resolver<types.Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<types.MutationNewUserArgs, 'input'>>;
   newUserLoginIdentity?: Resolver<types.Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<types.MutationNewUserLoginIdentityArgs, 'input'>>;
-  requestProjectDiscord?: Resolver<types.Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<types.MutationRequestProjectDiscordArgs, 'projectId'>>;
+  requestArchiveProjectDiscordConfig?: Resolver<types.Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<types.MutationRequestArchiveProjectDiscordConfigArgs, 'projectId'>>;
+  requestProjectDiscordConfig?: Resolver<types.Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<types.MutationRequestProjectDiscordConfigArgs, 'projectId'>>;
   transferProjectOwnership?: Resolver<types.Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<types.MutationTransferProjectOwnershipArgs, 'memberId' | 'projectId'>>;
   updateEBoard?: Resolver<types.Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<types.MutationUpdateEBoardArgs, 'input'>>;
   updateEBoardTerm?: Resolver<types.Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<types.MutationUpdateEBoardTermArgs, 'input'>>;
@@ -442,7 +443,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   updateEBoardTerms?: Resolver<types.Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<types.MutationUpdateEBoardTermsArgs, 'changes' | 'filter'>>;
   updateEBoards?: Resolver<types.Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<types.MutationUpdateEBoardsArgs, 'changes' | 'filter'>>;
   updateProject?: Resolver<types.Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<types.MutationUpdateProjectArgs, 'input'>>;
-  updateProjectDiscordSettingss?: Resolver<types.Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<types.MutationUpdateProjectDiscordSettingssArgs, 'changes' | 'filter'>>;
+  updateProjectDiscordConfigs?: Resolver<types.Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<types.MutationUpdateProjectDiscordConfigsArgs, 'changes' | 'filter'>>;
   updateProjectInvites?: Resolver<types.Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<types.MutationUpdateProjectInvitesArgs, 'changes' | 'filter'>>;
   updateProjectMember?: Resolver<types.Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<types.MutationUpdateProjectMemberArgs, 'input'>>;
   updateProjectMemberRoles?: Resolver<types.Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<types.MutationUpdateProjectMemberRolesArgs, 'changes' | 'filter'>>;
@@ -463,7 +464,7 @@ export type ProjectResolvers<ContextType = any, ParentType extends ResolversPare
   completedAt?: Resolver<types.Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
   createdAt?: Resolver<types.Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
   description?: Resolver<types.Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  discordSettings?: Resolver<types.Maybe<ResolversTypes['ProjectDiscordSettings']>, ParentType, ContextType>;
+  discordConfig?: Resolver<types.Maybe<ResolversTypes['ProjectDiscordConfig']>, ParentType, ContextType>;
   downloadLinks?: Resolver<types.Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
   galleryImageLinks?: Resolver<types.Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
@@ -477,7 +478,7 @@ export type ProjectResolvers<ContextType = any, ParentType extends ResolversPare
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
-export type ProjectDiscordSettingsResolvers<ContextType = any, ParentType extends ResolversParentTypes['ProjectDiscordSettings'] = ResolversParentTypes['ProjectDiscordSettings']> = {
+export type ProjectDiscordConfigResolvers<ContextType = any, ParentType extends ResolversParentTypes['ProjectDiscordConfig'] = ResolversParentTypes['ProjectDiscordConfig']> = {
   categoryId?: Resolver<types.Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   createdAt?: Resolver<types.Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
@@ -526,7 +527,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   eBoardTerms?: Resolver<Array<ResolversTypes['EBoardTerm']>, ParentType, ContextType, Partial<types.QueryEBoardTermsArgs>>;
   eBoards?: Resolver<Array<ResolversTypes['EBoard']>, ParentType, ContextType, Partial<types.QueryEBoardsArgs>>;
   isAuthTokenValid?: Resolver<types.Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
-  projectDiscordSettingss?: Resolver<Array<ResolversTypes['ProjectDiscordSettings']>, ParentType, ContextType, Partial<types.QueryProjectDiscordSettingssArgs>>;
+  projectDiscordConfigs?: Resolver<Array<ResolversTypes['ProjectDiscordConfig']>, ParentType, ContextType, Partial<types.QueryProjectDiscordConfigsArgs>>;
   projectInvites?: Resolver<Array<ResolversTypes['ProjectInvite']>, ParentType, ContextType, Partial<types.QueryProjectInvitesArgs>>;
   projectMemberRoles?: Resolver<Array<ResolversTypes['ProjectMemberRole']>, ParentType, ContextType, Partial<types.QueryProjectMemberRolesArgs>>;
   projectMembers?: Resolver<Array<ResolversTypes['ProjectMember']>, ParentType, ContextType, Partial<types.QueryProjectMembersArgs>>;
@@ -540,6 +541,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
 };
 
 export type SubscriptionResolvers<ContextType = any, ParentType extends ResolversParentTypes['Subscription'] = ResolversParentTypes['Subscription']> = {
+  archiveProjectDiscordConfigRequested?: SubscriptionResolver<types.Maybe<ResolversTypes['ID']>, "archiveProjectDiscordConfigRequested", ParentType, ContextType, RequireFields<types.SubscriptionArchiveProjectDiscordConfigRequestedArgs, 'filter'>>;
   eBoardCreated?: SubscriptionResolver<types.Maybe<ResolversTypes['ID']>, "eBoardCreated", ParentType, ContextType, RequireFields<types.SubscriptionEBoardCreatedArgs, 'filter'>>;
   eBoardDeleted?: SubscriptionResolver<types.Maybe<ResolversTypes['ID']>, "eBoardDeleted", ParentType, ContextType, RequireFields<types.SubscriptionEBoardDeletedArgs, 'filter'>>;
   eBoardTermCreated?: SubscriptionResolver<types.Maybe<ResolversTypes['ID']>, "eBoardTermCreated", ParentType, ContextType, RequireFields<types.SubscriptionEBoardTermCreatedArgs, 'filter'>>;
@@ -548,7 +550,7 @@ export type SubscriptionResolvers<ContextType = any, ParentType extends Resolver
   eBoardUpdated?: SubscriptionResolver<types.Maybe<ResolversTypes['ID']>, "eBoardUpdated", ParentType, ContextType, RequireFields<types.SubscriptionEBoardUpdatedArgs, 'filter'>>;
   projectCreated?: SubscriptionResolver<types.Maybe<ResolversTypes['ID']>, "projectCreated", ParentType, ContextType, RequireFields<types.SubscriptionProjectCreatedArgs, 'filter'>>;
   projectDeleted?: SubscriptionResolver<types.Maybe<ResolversTypes['ID']>, "projectDeleted", ParentType, ContextType, RequireFields<types.SubscriptionProjectDeletedArgs, 'filter'>>;
-  projectDiscordRequested?: SubscriptionResolver<types.Maybe<ResolversTypes['ID']>, "projectDiscordRequested", ParentType, ContextType, RequireFields<types.SubscriptionProjectDiscordRequestedArgs, 'filter'>>;
+  projectDiscordConfigRequested?: SubscriptionResolver<types.Maybe<ResolversTypes['ID']>, "projectDiscordConfigRequested", ParentType, ContextType, RequireFields<types.SubscriptionProjectDiscordConfigRequestedArgs, 'filter'>>;
   projectInviteCreated?: SubscriptionResolver<types.Maybe<ResolversTypes['ID']>, "projectInviteCreated", ParentType, ContextType, RequireFields<types.SubscriptionProjectInviteCreatedArgs, 'filter'>>;
   projectInviteDeleted?: SubscriptionResolver<types.Maybe<ResolversTypes['ID']>, "projectInviteDeleted", ParentType, ContextType, RequireFields<types.SubscriptionProjectInviteDeletedArgs, 'filter'>>;
   projectMemberCreated?: SubscriptionResolver<types.Maybe<ResolversTypes['ID']>, "projectMemberCreated", ParentType, ContextType, RequireFields<types.SubscriptionProjectMemberCreatedArgs, 'filter'>>;
@@ -623,7 +625,7 @@ export type Resolvers<ContextType = any> = {
   Json?: GraphQLScalarType;
   Mutation?: MutationResolvers<ContextType>;
   Project?: ProjectResolvers<ContextType>;
-  ProjectDiscordSettings?: ProjectDiscordSettingsResolvers<ContextType>;
+  ProjectDiscordConfig?: ProjectDiscordConfigResolvers<ContextType>;
   ProjectInvite?: ProjectInviteResolvers<ContextType>;
   ProjectMember?: ProjectMemberResolvers<ContextType>;
   ProjectMemberRole?: ProjectMemberRoleResolvers<ContextType>;

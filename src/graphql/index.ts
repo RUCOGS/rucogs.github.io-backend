@@ -11,8 +11,6 @@ import authResolvers from './auth/auth.resolvers';
 import authTypeDefs from './auth/auth.typedefs';
 import eBoardResolvers from './e-board/e-board.resolvers';
 import eBoardTypeDefs from './e-board/e-board.typedefs';
-import projectDiscordSettingsResolvers from './project-discord-config/project-discord-config.resolvers';
-import projectDiscordSettingsTypeDefs from './project-discord-config/project-discord-config.typedefs';
 import projectInviteResolvers from './project-invite/project-invite.resolvers';
 import projectInviteTypeDefs from './project-invite/project-invite.typedefs';
 import projectMemberResolvers from './project-member/project-member.resolvers';
@@ -38,7 +36,6 @@ export const typeDefs = mergeTypeDefs([
   customTypeDefs,
   projectTypeDefs,
   eBoardTypeDefs,
-  projectDiscordSettingsTypeDefs,
   userLoginIdentityTypeDefs,
 ]);
 
@@ -52,7 +49,6 @@ export const resolvers = mergeResolvers([
   projectMemberResolvers,
   projectResolvers,
   eBoardResolvers,
-  projectDiscordSettingsResolvers,
   userLoginIdentityResolvers,
   {
     Upload: GraphQLUpload,

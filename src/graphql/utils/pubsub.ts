@@ -27,9 +27,6 @@ export const PubSubEvents = {
   UserLoginIdentityCreated: 'USER_LOGIN_IDENTITY_CREATED',
   UserLoginIdentityUpdated: 'USER_LOGIN_IDENTITY_UPDATED',
   UserLoginIdentityDeleted: 'USER_LOGIN_IDENTITY_DELETED',
-
-  ProjectDiscordRequested: 'PROJECT_DISCORD_REQUESTED',
-  ArchiveProjectDiscordRequested: 'ARCHIVE_PROJECT_DISCORD_REQUESTED',
 } as const;
 export type PubSubEvents = typeof PubSubEvents[keyof typeof PubSubEvents];
 

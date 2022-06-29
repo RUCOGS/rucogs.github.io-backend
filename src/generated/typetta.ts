@@ -210,9 +210,9 @@ description: { type: 'scalar',
       isExcluded: false,
       isId: false,
       generationStrategy: 'undefined' },
-discordSettings: { type: 'relation', relation: 'foreign', 
+discordConfig: { type: 'relation', relation: 'foreign', 
       isList: false, 
-      astName: 'ProjectDiscordSettings', 
+      astName: 'ProjectDiscordConfig', 
       isRequired: false, 
       isListElementRequired: false,
       isExcluded: false,
@@ -303,7 +303,7 @@ updatedAt: { type: 'scalar',
             rawUpdate: () => M.UpdateFilter<M.Document>, 
             rawSorts: () => M.Sort }
           },
-ProjectDiscordSettings: {
+ProjectDiscordConfig: {
           fields: { categoryId: { type: 'scalar', 
       isList: false, 
       astName: 'String', 
@@ -552,7 +552,15 @@ roleCode: { type: 'scalar',
             rawSorts: () => M.Sort }
           },
 Subscription: {
-          fields: { eBoardCreated: { type: 'scalar', 
+          fields: { archiveProjectDiscordConfigRequested: { type: 'scalar', 
+      isList: false, 
+      astName: 'ID', 
+      isRequired: false, 
+      isListElementRequired: false,
+      isExcluded: false,
+      isId: false,
+      generationStrategy: 'undefined' },
+eBoardCreated: { type: 'scalar', 
       isList: false, 
       astName: 'ID', 
       isRequired: false, 
@@ -616,7 +624,7 @@ projectDeleted: { type: 'scalar',
       isExcluded: false,
       isId: false,
       generationStrategy: 'undefined' },
-projectDiscordRequested: { type: 'scalar', 
+projectDiscordConfigRequested: { type: 'scalar', 
       isList: false, 
       astName: 'ID', 
       isRequired: false, 
@@ -1303,13 +1311,13 @@ export function projectSchema(): T.Schema<ScalarsSpecification> {
               scalar: 'String',
               
             },
-  'discordSettings':{
+  'discordConfig':{
                 type: 'relation',
                 relation: 'foreign',
-                schema: () => projectDiscordSettingsSchema(),
+                schema: () => projectDiscordConfigSchema(),
                 refFrom: 'projectId',
                 refTo: 'id',
-                dao: 'projectDiscordSettings',
+                dao: 'projectDiscordConfig',
                 
               },
   'downloadLinks': {
@@ -1421,7 +1429,7 @@ export class InMemoryProjectDAO<MetadataType, OperationMetadataType> extends T.A
     })
   }
   }
-export function projectDiscordSettingsSchema(): T.Schema<ScalarsSpecification> {
+export function projectDiscordConfigSchema(): T.Schema<ScalarsSpecification> {
   return {
   'categoryId': {
               type: 'scalar',
@@ -1470,51 +1478,51 @@ export function projectDiscordSettingsSchema(): T.Schema<ScalarsSpecification> {
   }
 }
 
-type ProjectDiscordSettingsDAOGenerics<MetadataType, OperationMetadataType> = T.MongoDBDAOGenerics<'ProjectDiscordSettings', AST, ScalarsSpecification, ProjectDiscordSettingsCachedTypes, MetadataType, OperationMetadataType, EntityManager<MetadataType, OperationMetadataType>>
-export type ProjectDiscordSettingsDAOParams<MetadataType, OperationMetadataType> = Omit<T.MongoDBDAOParams<ProjectDiscordSettingsDAOGenerics<MetadataType, OperationMetadataType>>, 'idGenerator' | 'idField' | 'schema' | 'idScalar' | 'idGeneration'>
-export type InMemoryProjectDiscordSettingsDAOParams<MetadataType, OperationMetadataType> = Omit<T.InMemoryDAOParams<ProjectDiscordSettingsDAOGenerics<MetadataType, OperationMetadataType>>, 'idGenerator' | 'idField' | 'schema' | 'idScalar' | 'idGeneration'>
+type ProjectDiscordConfigDAOGenerics<MetadataType, OperationMetadataType> = T.MongoDBDAOGenerics<'ProjectDiscordConfig', AST, ScalarsSpecification, ProjectDiscordConfigCachedTypes, MetadataType, OperationMetadataType, EntityManager<MetadataType, OperationMetadataType>>
+export type ProjectDiscordConfigDAOParams<MetadataType, OperationMetadataType> = Omit<T.MongoDBDAOParams<ProjectDiscordConfigDAOGenerics<MetadataType, OperationMetadataType>>, 'idGenerator' | 'idField' | 'schema' | 'idScalar' | 'idGeneration'>
+export type InMemoryProjectDiscordConfigDAOParams<MetadataType, OperationMetadataType> = Omit<T.InMemoryDAOParams<ProjectDiscordConfigDAOGenerics<MetadataType, OperationMetadataType>>, 'idGenerator' | 'idField' | 'schema' | 'idScalar' | 'idGeneration'>
 
 
-    export type ProjectDiscordSettingsIdFields = T.IdFields<'ProjectDiscordSettings', AST>
-    export interface ProjectDiscordSettingsModel extends types.ProjectDiscordSettings {}
-    export interface ProjectDiscordSettingsInsert extends T.Insert<'ProjectDiscordSettings', AST, ScalarsSpecification> {}
-    export interface ProjectDiscordSettingsPlainModel extends T.GenerateModel<'ProjectDiscordSettings', AST, ScalarsSpecification, 'relation'> {}
-    export interface ProjectDiscordSettingsProjection extends T.Projection<'ProjectDiscordSettings', AST> {}
-    export interface ProjectDiscordSettingsUpdate extends T.Update<'ProjectDiscordSettings', AST, ScalarsSpecification> {}
-    export interface ProjectDiscordSettingsFilter extends T.Filter<'ProjectDiscordSettings', AST, ScalarsSpecification> {}
-    export interface ProjectDiscordSettingsSortElement extends T.SortElement<'ProjectDiscordSettings', AST> {}
-    export interface ProjectDiscordSettingsRelationsFindParams extends T.RelationsFindParams<'ProjectDiscordSettings', AST, ScalarsSpecification> {}
-    export type ProjectDiscordSettingsParams<P extends ProjectDiscordSettingsProjection> = T.Params<'ProjectDiscordSettings', AST, ScalarsSpecification, P>
-    export type ProjectDiscordSettingsCachedTypes = T.CachedTypes<ProjectDiscordSettingsIdFields, ProjectDiscordSettingsModel, ProjectDiscordSettingsInsert, ProjectDiscordSettingsPlainModel, ProjectDiscordSettingsProjection, ProjectDiscordSettingsUpdate, ProjectDiscordSettingsFilter, ProjectDiscordSettingsSortElement, ProjectDiscordSettingsRelationsFindParams>
+    export type ProjectDiscordConfigIdFields = T.IdFields<'ProjectDiscordConfig', AST>
+    export interface ProjectDiscordConfigModel extends types.ProjectDiscordConfig {}
+    export interface ProjectDiscordConfigInsert extends T.Insert<'ProjectDiscordConfig', AST, ScalarsSpecification> {}
+    export interface ProjectDiscordConfigPlainModel extends T.GenerateModel<'ProjectDiscordConfig', AST, ScalarsSpecification, 'relation'> {}
+    export interface ProjectDiscordConfigProjection extends T.Projection<'ProjectDiscordConfig', AST> {}
+    export interface ProjectDiscordConfigUpdate extends T.Update<'ProjectDiscordConfig', AST, ScalarsSpecification> {}
+    export interface ProjectDiscordConfigFilter extends T.Filter<'ProjectDiscordConfig', AST, ScalarsSpecification> {}
+    export interface ProjectDiscordConfigSortElement extends T.SortElement<'ProjectDiscordConfig', AST> {}
+    export interface ProjectDiscordConfigRelationsFindParams extends T.RelationsFindParams<'ProjectDiscordConfig', AST, ScalarsSpecification> {}
+    export type ProjectDiscordConfigParams<P extends ProjectDiscordConfigProjection> = T.Params<'ProjectDiscordConfig', AST, ScalarsSpecification, P>
+    export type ProjectDiscordConfigCachedTypes = T.CachedTypes<ProjectDiscordConfigIdFields, ProjectDiscordConfigModel, ProjectDiscordConfigInsert, ProjectDiscordConfigPlainModel, ProjectDiscordConfigProjection, ProjectDiscordConfigUpdate, ProjectDiscordConfigFilter, ProjectDiscordConfigSortElement, ProjectDiscordConfigRelationsFindParams>
 
-export class ProjectDiscordSettingsDAO<MetadataType, OperationMetadataType> extends T.AbstractMongoDBDAO<ProjectDiscordSettingsDAOGenerics<MetadataType, OperationMetadataType>> {  
+export class ProjectDiscordConfigDAO<MetadataType, OperationMetadataType> extends T.AbstractMongoDBDAO<ProjectDiscordConfigDAOGenerics<MetadataType, OperationMetadataType>> {  
   
-        public static projection<P extends T.Projection<'ProjectDiscordSettings', AST>>(p: P) {
+        public static projection<P extends T.Projection<'ProjectDiscordConfig', AST>>(p: P) {
           return p
         }
-        public static mergeProjection<P1 extends T.Projection<'ProjectDiscordSettings', AST>, P2 extends T.Projection<'ProjectDiscordSettings', AST>>(p1: P1, p2: P2): T.SelectProjection<T.Projection<'ProjectDiscordSettings', AST>, P1, P2> {
-          return T.mergeProjections(p1, p2) as T.SelectProjection<T.Projection<'ProjectDiscordSettings', AST>, P1, P2>
+        public static mergeProjection<P1 extends T.Projection<'ProjectDiscordConfig', AST>, P2 extends T.Projection<'ProjectDiscordConfig', AST>>(p1: P1, p2: P2): T.SelectProjection<T.Projection<'ProjectDiscordConfig', AST>, P1, P2> {
+          return T.mergeProjections(p1, p2) as T.SelectProjection<T.Projection<'ProjectDiscordConfig', AST>, P1, P2>
         }
-        public constructor(params: ProjectDiscordSettingsDAOParams<MetadataType, OperationMetadataType>){
+        public constructor(params: ProjectDiscordConfigDAOParams<MetadataType, OperationMetadataType>){
     super({   
       ...params, 
-      schema: projectDiscordSettingsSchema() 
+      schema: projectDiscordConfigSchema() 
     })
   }
   }
 
-export class InMemoryProjectDiscordSettingsDAO<MetadataType, OperationMetadataType> extends T.AbstractInMemoryDAO<ProjectDiscordSettingsDAOGenerics<MetadataType, OperationMetadataType>> {  
+export class InMemoryProjectDiscordConfigDAO<MetadataType, OperationMetadataType> extends T.AbstractInMemoryDAO<ProjectDiscordConfigDAOGenerics<MetadataType, OperationMetadataType>> {  
   
-        public static projection<P extends T.Projection<'ProjectDiscordSettings', AST>>(p: P) {
+        public static projection<P extends T.Projection<'ProjectDiscordConfig', AST>>(p: P) {
           return p
         }
-        public static mergeProjection<P1 extends T.Projection<'ProjectDiscordSettings', AST>, P2 extends T.Projection<'ProjectDiscordSettings', AST>>(p1: P1, p2: P2): T.SelectProjection<T.Projection<'ProjectDiscordSettings', AST>, P1, P2> {
-          return T.mergeProjections(p1, p2) as T.SelectProjection<T.Projection<'ProjectDiscordSettings', AST>, P1, P2>
+        public static mergeProjection<P1 extends T.Projection<'ProjectDiscordConfig', AST>, P2 extends T.Projection<'ProjectDiscordConfig', AST>>(p1: P1, p2: P2): T.SelectProjection<T.Projection<'ProjectDiscordConfig', AST>, P1, P2> {
+          return T.mergeProjections(p1, p2) as T.SelectProjection<T.Projection<'ProjectDiscordConfig', AST>, P1, P2>
         }
-        public constructor(params: InMemoryProjectDiscordSettingsDAOParams<MetadataType, OperationMetadataType>){
+        public constructor(params: InMemoryProjectDiscordConfigDAOParams<MetadataType, OperationMetadataType>){
     super({   
       ...params, 
-      schema: projectDiscordSettingsSchema() 
+      schema: projectDiscordConfigSchema() 
     })
   }
   }
@@ -1803,6 +1811,11 @@ export class InMemoryProjectMemberRoleDAO<MetadataType, OperationMetadataType> e
   }
 export function subscriptionSchema(): T.Schema<ScalarsSpecification> {
   return {
+  'archiveProjectDiscordConfigRequested': {
+              type: 'scalar',
+              scalar: 'ID',
+              
+            },
   'eBoardCreated': {
               type: 'scalar',
               scalar: 'ID',
@@ -1843,7 +1856,7 @@ export function subscriptionSchema(): T.Schema<ScalarsSpecification> {
               scalar: 'ID',
               
             },
-  'projectDiscordRequested': {
+  'projectDiscordConfigRequested': {
               type: 'scalar',
               scalar: 'ID',
               
@@ -2328,7 +2341,7 @@ export type EntityManagerParams<MetadataType, OperationMetadataType, Permissions
     eBoardTerm?: Pick<Partial<EBoardTermDAOParams<MetadataType, OperationMetadataType>>, 'middlewares' | 'metadata'>,
     eBoardTermRole?: Pick<Partial<EBoardTermRoleDAOParams<MetadataType, OperationMetadataType>>, 'middlewares' | 'metadata'>,
     project?: Pick<Partial<ProjectDAOParams<MetadataType, OperationMetadataType>>, 'middlewares' | 'metadata'>,
-    projectDiscordSettings?: Pick<Partial<ProjectDiscordSettingsDAOParams<MetadataType, OperationMetadataType>>, 'middlewares' | 'metadata'>,
+    projectDiscordConfig?: Pick<Partial<ProjectDiscordConfigDAOParams<MetadataType, OperationMetadataType>>, 'middlewares' | 'metadata'>,
     projectInvite?: Pick<Partial<ProjectInviteDAOParams<MetadataType, OperationMetadataType>>, 'middlewares' | 'metadata'>,
     projectMember?: Pick<Partial<ProjectMemberDAOParams<MetadataType, OperationMetadataType>>, 'middlewares' | 'metadata'>,
     projectMemberRole?: Pick<Partial<ProjectMemberRoleDAOParams<MetadataType, OperationMetadataType>>, 'middlewares' | 'metadata'>,
@@ -2339,7 +2352,7 @@ export type EntityManagerParams<MetadataType, OperationMetadataType, Permissions
   },
   mongodb: Record<'default', M.Db | 'mock'>,
   scalars?: T.UserInputDriverDataTypeAdapterMap<ScalarsSpecification, 'mongo'>,
-  log?: T.LogInput<'EBoard' | 'EBoardTerm' | 'EBoardTermRole' | 'Project' | 'ProjectDiscordSettings' | 'ProjectInvite' | 'ProjectMember' | 'ProjectMemberRole' | 'User' | 'UserLoginIdentity' | 'UserRole' | 'UserSocial'>,
+  log?: T.LogInput<'EBoard' | 'EBoardTerm' | 'EBoardTermRole' | 'Project' | 'ProjectDiscordConfig' | 'ProjectInvite' | 'ProjectMember' | 'ProjectMemberRole' | 'User' | 'UserLoginIdentity' | 'UserRole' | 'UserSocial'>,
   security?: T.EntityManagerSecurtyPolicy<DAOGenericsMap<MetadataType, OperationMetadataType>, OperationMetadataType, Permissions, SecurityDomain>
 }
 type EntityManagerMiddleware<MetadataType = never, OperationMetadataType = never> = T.DAOMiddleware<DAOGenericsUnion<MetadataType, OperationMetadataType>>
@@ -2349,7 +2362,7 @@ export class EntityManager<MetadataType = never, OperationMetadataType = never, 
   private _eBoardTerm: EBoardTermDAO<MetadataType, OperationMetadataType> | undefined
   private _eBoardTermRole: EBoardTermRoleDAO<MetadataType, OperationMetadataType> | undefined
   private _project: ProjectDAO<MetadataType, OperationMetadataType> | undefined
-  private _projectDiscordSettings: ProjectDiscordSettingsDAO<MetadataType, OperationMetadataType> | undefined
+  private _projectDiscordConfig: ProjectDiscordConfigDAO<MetadataType, OperationMetadataType> | undefined
   private _projectInvite: ProjectInviteDAO<MetadataType, OperationMetadataType> | undefined
   private _projectMember: ProjectMemberDAO<MetadataType, OperationMetadataType> | undefined
   private _projectMemberRole: ProjectMemberRoleDAO<MetadataType, OperationMetadataType> | undefined
@@ -2365,7 +2378,7 @@ export class EntityManager<MetadataType = never, OperationMetadataType = never, 
   
   private middlewares: (EntityManagerMiddleware<MetadataType, OperationMetadataType> | GroupMiddleware<any, MetadataType, OperationMetadataType>)[]
   
-  private logger?: T.LogFunction<'EBoard' | 'EBoardTerm' | 'EBoardTermRole' | 'Project' | 'ProjectDiscordSettings' | 'ProjectInvite' | 'ProjectMember' | 'ProjectMemberRole' | 'User' | 'UserLoginIdentity' | 'UserRole' | 'UserSocial'>
+  private logger?: T.LogFunction<'EBoard' | 'EBoardTerm' | 'EBoardTermRole' | 'Project' | 'ProjectDiscordConfig' | 'ProjectInvite' | 'ProjectMember' | 'ProjectMemberRole' | 'User' | 'UserLoginIdentity' | 'UserRole' | 'UserSocial'>
   
   get eBoard(): EBoardDAO<MetadataType, OperationMetadataType> {
     if(!this._eBoard) {
@@ -2395,12 +2408,12 @@ export class EntityManager<MetadataType = never, OperationMetadataType = never, 
     }
     return this._project
   }
-  get projectDiscordSettings(): ProjectDiscordSettingsDAO<MetadataType, OperationMetadataType> {
-    if(!this._projectDiscordSettings) {
+  get projectDiscordConfig(): ProjectDiscordConfigDAO<MetadataType, OperationMetadataType> {
+    if(!this._projectDiscordConfig) {
       const db = this.mongodb.default
-      this._projectDiscordSettings = db === 'mock' ? (new InMemoryProjectDiscordSettingsDAO({ entityManager: this, datasource: null, metadata: this.metadata, ...this.overrides?.projectDiscordSettings, middlewares: [...(this.overrides?.projectDiscordSettings?.middlewares || []), ...selectMiddleware('projectDiscordSettings', this.middlewares) as T.DAOMiddleware<ProjectDiscordSettingsDAOGenerics<MetadataType, OperationMetadataType>>[]], name: 'ProjectDiscordSettings', logger: this.logger }) as unknown as ProjectDiscordSettingsDAO<MetadataType, OperationMetadataType>) : new ProjectDiscordSettingsDAO({ entityManager: this, datasource: 'default', metadata: this.metadata, ...this.overrides?.projectDiscordSettings, collection: db.collection('projectDiscordSettingss'), middlewares: [...(this.overrides?.projectDiscordSettings?.middlewares || []), ...selectMiddleware('projectDiscordSettings', this.middlewares) as T.DAOMiddleware<ProjectDiscordSettingsDAOGenerics<MetadataType, OperationMetadataType>>[]], name: 'ProjectDiscordSettings', logger: this.logger })
+      this._projectDiscordConfig = db === 'mock' ? (new InMemoryProjectDiscordConfigDAO({ entityManager: this, datasource: null, metadata: this.metadata, ...this.overrides?.projectDiscordConfig, middlewares: [...(this.overrides?.projectDiscordConfig?.middlewares || []), ...selectMiddleware('projectDiscordConfig', this.middlewares) as T.DAOMiddleware<ProjectDiscordConfigDAOGenerics<MetadataType, OperationMetadataType>>[]], name: 'ProjectDiscordConfig', logger: this.logger }) as unknown as ProjectDiscordConfigDAO<MetadataType, OperationMetadataType>) : new ProjectDiscordConfigDAO({ entityManager: this, datasource: 'default', metadata: this.metadata, ...this.overrides?.projectDiscordConfig, collection: db.collection('projectDiscordConfigs'), middlewares: [...(this.overrides?.projectDiscordConfig?.middlewares || []), ...selectMiddleware('projectDiscordConfig', this.middlewares) as T.DAOMiddleware<ProjectDiscordConfigDAOGenerics<MetadataType, OperationMetadataType>>[]], name: 'ProjectDiscordConfig', logger: this.logger })
     }
-    return this._projectDiscordSettings
+    return this._projectDiscordConfig
   }
   get projectInvite(): ProjectInviteDAO<MetadataType, OperationMetadataType> {
     if(!this._projectInvite) {
@@ -2469,8 +2482,8 @@ export class EntityManager<MetadataType = never, OperationMetadataType = never, 
     this.params = params
   }
   
-  public async execQuery<T>(run: (dbs: { mongodb: Record<'default', M.Db | 'mock'> }, entities: { eBoard: M.Collection<M.Document> | null, eBoardTerm: M.Collection<M.Document> | null, eBoardTermRole: M.Collection<M.Document> | null, project: M.Collection<M.Document> | null, projectDiscordSettings: M.Collection<M.Document> | null, projectInvite: M.Collection<M.Document> | null, projectMember: M.Collection<M.Document> | null, projectMemberRole: M.Collection<M.Document> | null, user: M.Collection<M.Document> | null, userLoginIdentity: M.Collection<M.Document> | null, userRole: M.Collection<M.Document> | null, userSocial: M.Collection<M.Document> | null }) => Promise<T>): Promise<T> {
-    return run({ mongodb: this.mongodb }, { eBoard: this.mongodb.default === 'mock' ? null : this.mongodb.default.collection('eBoards'), eBoardTerm: this.mongodb.default === 'mock' ? null : this.mongodb.default.collection('eBoardTerms'), eBoardTermRole: this.mongodb.default === 'mock' ? null : this.mongodb.default.collection('eBoardTermRoles'), project: this.mongodb.default === 'mock' ? null : this.mongodb.default.collection('projects'), projectDiscordSettings: this.mongodb.default === 'mock' ? null : this.mongodb.default.collection('projectDiscordSettingss'), projectInvite: this.mongodb.default === 'mock' ? null : this.mongodb.default.collection('projectInvites'), projectMember: this.mongodb.default === 'mock' ? null : this.mongodb.default.collection('projectMembers'), projectMemberRole: this.mongodb.default === 'mock' ? null : this.mongodb.default.collection('projectMemberRoles'), user: this.mongodb.default === 'mock' ? null : this.mongodb.default.collection('users'), userLoginIdentity: this.mongodb.default === 'mock' ? null : this.mongodb.default.collection('userLoginIdentitys'), userRole: this.mongodb.default === 'mock' ? null : this.mongodb.default.collection('userRoles'), userSocial: this.mongodb.default === 'mock' ? null : this.mongodb.default.collection('userSocials') })
+  public async execQuery<T>(run: (dbs: { mongodb: Record<'default', M.Db | 'mock'> }, entities: { eBoard: M.Collection<M.Document> | null, eBoardTerm: M.Collection<M.Document> | null, eBoardTermRole: M.Collection<M.Document> | null, project: M.Collection<M.Document> | null, projectDiscordConfig: M.Collection<M.Document> | null, projectInvite: M.Collection<M.Document> | null, projectMember: M.Collection<M.Document> | null, projectMemberRole: M.Collection<M.Document> | null, user: M.Collection<M.Document> | null, userLoginIdentity: M.Collection<M.Document> | null, userRole: M.Collection<M.Document> | null, userSocial: M.Collection<M.Document> | null }) => Promise<T>): Promise<T> {
+    return run({ mongodb: this.mongodb }, { eBoard: this.mongodb.default === 'mock' ? null : this.mongodb.default.collection('eBoards'), eBoardTerm: this.mongodb.default === 'mock' ? null : this.mongodb.default.collection('eBoardTerms'), eBoardTermRole: this.mongodb.default === 'mock' ? null : this.mongodb.default.collection('eBoardTermRoles'), project: this.mongodb.default === 'mock' ? null : this.mongodb.default.collection('projects'), projectDiscordConfig: this.mongodb.default === 'mock' ? null : this.mongodb.default.collection('projectDiscordConfigs'), projectInvite: this.mongodb.default === 'mock' ? null : this.mongodb.default.collection('projectInvites'), projectMember: this.mongodb.default === 'mock' ? null : this.mongodb.default.collection('projectMembers'), projectMemberRole: this.mongodb.default === 'mock' ? null : this.mongodb.default.collection('projectMemberRoles'), user: this.mongodb.default === 'mock' ? null : this.mongodb.default.collection('users'), userLoginIdentity: this.mongodb.default === 'mock' ? null : this.mongodb.default.collection('userLoginIdentitys'), userRole: this.mongodb.default === 'mock' ? null : this.mongodb.default.collection('userRoles'), userSocial: this.mongodb.default === 'mock' ? null : this.mongodb.default.collection('userSocials') })
   }
   
   protected clone(): this {
@@ -2487,7 +2500,7 @@ type DAOGenericsMap<MetadataType, OperationMetadataType> = {
   eBoardTerm: EBoardTermDAOGenerics<MetadataType, OperationMetadataType>
   eBoardTermRole: EBoardTermRoleDAOGenerics<MetadataType, OperationMetadataType>
   project: ProjectDAOGenerics<MetadataType, OperationMetadataType>
-  projectDiscordSettings: ProjectDiscordSettingsDAOGenerics<MetadataType, OperationMetadataType>
+  projectDiscordConfig: ProjectDiscordConfigDAOGenerics<MetadataType, OperationMetadataType>
   projectInvite: ProjectInviteDAOGenerics<MetadataType, OperationMetadataType>
   projectMember: ProjectMemberDAOGenerics<MetadataType, OperationMetadataType>
   projectMemberRole: ProjectMemberRoleDAOGenerics<MetadataType, OperationMetadataType>
