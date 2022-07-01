@@ -13,6 +13,7 @@ import {
   UploadOperation,
 } from '@src/generated/graphql-endpoint.types';
 import { ProjectDAO, ProjectPlainModel } from '@src/generated/typetta';
+import pubsub, { PubSubEvents } from '@src/graphql/utils/pubsub';
 import { makeSubscriptionResolver } from '@src/graphql/utils/subscription-resolver-builder';
 import { ApolloResolversContext } from '@src/misc/context';
 import { makePermsCalc } from '@src/shared/security';
@@ -21,7 +22,6 @@ import { daoInsertRolesBatch, isDefined, startEntityManagerTransaction } from '@
 import AsyncLock from 'async-lock';
 import { deleteProjectInvites, makeProjectMember } from '../project-invite/project-invite.resolvers';
 import { deleteProjectMembers } from '../project-member/project-member.resolvers';
-import pubsub, { PubSubEvents } from '../pubsub';
 
 const updateProjectLock = new AsyncLock();
 

@@ -16,6 +16,7 @@ import {
   EntityManager,
   UserDAO,
 } from '@src/generated/typetta';
+import pubsub, { PubSubEvents } from '@src/graphql/utils/pubsub';
 import { makeSubscriptionResolver } from '@src/graphql/utils/subscription-resolver-builder';
 import { ApolloResolversContext } from '@src/misc/context';
 import { makePermsCalc, RoleType } from '@src/shared/security';
@@ -28,7 +29,6 @@ import {
   startEntityManagerTransaction,
 } from '@src/utils';
 import AsyncLock from 'async-lock';
-import pubsub, { PubSubEvents } from '../pubsub';
 
 async function getRequesterRoles(unsecureEntityManager: EntityManager, requesterUserId: string, roleEntityId: string) {
   const requesterUser = await unsecureEntityManager.user.findOne({
