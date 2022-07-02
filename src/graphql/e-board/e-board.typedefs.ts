@@ -12,13 +12,13 @@ export default gql`
   }
 
   extend type Subscription {
-    eBoardCreated(filter: EBoardSubscriptionFilter!): ID
-    eBoardUpdated(filter: EBoardSubscriptionFilter!): ID
-    eBoardDeleted(filter: EBoardSubscriptionFilter!): ID
+    eBoardCreated(filter: EBoardSubscriptionFilter!): EBoard
+    eBoardUpdated(filter: EBoardSubscriptionFilter!): EBoard
+    eBoardDeleted(filter: EBoardSubscriptionFilter!): EBoard
 
-    eBoardTermCreated(filter: EBoardTermSubscriptionFilter!): ID
-    eBoardTermUpdated(filter: EBoardTermSubscriptionFilter!): ID
-    eBoardTermDeleted(filter: EBoardTermSubscriptionFilter!): ID
+    eBoardTermCreated(filter: EBoardTermSubscriptionFilter!): EBoardTerm
+    eBoardTermUpdated(filter: EBoardTermSubscriptionFilter!): EBoardTerm
+    eBoardTermDeleted(filter: EBoardTermSubscriptionFilter!): EBoardTerm
   }
 
   input EBoardSubscriptionFilter {

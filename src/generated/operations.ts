@@ -518,70 +518,70 @@ roleCode: RoleCodeFilterInput
 
 ########### Subscription ###########
       input SubscriptionInsertInput {
-        eBoardCreated: ID
-eBoardDeleted: ID
-eBoardTermCreated: ID
-eBoardTermDeleted: ID
-eBoardTermUpdated: ID
-eBoardUpdated: ID
-projectCreated: ID
-projectDeleted: ID
-projectInviteCreated: ID
-projectInviteDeleted: ID
-projectMemberCreated: ID
-projectMemberDeleted: ID
-projectMemberUpdated: ID
-projectUpdated: ID
-userCreated: ID
-userDeleted: ID
-userLoginIdentityCreated: ID
-userLoginIdentityDeleted: ID
-userLoginIdentityUpdated: ID
-userUpdated: ID
+        eBoardCreated: EBoardInsertInput
+eBoardDeleted: EBoardInsertInput
+eBoardTermCreated: EBoardTermInsertInput
+eBoardTermDeleted: EBoardTermInsertInput
+eBoardTermUpdated: EBoardTermInsertInput
+eBoardUpdated: EBoardInsertInput
+projectCreated: ProjectInsertInput
+projectDeleted: ProjectInsertInput
+projectInviteCreated: ProjectInviteInsertInput
+projectInviteDeleted: ProjectInviteInsertInput
+projectMemberCreated: ProjectMemberInsertInput
+projectMemberDeleted: ProjectMemberInsertInput
+projectMemberUpdated: ProjectMemberInsertInput
+projectUpdated: ProjectInsertInput
+userCreated: UserInsertInput
+userDeleted: UserInsertInput
+userLoginIdentityCreated: UserLoginIdentityInsertInput
+userLoginIdentityDeleted: UserLoginIdentityInsertInput
+userLoginIdentityUpdated: UserLoginIdentityInsertInput
+userUpdated: UserInsertInput
       }
       input SubscriptionUpdateInput {
-        eBoardCreated: ID
-eBoardDeleted: ID
-eBoardTermCreated: ID
-eBoardTermDeleted: ID
-eBoardTermUpdated: ID
-eBoardUpdated: ID
-projectCreated: ID
-projectDeleted: ID
-projectInviteCreated: ID
-projectInviteDeleted: ID
-projectMemberCreated: ID
-projectMemberDeleted: ID
-projectMemberUpdated: ID
-projectUpdated: ID
-userCreated: ID
-userDeleted: ID
-userLoginIdentityCreated: ID
-userLoginIdentityDeleted: ID
-userLoginIdentityUpdated: ID
-userUpdated: ID
+        eBoardCreated: EBoardUpdateInput
+eBoardDeleted: EBoardUpdateInput
+eBoardTermCreated: EBoardTermUpdateInput
+eBoardTermDeleted: EBoardTermUpdateInput
+eBoardTermUpdated: EBoardTermUpdateInput
+eBoardUpdated: EBoardUpdateInput
+projectCreated: ProjectUpdateInput
+projectDeleted: ProjectUpdateInput
+projectInviteCreated: ProjectInviteUpdateInput
+projectInviteDeleted: ProjectInviteUpdateInput
+projectMemberCreated: ProjectMemberUpdateInput
+projectMemberDeleted: ProjectMemberUpdateInput
+projectMemberUpdated: ProjectMemberUpdateInput
+projectUpdated: ProjectUpdateInput
+userCreated: UserUpdateInput
+userDeleted: UserUpdateInput
+userLoginIdentityCreated: UserLoginIdentityUpdateInput
+userLoginIdentityDeleted: UserLoginIdentityUpdateInput
+userLoginIdentityUpdated: UserLoginIdentityUpdateInput
+userUpdated: UserUpdateInput
       }
       input SubscriptionSortInput {
-        eBoardCreated: SortDirection
-eBoardDeleted: SortDirection
-eBoardTermCreated: SortDirection
-eBoardTermDeleted: SortDirection
-eBoardTermUpdated: SortDirection
-eBoardUpdated: SortDirection
-projectCreated: SortDirection
-projectDeleted: SortDirection
-projectInviteCreated: SortDirection
-projectInviteDeleted: SortDirection
-projectMemberCreated: SortDirection
-projectMemberDeleted: SortDirection
-projectMemberUpdated: SortDirection
-projectUpdated: SortDirection
-userCreated: SortDirection
-userDeleted: SortDirection
-userLoginIdentityCreated: SortDirection
-userLoginIdentityDeleted: SortDirection
-userLoginIdentityUpdated: SortDirection
-userUpdated: SortDirection
+        eBoardCreated: EBoardSortInput
+eBoardDeleted: EBoardSortInput
+eBoardTermCreated: EBoardTermSortInput
+eBoardTermDeleted: EBoardTermSortInput
+eBoardTermUpdated: EBoardTermSortInput
+eBoardUpdated: EBoardSortInput
+projectCreated: ProjectSortInput
+projectDeleted: ProjectSortInput
+projectInviteCreated: ProjectInviteSortInput
+projectInviteDeleted: ProjectInviteSortInput
+projectMemberCreated: ProjectMemberSortInput
+projectMemberDeleted: ProjectMemberSortInput
+projectMemberUpdated: ProjectMemberSortInput
+projectUpdated: ProjectSortInput
+userCreated: UserSortInput
+userDeleted: UserSortInput
+userLoginIdentityCreated: UserLoginIdentitySortInput
+userLoginIdentityDeleted: UserLoginIdentitySortInput
+userLoginIdentityUpdated: UserLoginIdentitySortInput
+userUpdated: UserSortInput
       }
 ########### Subscription ###########
 

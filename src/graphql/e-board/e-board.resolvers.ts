@@ -299,40 +299,25 @@ export default {
   },
 
   Subscription: {
-    eBoardCreated: makeSubscriptionResolver()
-      .pubsub(PubSubEvents.EBoardCreated)
-      .shallowOneToOneFilter()
-      .mapId()
-      .build(),
+    eBoardCreated: makeSubscriptionResolver().pubsub(PubSubEvents.EBoardCreated).shallowOneToOneFilter().build(),
 
-    eBoardUpdated: makeSubscriptionResolver()
-      .pubsub(PubSubEvents.EBoardUpdated)
-      .shallowOneToOneFilter()
-      .mapId()
-      .build(),
+    eBoardUpdated: makeSubscriptionResolver().pubsub(PubSubEvents.EBoardUpdated).shallowOneToOneFilter().build(),
 
-    eBoardDeleted: makeSubscriptionResolver()
-      .pubsub(PubSubEvents.EBoardCreated)
-      .shallowOneToOneFilter()
-      .mapId()
-      .build(),
+    eBoardDeleted: makeSubscriptionResolver().pubsub(PubSubEvents.EBoardCreated).shallowOneToOneFilter().build(),
 
     eBoardTermCreated: makeSubscriptionResolver()
       .pubsub(PubSubEvents.EBoardTermCreated)
       .shallowOneToOneFilter()
-      .mapId()
       .build(),
 
     eBoardTermUpdated: makeSubscriptionResolver()
       .pubsub(PubSubEvents.EBoardTermUpdated)
       .shallowOneToOneFilter()
-      .mapId()
       .build(),
 
     eBoardTermDeleted: makeSubscriptionResolver()
       .pubsub(PubSubEvents.EBoardTermCreated)
       .shallowOneToOneFilter()
-      .mapId()
       .build(),
   },
 } as {

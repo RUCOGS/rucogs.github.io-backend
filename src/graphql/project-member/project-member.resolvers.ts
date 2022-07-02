@@ -191,19 +191,16 @@ export default {
     projectMemberCreated: makeSubscriptionResolver()
       .pubsub(PubSubEvents.ProjectMemberCreated)
       .shallowOneToOneFilter()
-      .mapId()
       .build(),
 
     projectMemberUpdated: makeSubscriptionResolver()
       .pubsub(PubSubEvents.ProjectMemberUpdated)
       .shallowOneToOneFilter()
-      .mapId()
       .build(),
 
     projectMemberDeleted: makeSubscriptionResolver()
       .pubsub(PubSubEvents.ProjectMemberDeleted)
       .shallowOneToOneFilter()
-      .mapId()
       .build(),
   },
 } as {

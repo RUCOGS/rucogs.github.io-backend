@@ -9,8 +9,8 @@ export default gql`
   }
 
   extend type Subscription {
-    projectInviteCreated(filter: ProjectInviteSubscriptionFilter!): ID
-    projectInviteDeleted(filter: ProjectInviteSubscriptionFilter!): ID
+    projectInviteCreated(filter: ProjectInviteSubscriptionFilter!): ProjectInvite
+    projectInviteDeleted(filter: ProjectInviteSubscriptionFilter!): ProjectInvite
   }
 
   input ProjectInviteSubscriptionFilter {

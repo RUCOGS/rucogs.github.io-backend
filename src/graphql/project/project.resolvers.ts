@@ -229,9 +229,14 @@ export default {
           members: {
             id: true,
           },
+          discordConfig: {
+            id: true,
+          },
         }),
       });
       if (!project) throw new HttpError(400, "Project doesn't exist!");
+
+      if (project.discordConfig) throw new HttpError(400, 'Cannot delete project with Discord presence!');
 
       const invites = await context.unsecureEntityManager.projectInvite.findAll({
         filter: { projectId: args.id },
@@ -340,23 +345,11 @@ export default {
     },
   },
   Subscription: {
-    projectCreated: makeSubscriptionResolver()
-      .pubsub(PubSubEvents.ProjectCreated)
-      .shallowOneToOneFilter()
-      .mapId()
-      .build(),
+    projectCreated: makeSubscriptionResolver().pubsub(PubSubEvents.ProjectCreated).shallowOneToOneFilter().build(),
 
-    projectUpdated: makeSubscriptionResolver()
-      .pubsub(PubSubEvents.ProjectUpdated)
-      .shallowOneToOneFilter()
-      .mapId()
-      .build(),
+    projectUpdated: makeSubscriptionResolver().pubsub(PubSubEvents.ProjectUpdated).shallowOneToOneFilter().build(),
 
-    projectDeleted: makeSubscriptionResolver()
-      .pubsub(PubSubEvents.ProjectDeleted)
-      .shallowOneToOneFilter()
-      .mapId()
-      .build(),
+    projectDeleted: makeSubscriptionResolver().pubsub(PubSubEvents.ProjectDeleted).shallowOneToOneFilter().build(),
   },
 } as {
   Query: QueryResolvers;

@@ -3,6 +3,7 @@ import { downloadToCdn } from '@src/controllers/cdn.controller';
 import { getCompleteSecurityContext } from '@src/controllers/security.controller/security-context';
 import { RoleCode, User } from '@src/generated/model.types';
 import { EntityManager, UserInsert } from '@src/generated/typetta';
+import { makeUserLoginIdentity } from '@src/graphql/user-login-identity/user-login-identity.resolvers';
 import { makeUser } from '@src/graphql/user/user.resolvers';
 import { RequestWithDefaultContext } from '@src/misc/context';
 import { isDebug } from '@src/misc/server-constructor';
@@ -128,13 +129,11 @@ function getOAuthStrategyPassportCallback<TProfile extends passport.Profile>(
         }
       }
 
-      await entityManager.userLoginIdentity.insertOne({
-        record: {
-          name: strategyName,
-          identityId: identityId,
-          data: await profileToData(profile),
-          userId: newUser.id,
-        },
+      await makeUserLoginIdentity(entityManager, {
+        name: strategyName,
+        identityId: identityId,
+        data: await profileToData(profile),
+        userId: newUser.id,
       });
 
       return newUser;

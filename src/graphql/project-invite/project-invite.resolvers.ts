@@ -205,13 +205,11 @@ export default {
     projectInviteCreated: makeSubscriptionResolver()
       .pubsub(PubSubEvents.ProjectInviteCreated)
       .shallowOneToOneFilter()
-      .mapId()
       .build(),
 
     projectInviteDeleted: makeSubscriptionResolver()
       .pubsub(PubSubEvents.ProjectInviteDeleted)
       .shallowOneToOneFilter()
-      .mapId()
       .build(),
   },
 } as {

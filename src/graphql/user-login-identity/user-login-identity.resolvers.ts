@@ -1,5 +1,6 @@
 import { MutationResolvers, QueryResolvers, SubscriptionResolvers } from '@src/generated/graphql-endpoint.types';
 import { Permission } from '@src/generated/model.types';
+import { EntityManager, UserLoginIdentityInsert } from '@src/generated/typetta';
 import pubsub, { PubSubEvents } from '@src/graphql/utils/pubsub';
 import { makeSubscriptionResolver } from '@src/graphql/utils/subscription-resolver-builder';
 import { ApolloResolversContext } from '@src/misc/context';
@@ -31,11 +32,7 @@ export default {
       if (loginIdentityExists)
         throw new HttpError(400, `User already has a login identity of name "${args.input.name}"!`);
 
-      const loginIdentity = await context.unsecureEntityManager.userLoginIdentity.insertOne({
-        record: args.input,
-      });
-
-      pubsub.publish(PubSubEvents.UserLoginIdentityCreated, loginIdentity);
+      const loginIdentity = await makeUserLoginIdentity(context.unsecureEntityManager, args.input);
       return loginIdentity.id;
     },
 
@@ -105,19 +102,16 @@ export default {
     userLoginIdentityCreated: makeSubscriptionResolver()
       .pubsub(PubSubEvents.UserLoginIdentityCreated)
       .shallowOneToOneFilter()
-      .mapId()
       .build(),
 
     userLoginIdentityUpdated: makeSubscriptionResolver()
       .pubsub(PubSubEvents.UserLoginIdentityUpdated)
       .shallowOneToOneFilter()
-      .mapId()
       .build(),
 
     userLoginIdentityDeleted: makeSubscriptionResolver()
       .pubsub(PubSubEvents.UserLoginIdentityDeleted)
       .shallowOneToOneFilter()
-      .mapId()
       .build(),
   },
 } as {
@@ -125,3 +119,16 @@ export default {
   Mutation: MutationResolvers;
   Subscription: SubscriptionResolvers;
 };
+
+export async function makeUserLoginIdentity(
+  entityManager: EntityManager,
+  record: UserLoginIdentityInsert,
+  emitSubscription: boolean = true,
+) {
+  const loginIdentity = await entityManager.userLoginIdentity.insertOne({
+    record,
+  });
+
+  if (emitSubscription) pubsub.publish(PubSubEvents.UserLoginIdentityCreated, loginIdentity);
+  return loginIdentity;
+}

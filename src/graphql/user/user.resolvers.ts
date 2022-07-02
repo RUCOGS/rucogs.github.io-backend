@@ -286,11 +286,11 @@ export default {
   },
 
   Subscription: {
-    userCreated: makeSubscriptionResolver().pubsub(PubSubEvents.UserCreated).shallowOneToOneFilter().mapId().build(),
+    userCreated: makeSubscriptionResolver().pubsub(PubSubEvents.UserCreated).shallowOneToOneFilter().build(),
 
-    userUpdated: makeSubscriptionResolver().pubsub(PubSubEvents.UserUpdated).shallowOneToOneFilter().mapId().build(),
+    userUpdated: makeSubscriptionResolver().pubsub(PubSubEvents.UserUpdated).shallowOneToOneFilter().build(),
 
-    userDeleted: makeSubscriptionResolver().pubsub(PubSubEvents.UserDeleted).shallowOneToOneFilter().mapId().build(),
+    userDeleted: makeSubscriptionResolver().pubsub(PubSubEvents.UserDeleted).shallowOneToOneFilter().build(),
   },
 } as {
   Query: QueryResolvers;
