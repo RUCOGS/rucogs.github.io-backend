@@ -344,27 +344,11 @@ projectId: { type: 'scalar',
       isExcluded: false,
       isId: false,
       generationStrategy: 'undefined' },
-textChannelIds: { type: 'scalar', 
-      isList: true, 
-      astName: 'String', 
-      isRequired: false, 
-      isListElementRequired: true,
-      isExcluded: false,
-      isId: false,
-      generationStrategy: 'undefined' },
 updatedAt: { type: 'scalar', 
       isList: false, 
       astName: 'Date', 
       isRequired: false, 
       isListElementRequired: false,
-      isExcluded: false,
-      isId: false,
-      generationStrategy: 'undefined' },
-voiceChannelIds: { type: 'scalar', 
-      isList: true, 
-      astName: 'String', 
-      isRequired: false, 
-      isListElementRequired: true,
       isExcluded: false,
       isId: false,
       generationStrategy: 'undefined' } }, 
@@ -552,15 +536,7 @@ roleCode: { type: 'scalar',
             rawSorts: () => M.Sort }
           },
 Subscription: {
-          fields: { archiveProjectDiscordConfigRequested: { type: 'scalar', 
-      isList: false, 
-      astName: 'ID', 
-      isRequired: false, 
-      isListElementRequired: false,
-      isExcluded: false,
-      isId: false,
-      generationStrategy: 'undefined' },
-eBoardCreated: { type: 'scalar', 
+          fields: { eBoardCreated: { type: 'scalar', 
       isList: false, 
       astName: 'ID', 
       isRequired: false, 
@@ -617,14 +593,6 @@ projectCreated: { type: 'scalar',
       isId: false,
       generationStrategy: 'undefined' },
 projectDeleted: { type: 'scalar', 
-      isList: false, 
-      astName: 'ID', 
-      isRequired: false, 
-      isListElementRequired: false,
-      isExcluded: false,
-      isId: false,
-      generationStrategy: 'undefined' },
-projectDiscordConfigRequested: { type: 'scalar', 
       isList: false, 
       astName: 'ID', 
       isRequired: false, 
@@ -1460,20 +1428,10 @@ export function projectDiscordConfigSchema(): T.Schema<ScalarsSpecification> {
               scalar: 'ID',
               required: true,
             },
-  'textChannelIds': {
-              type: 'scalar',
-              scalar: 'String',
-              isListElementRequired: true,isList: true,
-            },
   'updatedAt': {
               type: 'scalar',
               scalar: 'Date',
               metadata: Object.fromEntries([['updatedAt', 'true']])
-            },
-  'voiceChannelIds': {
-              type: 'scalar',
-              scalar: 'String',
-              isListElementRequired: true,isList: true,
             }
   }
 }
@@ -1811,11 +1769,6 @@ export class InMemoryProjectMemberRoleDAO<MetadataType, OperationMetadataType> e
   }
 export function subscriptionSchema(): T.Schema<ScalarsSpecification> {
   return {
-  'archiveProjectDiscordConfigRequested': {
-              type: 'scalar',
-              scalar: 'ID',
-              
-            },
   'eBoardCreated': {
               type: 'scalar',
               scalar: 'ID',
@@ -1852,11 +1805,6 @@ export function subscriptionSchema(): T.Schema<ScalarsSpecification> {
               
             },
   'projectDeleted': {
-              type: 'scalar',
-              scalar: 'ID',
-              
-            },
-  'projectDiscordConfigRequested': {
               type: 'scalar',
               scalar: 'ID',
               

@@ -55,6 +55,8 @@ export default gql`
     MANAGE_EBOARD
     MANAGE_EBOARD_ROLES
 
+    MANAGE_PROJECT_DISCORD
+
     MANAGE_METADATA
   }
 
@@ -168,8 +170,6 @@ export default gql`
 
     project: Project! @innerRef
     projectId: ID!
-    textChannelIds: [String!]
-    voiceChannelIds: [String!]
     categoryId: String
   }
 

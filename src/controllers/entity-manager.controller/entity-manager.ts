@@ -1,6 +1,6 @@
 import { securityContextToTypettaSecurityContext, SecurityPolicy } from '@src/controllers/security.controller';
 import { Permission } from '@src/generated/model.types';
-import { EntityManager } from '@src/generated/typetta';
+import { EntityManager, EntityManagerParams } from '@src/generated/typetta';
 import { dateMetadataMiddleware } from '@src/middlewares/dateMetadata.middleware';
 import { BaseSecurityDomainFieldSet, EntityManagerMetadata, SecurityContext } from '@src/shared/security';
 import { HttpError } from '@src/shared/utils';
@@ -17,6 +17,12 @@ export type TypettaSecurityContextPerms = {
 
 export type AnyEntityManager = EntityManager | SecureEntityManager;
 export type SecureEntityManager = EntityManager<never, EntityManagerMetadata, Permission, BaseSecurityDomainFieldSet>;
+export type SecureEntityManagerParams = EntityManagerParams<
+  never,
+  EntityManagerMetadata,
+  Permission,
+  BaseSecurityDomainFieldSet
+>;
 
 function getScalars() {
   return {
@@ -72,7 +78,7 @@ export function createSecureEntityManager(
     security: {
       applySecurity: securityContext != null,
       context,
-      policies: <any>SecurityPolicy,
+      policies: SecurityPolicy,
       defaultPermission: PERMISSION.DENY,
       // 'metadata' is the metadata passed into a EntityManager call.
       // Here you're specify how you want to fetch the current call's domain.

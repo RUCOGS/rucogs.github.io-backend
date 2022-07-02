@@ -354,35 +354,27 @@ members: ProjectMemberFindInput
         categoryId: String
 createdAt: Date
 projectId: ID!
-textChannelIds: [String!]
 updatedAt: Date
-voiceChannelIds: [String!]
       }
       input ProjectDiscordConfigUpdateInput {
         categoryId: String
 createdAt: Date
 projectId: ID
-textChannelIds: [String!]
 updatedAt: Date
-voiceChannelIds: [String!]
       }
       input ProjectDiscordConfigSortInput {
         categoryId: SortDirection
 createdAt: SortDirection
 id: SortDirection
 projectId: SortDirection
-textChannelIds: SortDirection
 updatedAt: SortDirection
-voiceChannelIds: SortDirection
       }
       input ProjectDiscordConfigFilterInput {
         categoryId: StringFilterInput
 createdAt: DateFilterInput
 id: IDFilterInput
 projectId: IDFilterInput
-textChannelIds: StringFilterInput
 updatedAt: DateFilterInput
-voiceChannelIds: StringFilterInput
           and_: [ProjectDiscordConfigFilterInput!]
           or_: [ProjectDiscordConfigFilterInput!]
           nor_: [ProjectDiscordConfigFilterInput!]
@@ -526,8 +518,7 @@ roleCode: RoleCodeFilterInput
 
 ########### Subscription ###########
       input SubscriptionInsertInput {
-        archiveProjectDiscordConfigRequested: ID
-eBoardCreated: ID
+        eBoardCreated: ID
 eBoardDeleted: ID
 eBoardTermCreated: ID
 eBoardTermDeleted: ID
@@ -535,7 +526,6 @@ eBoardTermUpdated: ID
 eBoardUpdated: ID
 projectCreated: ID
 projectDeleted: ID
-projectDiscordConfigRequested: ID
 projectInviteCreated: ID
 projectInviteDeleted: ID
 projectMemberCreated: ID
@@ -550,8 +540,7 @@ userLoginIdentityUpdated: ID
 userUpdated: ID
       }
       input SubscriptionUpdateInput {
-        archiveProjectDiscordConfigRequested: ID
-eBoardCreated: ID
+        eBoardCreated: ID
 eBoardDeleted: ID
 eBoardTermCreated: ID
 eBoardTermDeleted: ID
@@ -559,7 +548,6 @@ eBoardTermUpdated: ID
 eBoardUpdated: ID
 projectCreated: ID
 projectDeleted: ID
-projectDiscordConfigRequested: ID
 projectInviteCreated: ID
 projectInviteDeleted: ID
 projectMemberCreated: ID
@@ -574,8 +562,7 @@ userLoginIdentityUpdated: ID
 userUpdated: ID
       }
       input SubscriptionSortInput {
-        archiveProjectDiscordConfigRequested: SortDirection
-eBoardCreated: SortDirection
+        eBoardCreated: SortDirection
 eBoardDeleted: SortDirection
 eBoardTermCreated: SortDirection
 eBoardTermDeleted: SortDirection
@@ -583,7 +570,6 @@ eBoardTermUpdated: SortDirection
 eBoardUpdated: SortDirection
 projectCreated: SortDirection
 projectDeleted: SortDirection
-projectDiscordConfigRequested: SortDirection
 projectInviteCreated: SortDirection
 projectInviteDeleted: SortDirection
 projectMemberCreated: SortDirection

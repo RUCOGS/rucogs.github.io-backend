@@ -3,7 +3,6 @@ import { Permission } from '@src/generated/graphql-endpoint.types';
 export type SecurityDomainTemplate = {
   userId: string;
   projectId: string;
-  roleCode: string;
   projectMemberId: string;
   projectInviteId: string;
 };

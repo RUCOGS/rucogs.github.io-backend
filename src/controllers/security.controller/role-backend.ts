@@ -40,6 +40,7 @@ export const RoleBackendDataDict: {
         MANAGE_PROJECT_MEMBER: true,
         MANAGE_USER_ROLES: true,
         MANAGE_PROJECT_MEMBER_ROLES: true,
+        MANAGE_PROJECT_DISCORD: true,
         MANAGE_EBOARD: [{ userId }],
         MANAGE_EBOARD_ROLES: [{ userId }],
       };
@@ -120,6 +121,7 @@ export const RoleBackendDataDict: {
       let finalPermissions: SecurityPermissions = {
         UPDATE_PROJECT: [{ projectId: projectMember.projectId }],
         MANAGE_PROJECT_INVITES: invites.map((x) => ({ projectInviteId: x.id })),
+        MANAGE_PROJECT_DISCORD: [{ projectId: projectMember.projectId }],
       };
 
       // Get all member permissions, so we can edit them
