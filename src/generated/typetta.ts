@@ -983,55 +983,73 @@ username: { type: 'scalar',
           }
   }
 
+export const schemas = {
+      EBoard: eBoardSchema,
+EBoardTerm: eBoardTermSchema,
+EBoardTermRole: eBoardTermRoleSchema,
+Project: projectSchema,
+ProjectDiscordConfig: projectDiscordConfigSchema,
+ProjectInvite: projectInviteSchema,
+ProjectMember: projectMemberSchema,
+ProjectMemberRole: projectMemberRoleSchema,
+Subscription: subscriptionSchema,
+User: userSchema,
+UserLoginIdentity: userLoginIdentitySchema,
+UserRole: userRoleSchema,
+UserSocial: userSocialSchema
+    } as const
+
 export function eBoardSchema(): T.Schema<ScalarsSpecification> {
   return {
   'avatarLink': {
               type: 'scalar',
               scalar: 'String',
-              
+              directives: {  }
             },
   'bio': {
               type: 'scalar',
               scalar: 'String',
-              
+              directives: {  }
             },
   'createdAt': {
               type: 'scalar',
               scalar: 'Date',
-              metadata: Object.fromEntries([['createdAt', 'true']])
+              directives: { 'createdAt': {  } }
             },
   'id': {
               type: 'scalar',
               scalar: 'ID',
-              isId: true,generationStrategy: 'db',required: true,alias: '_id',
+              isId: true,generationStrategy: 'db',required: true,alias: '_id',directives: {  }
             },
   'terms':{
                 type: 'relation',
+                astName: 'EBoardTerm',
                 relation: 'foreign',
                 schema: () => eBoardTermSchema(),
                 refFrom: 'eBoardId',
                 refTo: 'id',
                 dao: 'eBoardTerm',
-                isListElementRequired: true,required: true,isList: true,
+                isListElementRequired: true,required: true,isList: true,directives: {  }
               },
   'updatedAt': {
               type: 'scalar',
               scalar: 'Date',
-              metadata: Object.fromEntries([['updatedAt', 'true']])
+              directives: { 'updatedAt': {  } }
             },
   'user': {
                 type: 'relation',
+                astName: 'User',
                 relation: 'inner',
                 schema: () => userSchema(),
                 refFrom: 'userId',
                 refTo: 'id',
                 dao: 'user',
-                required: true,
+                required: true,directives: {  }
               },
   'userId': {
               type: 'scalar',
               scalar: 'ID',
-              required: true,
+              required: true,directives: {  }
             }
   }
 }
@@ -1088,36 +1106,38 @@ export function eBoardTermSchema(): T.Schema<ScalarsSpecification> {
   return {
   'eBoard': {
                 type: 'relation',
+                astName: 'EBoard',
                 relation: 'inner',
                 schema: () => eBoardSchema(),
                 refFrom: 'eBoardId',
                 refTo: 'id',
                 dao: 'eBoard',
-                required: true,
+                required: true,directives: {  }
               },
   'eBoardId': {
               type: 'scalar',
               scalar: 'ID',
-              required: true,
+              required: true,directives: {  }
             },
   'id': {
               type: 'scalar',
               scalar: 'ID',
-              isId: true,generationStrategy: 'db',required: true,alias: '_id',
+              isId: true,generationStrategy: 'db',required: true,alias: '_id',directives: {  }
             },
   'roles':{
                 type: 'relation',
+                astName: 'EBoardTermRole',
                 relation: 'foreign',
                 schema: () => eBoardTermRoleSchema(),
                 refFrom: 'termId',
                 refTo: 'id',
                 dao: 'eBoardTermRole',
-                isListElementRequired: true,required: true,isList: true,
+                isListElementRequired: true,required: true,isList: true,directives: {  }
               },
   'year': {
               type: 'scalar',
               scalar: 'Int',
-              required: true,
+              required: true,directives: {  }
             }
   }
 }
@@ -1175,26 +1195,27 @@ export function eBoardTermRoleSchema(): T.Schema<ScalarsSpecification> {
   'id': {
               type: 'scalar',
               scalar: 'ID',
-              isId: true,generationStrategy: 'db',required: true,alias: '_id',
+              isId: true,generationStrategy: 'db',required: true,alias: '_id',directives: {  }
             },
   'roleCode': {
               type: 'scalar',
               scalar: 'String',
-              required: true,isEnum: true,
+              required: true,isEnum: true,directives: {  }
             },
   'term': {
                 type: 'relation',
+                astName: 'EBoardTerm',
                 relation: 'inner',
                 schema: () => eBoardTermSchema(),
                 refFrom: 'termId',
                 refTo: 'id',
                 dao: 'eBoardTerm',
-                required: true,
+                required: true,directives: {  }
               },
   'termId': {
               type: 'scalar',
               scalar: 'ID',
-              required: true,
+              required: true,directives: {  }
             }
   }
 }
@@ -1252,99 +1273,102 @@ export function projectSchema(): T.Schema<ScalarsSpecification> {
   'access': {
               type: 'scalar',
               scalar: 'String',
-              required: true,isEnum: true,
+              required: true,isEnum: true,directives: {  }
             },
   'bannerLink': {
               type: 'scalar',
               scalar: 'String',
-              
+              directives: {  }
             },
   'cardImageLink': {
               type: 'scalar',
               scalar: 'String',
-              
+              directives: {  }
             },
   'completedAt': {
               type: 'scalar',
               scalar: 'Date',
-              
+              directives: {  }
             },
   'createdAt': {
               type: 'scalar',
               scalar: 'Date',
-              metadata: Object.fromEntries([['createdAt', 'true']])
+              directives: { 'createdAt': {  } }
             },
   'description': {
               type: 'scalar',
               scalar: 'String',
-              
+              directives: {  }
             },
   'discordConfig':{
                 type: 'relation',
+                astName: 'ProjectDiscordConfig',
                 relation: 'foreign',
                 schema: () => projectDiscordConfigSchema(),
                 refFrom: 'projectId',
                 refTo: 'id',
                 dao: 'projectDiscordConfig',
-                
+                directives: {  }
               },
   'downloadLinks': {
               type: 'scalar',
               scalar: 'String',
-              isListElementRequired: true,isList: true,
+              isListElementRequired: true,isList: true,directives: {  }
             },
   'galleryImageLinks': {
               type: 'scalar',
               scalar: 'String',
-              isListElementRequired: true,isList: true,
+              isListElementRequired: true,isList: true,directives: {  }
             },
   'id': {
               type: 'scalar',
               scalar: 'ID',
-              isId: true,generationStrategy: 'db',required: true,alias: '_id',
+              isId: true,generationStrategy: 'db',required: true,alias: '_id',directives: {  }
             },
   'invites':{
                 type: 'relation',
+                astName: 'ProjectInvite',
                 relation: 'foreign',
                 schema: () => projectInviteSchema(),
                 refFrom: 'projectId',
                 refTo: 'id',
                 dao: 'projectInvite',
-                isListElementRequired: true,required: true,isList: true,
+                isListElementRequired: true,required: true,isList: true,directives: {  }
               },
   'members':{
                 type: 'relation',
+                astName: 'ProjectMember',
                 relation: 'foreign',
                 schema: () => projectMemberSchema(),
                 refFrom: 'projectId',
                 refTo: 'id',
                 dao: 'projectMember',
-                isListElementRequired: true,required: true,isList: true,
+                isListElementRequired: true,required: true,isList: true,directives: {  }
               },
   'name': {
               type: 'scalar',
               scalar: 'String',
-              required: true,
+              required: true,directives: {  }
             },
   'pitch': {
               type: 'scalar',
               scalar: 'String',
-              required: true,
+              required: true,directives: {  }
             },
   'soundcloudEmbedSrc': {
               type: 'scalar',
               scalar: 'String',
-              
+              directives: {  }
             },
   'tags': {
               type: 'scalar',
               scalar: 'String',
-              isListElementRequired: true,isList: true,
+              isListElementRequired: true,isList: true,directives: {  }
             },
   'updatedAt': {
               type: 'scalar',
               scalar: 'Date',
-              metadata: Object.fromEntries([['updatedAt', 'true']])
+              directives: { 'updatedAt': {  } }
             }
   }
 }
@@ -1402,36 +1426,37 @@ export function projectDiscordConfigSchema(): T.Schema<ScalarsSpecification> {
   'categoryId': {
               type: 'scalar',
               scalar: 'String',
-              
+              directives: {  }
             },
   'createdAt': {
               type: 'scalar',
               scalar: 'Date',
-              metadata: Object.fromEntries([['createdAt', 'true']])
+              directives: { 'createdAt': {  } }
             },
   'id': {
               type: 'scalar',
               scalar: 'ID',
-              isId: true,generationStrategy: 'db',required: true,alias: '_id',
+              isId: true,generationStrategy: 'db',required: true,alias: '_id',directives: {  }
             },
   'project': {
                 type: 'relation',
+                astName: 'Project',
                 relation: 'inner',
                 schema: () => projectSchema(),
                 refFrom: 'projectId',
                 refTo: 'id',
                 dao: 'project',
-                required: true,
+                required: true,directives: {  }
               },
   'projectId': {
               type: 'scalar',
               scalar: 'ID',
-              required: true,
+              required: true,directives: {  }
             },
   'updatedAt': {
               type: 'scalar',
               scalar: 'Date',
-              metadata: Object.fromEntries([['updatedAt', 'true']])
+              directives: { 'updatedAt': {  } }
             }
   }
 }
@@ -1489,45 +1514,47 @@ export function projectInviteSchema(): T.Schema<ScalarsSpecification> {
   'createdAt': {
               type: 'scalar',
               scalar: 'Date',
-              metadata: Object.fromEntries([['createdAt', 'true']])
+              directives: { 'createdAt': {  } }
             },
   'id': {
               type: 'scalar',
               scalar: 'ID',
-              isId: true,generationStrategy: 'db',required: true,alias: '_id',
+              isId: true,generationStrategy: 'db',required: true,alias: '_id',directives: {  }
             },
   'project': {
                 type: 'relation',
+                astName: 'Project',
                 relation: 'inner',
                 schema: () => projectSchema(),
                 refFrom: 'projectId',
                 refTo: 'id',
                 dao: 'project',
-                required: true,
+                required: true,directives: {  }
               },
   'projectId': {
               type: 'scalar',
               scalar: 'ID',
-              required: true,metadata: Object.fromEntries([['unique', 'true']])
+              required: true,directives: { 'unique': {  } }
             },
   'type': {
               type: 'scalar',
               scalar: 'String',
-              required: true,isEnum: true,
+              required: true,isEnum: true,directives: {  }
             },
   'user': {
                 type: 'relation',
+                astName: 'User',
                 relation: 'inner',
                 schema: () => userSchema(),
                 refFrom: 'userId',
                 refTo: 'id',
                 dao: 'user',
-                required: true,
+                required: true,directives: {  }
               },
   'userId': {
               type: 'scalar',
               scalar: 'ID',
-              required: true,metadata: Object.fromEntries([['unique', 'true']])
+              required: true,directives: { 'unique': {  } }
             }
   }
 }
@@ -1585,59 +1612,62 @@ export function projectMemberSchema(): T.Schema<ScalarsSpecification> {
   'contributions': {
               type: 'scalar',
               scalar: 'String',
-              
+              directives: {  }
             },
   'createdAt': {
               type: 'scalar',
               scalar: 'Date',
-              metadata: Object.fromEntries([['createdAt', 'true']])
+              directives: { 'createdAt': {  } }
             },
   'id': {
               type: 'scalar',
               scalar: 'ID',
-              isId: true,generationStrategy: 'db',required: true,alias: '_id',
+              isId: true,generationStrategy: 'db',required: true,alias: '_id',directives: {  }
             },
   'project': {
                 type: 'relation',
+                astName: 'Project',
                 relation: 'inner',
                 schema: () => projectSchema(),
                 refFrom: 'projectId',
                 refTo: 'id',
                 dao: 'project',
-                required: true,
+                required: true,directives: {  }
               },
   'projectId': {
               type: 'scalar',
               scalar: 'ID',
-              required: true,
+              required: true,directives: {  }
             },
   'roles':{
                 type: 'relation',
+                astName: 'ProjectMemberRole',
                 relation: 'foreign',
                 schema: () => projectMemberRoleSchema(),
                 refFrom: 'projectMemberId',
                 refTo: 'id',
                 dao: 'projectMemberRole',
-                isListElementRequired: true,required: true,isList: true,
+                isListElementRequired: true,required: true,isList: true,directives: {  }
               },
   'updatedAt': {
               type: 'scalar',
               scalar: 'Date',
-              metadata: Object.fromEntries([['updatedAt', 'true']])
+              directives: { 'updatedAt': {  } }
             },
   'user': {
                 type: 'relation',
+                astName: 'User',
                 relation: 'inner',
                 schema: () => userSchema(),
                 refFrom: 'userId',
                 refTo: 'id',
                 dao: 'user',
-                required: true,
+                required: true,directives: {  }
               },
   'userId': {
               type: 'scalar',
               scalar: 'ID',
-              required: true,metadata: Object.fromEntries([['unique', 'true']])
+              required: true,directives: { 'unique': {  } }
             }
   }
 }
@@ -1695,26 +1725,27 @@ export function projectMemberRoleSchema(): T.Schema<ScalarsSpecification> {
   'id': {
               type: 'scalar',
               scalar: 'ID',
-              isId: true,generationStrategy: 'db',required: true,alias: '_id',
+              isId: true,generationStrategy: 'db',required: true,alias: '_id',directives: {  }
             },
   'projectMember': {
                 type: 'relation',
+                astName: 'ProjectMember',
                 relation: 'inner',
                 schema: () => projectMemberSchema(),
                 refFrom: 'projectMemberId',
                 refTo: 'id',
                 dao: 'projectMember',
-                required: true,
+                required: true,directives: {  }
               },
   'projectMemberId': {
               type: 'scalar',
               scalar: 'ID',
-              required: true,
+              required: true,directives: {  }
             },
   'roleCode': {
               type: 'scalar',
               scalar: 'String',
-              required: true,isEnum: true,metadata: Object.fromEntries([['unique', 'true']])
+              required: true,isEnum: true,directives: { 'unique': {  } }
             }
   }
 }
@@ -1771,211 +1802,241 @@ export function subscriptionSchema(): T.Schema<ScalarsSpecification> {
   return {
   'eBoardCreated': {
               type: 'embedded',
+              astName: 'EBoard',
               schema: () => eBoardSchema(),
-              
+              directives: {  }
             },
   'eBoardDeleted': {
               type: 'embedded',
+              astName: 'EBoard',
               schema: () => eBoardSchema(),
-              
+              directives: {  }
             },
   'eBoardTermCreated': {
               type: 'embedded',
+              astName: 'EBoardTerm',
               schema: () => eBoardTermSchema(),
-              
+              directives: {  }
             },
   'eBoardTermDeleted': {
               type: 'embedded',
+              astName: 'EBoardTerm',
               schema: () => eBoardTermSchema(),
-              
+              directives: {  }
             },
   'eBoardTermUpdated': {
               type: 'embedded',
+              astName: 'EBoardTerm',
               schema: () => eBoardTermSchema(),
-              
+              directives: {  }
             },
   'eBoardUpdated': {
               type: 'embedded',
+              astName: 'EBoard',
               schema: () => eBoardSchema(),
-              
+              directives: {  }
             },
   'projectCreated': {
               type: 'embedded',
+              astName: 'Project',
               schema: () => projectSchema(),
-              
+              directives: {  }
             },
   'projectDeleted': {
               type: 'embedded',
+              astName: 'Project',
               schema: () => projectSchema(),
-              
+              directives: {  }
             },
   'projectInviteCreated': {
               type: 'embedded',
+              astName: 'ProjectInvite',
               schema: () => projectInviteSchema(),
-              
+              directives: {  }
             },
   'projectInviteDeleted': {
               type: 'embedded',
+              astName: 'ProjectInvite',
               schema: () => projectInviteSchema(),
-              
+              directives: {  }
             },
   'projectMemberCreated': {
               type: 'embedded',
+              astName: 'ProjectMember',
               schema: () => projectMemberSchema(),
-              
+              directives: {  }
             },
   'projectMemberDeleted': {
               type: 'embedded',
+              astName: 'ProjectMember',
               schema: () => projectMemberSchema(),
-              
+              directives: {  }
             },
   'projectMemberUpdated': {
               type: 'embedded',
+              astName: 'ProjectMember',
               schema: () => projectMemberSchema(),
-              
+              directives: {  }
             },
   'projectUpdated': {
               type: 'embedded',
+              astName: 'Project',
               schema: () => projectSchema(),
-              
+              directives: {  }
             },
   'userCreated': {
               type: 'embedded',
+              astName: 'User',
               schema: () => userSchema(),
-              
+              directives: {  }
             },
   'userDeleted': {
               type: 'embedded',
+              astName: 'User',
               schema: () => userSchema(),
-              
+              directives: {  }
             },
   'userLoginIdentityCreated': {
               type: 'embedded',
+              astName: 'UserLoginIdentity',
               schema: () => userLoginIdentitySchema(),
-              
+              directives: {  }
             },
   'userLoginIdentityDeleted': {
               type: 'embedded',
+              astName: 'UserLoginIdentity',
               schema: () => userLoginIdentitySchema(),
-              
+              directives: {  }
             },
   'userLoginIdentityUpdated': {
               type: 'embedded',
+              astName: 'UserLoginIdentity',
               schema: () => userLoginIdentitySchema(),
-              
+              directives: {  }
             },
   'userUpdated': {
               type: 'embedded',
+              astName: 'User',
               schema: () => userSchema(),
-              
+              directives: {  }
             }
   }
 }
+
+
+    export interface SubscriptionModel extends types.Subscription {}
+    export interface SubscriptionPlainModel extends T.GenerateModel<'Subscription', AST, ScalarsSpecification, 'relation'> {}
 export function userSchema(): T.Schema<ScalarsSpecification> {
   return {
   'avatarLink': {
               type: 'scalar',
               scalar: 'String',
-              
+              directives: {  }
             },
   'bannerLink': {
               type: 'scalar',
               scalar: 'String',
-              
+              directives: {  }
             },
   'bio': {
               type: 'scalar',
               scalar: 'String',
-              
+              directives: {  }
             },
   'classYear': {
               type: 'scalar',
               scalar: 'Int',
-              
+              directives: {  }
             },
   'createdAt': {
               type: 'scalar',
               scalar: 'Date',
-              metadata: Object.fromEntries([['createdAt', 'true']])
+              directives: { 'createdAt': {  } }
             },
   'displayName': {
               type: 'scalar',
               scalar: 'String',
-              required: true,
+              required: true,directives: {  }
             },
   'eBoard':{
                 type: 'relation',
+                astName: 'EBoard',
                 relation: 'foreign',
                 schema: () => eBoardSchema(),
                 refFrom: 'userId',
                 refTo: 'id',
                 dao: 'eBoard',
-                
+                directives: {  }
               },
   'email': {
               type: 'scalar',
               scalar: 'String',
-              
+              directives: {  }
             },
   'id': {
               type: 'scalar',
               scalar: 'ID',
-              isId: true,generationStrategy: 'db',required: true,alias: '_id',
+              isId: true,generationStrategy: 'db',required: true,alias: '_id',directives: {  }
             },
   'loginIdentities':{
                 type: 'relation',
+                astName: 'UserLoginIdentity',
                 relation: 'foreign',
                 schema: () => userLoginIdentitySchema(),
                 refFrom: 'userId',
                 refTo: 'id',
                 dao: 'userLoginIdentity',
-                isListElementRequired: true,required: true,isList: true,
+                isListElementRequired: true,required: true,isList: true,directives: {  }
               },
   'projectInvites':{
                 type: 'relation',
+                astName: 'ProjectInvite',
                 relation: 'foreign',
                 schema: () => projectInviteSchema(),
                 refFrom: 'userId',
                 refTo: 'id',
                 dao: 'projectInvite',
-                isListElementRequired: true,required: true,isList: true,
+                isListElementRequired: true,required: true,isList: true,directives: {  }
               },
   'projectMembers':{
                 type: 'relation',
+                astName: 'ProjectMember',
                 relation: 'foreign',
                 schema: () => projectMemberSchema(),
                 refFrom: 'userId',
                 refTo: 'id',
                 dao: 'projectMember',
-                isListElementRequired: true,required: true,isList: true,
+                isListElementRequired: true,required: true,isList: true,directives: {  }
               },
   'roles':{
                 type: 'relation',
+                astName: 'UserRole',
                 relation: 'foreign',
                 schema: () => userRoleSchema(),
                 refFrom: 'userId',
                 refTo: 'id',
                 dao: 'userRole',
-                isListElementRequired: true,required: true,isList: true,
+                isListElementRequired: true,required: true,isList: true,directives: {  }
               },
   'socials':{
                 type: 'relation',
+                astName: 'UserSocial',
                 relation: 'foreign',
                 schema: () => userSocialSchema(),
                 refFrom: 'userId',
                 refTo: 'id',
                 dao: 'userSocial',
-                isListElementRequired: true,required: true,isList: true,
+                isListElementRequired: true,required: true,isList: true,directives: {  }
               },
   'updatedAt': {
               type: 'scalar',
               scalar: 'Date',
-              metadata: Object.fromEntries([['updatedAt', 'true']])
+              directives: { 'updatedAt': {  } }
             },
   'username': {
               type: 'scalar',
               scalar: 'String',
-              required: true,
+              required: true,directives: {  }
             }
   }
 }
@@ -2033,36 +2094,37 @@ export function userLoginIdentitySchema(): T.Schema<ScalarsSpecification> {
   'data': {
               type: 'scalar',
               scalar: 'Json',
-              
+              directives: {  }
             },
   'id': {
               type: 'scalar',
               scalar: 'ID',
-              isId: true,generationStrategy: 'db',required: true,alias: '_id',
+              isId: true,generationStrategy: 'db',required: true,alias: '_id',directives: {  }
             },
   'identityId': {
               type: 'scalar',
               scalar: 'String',
-              required: true,
+              required: true,directives: {  }
             },
   'name': {
               type: 'scalar',
               scalar: 'String',
-              required: true,metadata: Object.fromEntries([['unique', 'true']])
+              required: true,directives: { 'unique': {  } }
             },
   'user': {
                 type: 'relation',
+                astName: 'User',
                 relation: 'inner',
                 schema: () => userSchema(),
                 refFrom: 'userId',
                 refTo: 'id',
                 dao: 'user',
-                required: true,
+                required: true,directives: {  }
               },
   'userId': {
               type: 'scalar',
               scalar: 'ID',
-              required: true,
+              required: true,directives: {  }
             }
   }
 }
@@ -2120,26 +2182,27 @@ export function userRoleSchema(): T.Schema<ScalarsSpecification> {
   'id': {
               type: 'scalar',
               scalar: 'ID',
-              isId: true,generationStrategy: 'db',required: true,alias: '_id',
+              isId: true,generationStrategy: 'db',required: true,alias: '_id',directives: {  }
             },
   'roleCode': {
               type: 'scalar',
               scalar: 'String',
-              required: true,isEnum: true,metadata: Object.fromEntries([['unique', 'true']])
+              required: true,isEnum: true,directives: { 'unique': {  } }
             },
   'user': {
                 type: 'relation',
+                astName: 'User',
                 relation: 'inner',
                 schema: () => userSchema(),
                 refFrom: 'userId',
                 refTo: 'id',
                 dao: 'user',
-                required: true,
+                required: true,directives: {  }
               },
   'userId': {
               type: 'scalar',
               scalar: 'ID',
-              required: true,metadata: Object.fromEntries([['unique', 'true']])
+              required: true,directives: { 'unique': {  } }
             }
   }
 }
@@ -2197,36 +2260,37 @@ export function userSocialSchema(): T.Schema<ScalarsSpecification> {
   'id': {
               type: 'scalar',
               scalar: 'ID',
-              isId: true,generationStrategy: 'db',required: true,alias: '_id',
+              isId: true,generationStrategy: 'db',required: true,alias: '_id',directives: {  }
             },
   'link': {
               type: 'scalar',
               scalar: 'String',
-              required: true,
+              required: true,directives: {  }
             },
   'platform': {
               type: 'scalar',
               scalar: 'String',
-              required: true,
+              required: true,directives: {  }
             },
   'user': {
                 type: 'relation',
+                astName: 'User',
                 relation: 'inner',
                 schema: () => userSchema(),
                 refFrom: 'userId',
                 refTo: 'id',
                 dao: 'user',
-                required: true,
+                required: true,directives: {  }
               },
   'userId': {
               type: 'scalar',
               scalar: 'ID',
-              required: true,
+              required: true,directives: {  }
             },
   'username': {
               type: 'scalar',
               scalar: 'String',
-              required: true,
+              required: true,directives: {  }
             }
   }
 }
@@ -2301,6 +2365,7 @@ export type EntityManagerParams<MetadataType, OperationMetadataType, Permissions
   mongodb: Record<'default', M.Db | 'mock'>,
   scalars?: T.UserInputDriverDataTypeAdapterMap<ScalarsSpecification, 'mongo'>,
   log?: T.LogInput<'EBoard' | 'EBoardTerm' | 'EBoardTermRole' | 'Project' | 'ProjectDiscordConfig' | 'ProjectInvite' | 'ProjectMember' | 'ProjectMemberRole' | 'User' | 'UserLoginIdentity' | 'UserRole' | 'UserSocial'>,
+  awaitLog?: boolean,
   security?: T.EntityManagerSecurtyPolicy<DAOGenericsMap<MetadataType, OperationMetadataType>, OperationMetadataType, Permissions, SecurityDomain>
 }
 type EntityManagerMiddleware<MetadataType = never, OperationMetadataType = never> = T.DAOMiddleware<DAOGenericsUnion<MetadataType, OperationMetadataType>>
@@ -2331,84 +2396,84 @@ export class EntityManager<MetadataType = never, OperationMetadataType = never, 
   get eBoard(): EBoardDAO<MetadataType, OperationMetadataType> {
     if(!this._eBoard) {
       const db = this.mongodb.default
-      this._eBoard = db === 'mock' ? (new InMemoryEBoardDAO({ entityManager: this, datasource: null, metadata: this.metadata, ...this.overrides?.eBoard, middlewares: [...(this.overrides?.eBoard?.middlewares || []), ...selectMiddleware('eBoard', this.middlewares) as T.DAOMiddleware<EBoardDAOGenerics<MetadataType, OperationMetadataType>>[]], name: 'EBoard', logger: this.logger }) as unknown as EBoardDAO<MetadataType, OperationMetadataType>) : new EBoardDAO({ entityManager: this, datasource: 'default', metadata: this.metadata, ...this.overrides?.eBoard, collection: db.collection('eBoards'), middlewares: [...(this.overrides?.eBoard?.middlewares || []), ...selectMiddleware('eBoard', this.middlewares) as T.DAOMiddleware<EBoardDAOGenerics<MetadataType, OperationMetadataType>>[]], name: 'EBoard', logger: this.logger })
+      this._eBoard = db === 'mock' ? (new InMemoryEBoardDAO({ entityManager: this, datasource: null, metadata: this.metadata, ...this.overrides?.eBoard, middlewares: [...(this.overrides?.eBoard?.middlewares || []), ...selectMiddleware('eBoard', this.middlewares) as T.DAOMiddleware<EBoardDAOGenerics<MetadataType, OperationMetadataType>>[]], name: 'EBoard', logger: this.logger, awaitLog: this.params.awaitLog }) as unknown as EBoardDAO<MetadataType, OperationMetadataType>) : new EBoardDAO({ entityManager: this, datasource: 'default', metadata: this.metadata, ...this.overrides?.eBoard, collection: db.collection('eBoards'), middlewares: [...(this.overrides?.eBoard?.middlewares || []), ...selectMiddleware('eBoard', this.middlewares) as T.DAOMiddleware<EBoardDAOGenerics<MetadataType, OperationMetadataType>>[]], name: 'EBoard', logger: this.logger, awaitLog: this.params.awaitLog })
     }
     return this._eBoard
   }
   get eBoardTerm(): EBoardTermDAO<MetadataType, OperationMetadataType> {
     if(!this._eBoardTerm) {
       const db = this.mongodb.default
-      this._eBoardTerm = db === 'mock' ? (new InMemoryEBoardTermDAO({ entityManager: this, datasource: null, metadata: this.metadata, ...this.overrides?.eBoardTerm, middlewares: [...(this.overrides?.eBoardTerm?.middlewares || []), ...selectMiddleware('eBoardTerm', this.middlewares) as T.DAOMiddleware<EBoardTermDAOGenerics<MetadataType, OperationMetadataType>>[]], name: 'EBoardTerm', logger: this.logger }) as unknown as EBoardTermDAO<MetadataType, OperationMetadataType>) : new EBoardTermDAO({ entityManager: this, datasource: 'default', metadata: this.metadata, ...this.overrides?.eBoardTerm, collection: db.collection('eBoardTerms'), middlewares: [...(this.overrides?.eBoardTerm?.middlewares || []), ...selectMiddleware('eBoardTerm', this.middlewares) as T.DAOMiddleware<EBoardTermDAOGenerics<MetadataType, OperationMetadataType>>[]], name: 'EBoardTerm', logger: this.logger })
+      this._eBoardTerm = db === 'mock' ? (new InMemoryEBoardTermDAO({ entityManager: this, datasource: null, metadata: this.metadata, ...this.overrides?.eBoardTerm, middlewares: [...(this.overrides?.eBoardTerm?.middlewares || []), ...selectMiddleware('eBoardTerm', this.middlewares) as T.DAOMiddleware<EBoardTermDAOGenerics<MetadataType, OperationMetadataType>>[]], name: 'EBoardTerm', logger: this.logger, awaitLog: this.params.awaitLog }) as unknown as EBoardTermDAO<MetadataType, OperationMetadataType>) : new EBoardTermDAO({ entityManager: this, datasource: 'default', metadata: this.metadata, ...this.overrides?.eBoardTerm, collection: db.collection('eBoardTerms'), middlewares: [...(this.overrides?.eBoardTerm?.middlewares || []), ...selectMiddleware('eBoardTerm', this.middlewares) as T.DAOMiddleware<EBoardTermDAOGenerics<MetadataType, OperationMetadataType>>[]], name: 'EBoardTerm', logger: this.logger, awaitLog: this.params.awaitLog })
     }
     return this._eBoardTerm
   }
   get eBoardTermRole(): EBoardTermRoleDAO<MetadataType, OperationMetadataType> {
     if(!this._eBoardTermRole) {
       const db = this.mongodb.default
-      this._eBoardTermRole = db === 'mock' ? (new InMemoryEBoardTermRoleDAO({ entityManager: this, datasource: null, metadata: this.metadata, ...this.overrides?.eBoardTermRole, middlewares: [...(this.overrides?.eBoardTermRole?.middlewares || []), ...selectMiddleware('eBoardTermRole', this.middlewares) as T.DAOMiddleware<EBoardTermRoleDAOGenerics<MetadataType, OperationMetadataType>>[]], name: 'EBoardTermRole', logger: this.logger }) as unknown as EBoardTermRoleDAO<MetadataType, OperationMetadataType>) : new EBoardTermRoleDAO({ entityManager: this, datasource: 'default', metadata: this.metadata, ...this.overrides?.eBoardTermRole, collection: db.collection('eBoardTermRoles'), middlewares: [...(this.overrides?.eBoardTermRole?.middlewares || []), ...selectMiddleware('eBoardTermRole', this.middlewares) as T.DAOMiddleware<EBoardTermRoleDAOGenerics<MetadataType, OperationMetadataType>>[]], name: 'EBoardTermRole', logger: this.logger })
+      this._eBoardTermRole = db === 'mock' ? (new InMemoryEBoardTermRoleDAO({ entityManager: this, datasource: null, metadata: this.metadata, ...this.overrides?.eBoardTermRole, middlewares: [...(this.overrides?.eBoardTermRole?.middlewares || []), ...selectMiddleware('eBoardTermRole', this.middlewares) as T.DAOMiddleware<EBoardTermRoleDAOGenerics<MetadataType, OperationMetadataType>>[]], name: 'EBoardTermRole', logger: this.logger, awaitLog: this.params.awaitLog }) as unknown as EBoardTermRoleDAO<MetadataType, OperationMetadataType>) : new EBoardTermRoleDAO({ entityManager: this, datasource: 'default', metadata: this.metadata, ...this.overrides?.eBoardTermRole, collection: db.collection('eBoardTermRoles'), middlewares: [...(this.overrides?.eBoardTermRole?.middlewares || []), ...selectMiddleware('eBoardTermRole', this.middlewares) as T.DAOMiddleware<EBoardTermRoleDAOGenerics<MetadataType, OperationMetadataType>>[]], name: 'EBoardTermRole', logger: this.logger, awaitLog: this.params.awaitLog })
     }
     return this._eBoardTermRole
   }
   get project(): ProjectDAO<MetadataType, OperationMetadataType> {
     if(!this._project) {
       const db = this.mongodb.default
-      this._project = db === 'mock' ? (new InMemoryProjectDAO({ entityManager: this, datasource: null, metadata: this.metadata, ...this.overrides?.project, middlewares: [...(this.overrides?.project?.middlewares || []), ...selectMiddleware('project', this.middlewares) as T.DAOMiddleware<ProjectDAOGenerics<MetadataType, OperationMetadataType>>[]], name: 'Project', logger: this.logger }) as unknown as ProjectDAO<MetadataType, OperationMetadataType>) : new ProjectDAO({ entityManager: this, datasource: 'default', metadata: this.metadata, ...this.overrides?.project, collection: db.collection('projects'), middlewares: [...(this.overrides?.project?.middlewares || []), ...selectMiddleware('project', this.middlewares) as T.DAOMiddleware<ProjectDAOGenerics<MetadataType, OperationMetadataType>>[]], name: 'Project', logger: this.logger })
+      this._project = db === 'mock' ? (new InMemoryProjectDAO({ entityManager: this, datasource: null, metadata: this.metadata, ...this.overrides?.project, middlewares: [...(this.overrides?.project?.middlewares || []), ...selectMiddleware('project', this.middlewares) as T.DAOMiddleware<ProjectDAOGenerics<MetadataType, OperationMetadataType>>[]], name: 'Project', logger: this.logger, awaitLog: this.params.awaitLog }) as unknown as ProjectDAO<MetadataType, OperationMetadataType>) : new ProjectDAO({ entityManager: this, datasource: 'default', metadata: this.metadata, ...this.overrides?.project, collection: db.collection('projects'), middlewares: [...(this.overrides?.project?.middlewares || []), ...selectMiddleware('project', this.middlewares) as T.DAOMiddleware<ProjectDAOGenerics<MetadataType, OperationMetadataType>>[]], name: 'Project', logger: this.logger, awaitLog: this.params.awaitLog })
     }
     return this._project
   }
   get projectDiscordConfig(): ProjectDiscordConfigDAO<MetadataType, OperationMetadataType> {
     if(!this._projectDiscordConfig) {
       const db = this.mongodb.default
-      this._projectDiscordConfig = db === 'mock' ? (new InMemoryProjectDiscordConfigDAO({ entityManager: this, datasource: null, metadata: this.metadata, ...this.overrides?.projectDiscordConfig, middlewares: [...(this.overrides?.projectDiscordConfig?.middlewares || []), ...selectMiddleware('projectDiscordConfig', this.middlewares) as T.DAOMiddleware<ProjectDiscordConfigDAOGenerics<MetadataType, OperationMetadataType>>[]], name: 'ProjectDiscordConfig', logger: this.logger }) as unknown as ProjectDiscordConfigDAO<MetadataType, OperationMetadataType>) : new ProjectDiscordConfigDAO({ entityManager: this, datasource: 'default', metadata: this.metadata, ...this.overrides?.projectDiscordConfig, collection: db.collection('projectDiscordConfigs'), middlewares: [...(this.overrides?.projectDiscordConfig?.middlewares || []), ...selectMiddleware('projectDiscordConfig', this.middlewares) as T.DAOMiddleware<ProjectDiscordConfigDAOGenerics<MetadataType, OperationMetadataType>>[]], name: 'ProjectDiscordConfig', logger: this.logger })
+      this._projectDiscordConfig = db === 'mock' ? (new InMemoryProjectDiscordConfigDAO({ entityManager: this, datasource: null, metadata: this.metadata, ...this.overrides?.projectDiscordConfig, middlewares: [...(this.overrides?.projectDiscordConfig?.middlewares || []), ...selectMiddleware('projectDiscordConfig', this.middlewares) as T.DAOMiddleware<ProjectDiscordConfigDAOGenerics<MetadataType, OperationMetadataType>>[]], name: 'ProjectDiscordConfig', logger: this.logger, awaitLog: this.params.awaitLog }) as unknown as ProjectDiscordConfigDAO<MetadataType, OperationMetadataType>) : new ProjectDiscordConfigDAO({ entityManager: this, datasource: 'default', metadata: this.metadata, ...this.overrides?.projectDiscordConfig, collection: db.collection('projectDiscordConfigs'), middlewares: [...(this.overrides?.projectDiscordConfig?.middlewares || []), ...selectMiddleware('projectDiscordConfig', this.middlewares) as T.DAOMiddleware<ProjectDiscordConfigDAOGenerics<MetadataType, OperationMetadataType>>[]], name: 'ProjectDiscordConfig', logger: this.logger, awaitLog: this.params.awaitLog })
     }
     return this._projectDiscordConfig
   }
   get projectInvite(): ProjectInviteDAO<MetadataType, OperationMetadataType> {
     if(!this._projectInvite) {
       const db = this.mongodb.default
-      this._projectInvite = db === 'mock' ? (new InMemoryProjectInviteDAO({ entityManager: this, datasource: null, metadata: this.metadata, ...this.overrides?.projectInvite, middlewares: [...(this.overrides?.projectInvite?.middlewares || []), ...selectMiddleware('projectInvite', this.middlewares) as T.DAOMiddleware<ProjectInviteDAOGenerics<MetadataType, OperationMetadataType>>[]], name: 'ProjectInvite', logger: this.logger }) as unknown as ProjectInviteDAO<MetadataType, OperationMetadataType>) : new ProjectInviteDAO({ entityManager: this, datasource: 'default', metadata: this.metadata, ...this.overrides?.projectInvite, collection: db.collection('projectInvites'), middlewares: [...(this.overrides?.projectInvite?.middlewares || []), ...selectMiddleware('projectInvite', this.middlewares) as T.DAOMiddleware<ProjectInviteDAOGenerics<MetadataType, OperationMetadataType>>[]], name: 'ProjectInvite', logger: this.logger })
+      this._projectInvite = db === 'mock' ? (new InMemoryProjectInviteDAO({ entityManager: this, datasource: null, metadata: this.metadata, ...this.overrides?.projectInvite, middlewares: [...(this.overrides?.projectInvite?.middlewares || []), ...selectMiddleware('projectInvite', this.middlewares) as T.DAOMiddleware<ProjectInviteDAOGenerics<MetadataType, OperationMetadataType>>[]], name: 'ProjectInvite', logger: this.logger, awaitLog: this.params.awaitLog }) as unknown as ProjectInviteDAO<MetadataType, OperationMetadataType>) : new ProjectInviteDAO({ entityManager: this, datasource: 'default', metadata: this.metadata, ...this.overrides?.projectInvite, collection: db.collection('projectInvites'), middlewares: [...(this.overrides?.projectInvite?.middlewares || []), ...selectMiddleware('projectInvite', this.middlewares) as T.DAOMiddleware<ProjectInviteDAOGenerics<MetadataType, OperationMetadataType>>[]], name: 'ProjectInvite', logger: this.logger, awaitLog: this.params.awaitLog })
     }
     return this._projectInvite
   }
   get projectMember(): ProjectMemberDAO<MetadataType, OperationMetadataType> {
     if(!this._projectMember) {
       const db = this.mongodb.default
-      this._projectMember = db === 'mock' ? (new InMemoryProjectMemberDAO({ entityManager: this, datasource: null, metadata: this.metadata, ...this.overrides?.projectMember, middlewares: [...(this.overrides?.projectMember?.middlewares || []), ...selectMiddleware('projectMember', this.middlewares) as T.DAOMiddleware<ProjectMemberDAOGenerics<MetadataType, OperationMetadataType>>[]], name: 'ProjectMember', logger: this.logger }) as unknown as ProjectMemberDAO<MetadataType, OperationMetadataType>) : new ProjectMemberDAO({ entityManager: this, datasource: 'default', metadata: this.metadata, ...this.overrides?.projectMember, collection: db.collection('projectMembers'), middlewares: [...(this.overrides?.projectMember?.middlewares || []), ...selectMiddleware('projectMember', this.middlewares) as T.DAOMiddleware<ProjectMemberDAOGenerics<MetadataType, OperationMetadataType>>[]], name: 'ProjectMember', logger: this.logger })
+      this._projectMember = db === 'mock' ? (new InMemoryProjectMemberDAO({ entityManager: this, datasource: null, metadata: this.metadata, ...this.overrides?.projectMember, middlewares: [...(this.overrides?.projectMember?.middlewares || []), ...selectMiddleware('projectMember', this.middlewares) as T.DAOMiddleware<ProjectMemberDAOGenerics<MetadataType, OperationMetadataType>>[]], name: 'ProjectMember', logger: this.logger, awaitLog: this.params.awaitLog }) as unknown as ProjectMemberDAO<MetadataType, OperationMetadataType>) : new ProjectMemberDAO({ entityManager: this, datasource: 'default', metadata: this.metadata, ...this.overrides?.projectMember, collection: db.collection('projectMembers'), middlewares: [...(this.overrides?.projectMember?.middlewares || []), ...selectMiddleware('projectMember', this.middlewares) as T.DAOMiddleware<ProjectMemberDAOGenerics<MetadataType, OperationMetadataType>>[]], name: 'ProjectMember', logger: this.logger, awaitLog: this.params.awaitLog })
     }
     return this._projectMember
   }
   get projectMemberRole(): ProjectMemberRoleDAO<MetadataType, OperationMetadataType> {
     if(!this._projectMemberRole) {
       const db = this.mongodb.default
-      this._projectMemberRole = db === 'mock' ? (new InMemoryProjectMemberRoleDAO({ entityManager: this, datasource: null, metadata: this.metadata, ...this.overrides?.projectMemberRole, middlewares: [...(this.overrides?.projectMemberRole?.middlewares || []), ...selectMiddleware('projectMemberRole', this.middlewares) as T.DAOMiddleware<ProjectMemberRoleDAOGenerics<MetadataType, OperationMetadataType>>[]], name: 'ProjectMemberRole', logger: this.logger }) as unknown as ProjectMemberRoleDAO<MetadataType, OperationMetadataType>) : new ProjectMemberRoleDAO({ entityManager: this, datasource: 'default', metadata: this.metadata, ...this.overrides?.projectMemberRole, collection: db.collection('projectMemberRoles'), middlewares: [...(this.overrides?.projectMemberRole?.middlewares || []), ...selectMiddleware('projectMemberRole', this.middlewares) as T.DAOMiddleware<ProjectMemberRoleDAOGenerics<MetadataType, OperationMetadataType>>[]], name: 'ProjectMemberRole', logger: this.logger })
+      this._projectMemberRole = db === 'mock' ? (new InMemoryProjectMemberRoleDAO({ entityManager: this, datasource: null, metadata: this.metadata, ...this.overrides?.projectMemberRole, middlewares: [...(this.overrides?.projectMemberRole?.middlewares || []), ...selectMiddleware('projectMemberRole', this.middlewares) as T.DAOMiddleware<ProjectMemberRoleDAOGenerics<MetadataType, OperationMetadataType>>[]], name: 'ProjectMemberRole', logger: this.logger, awaitLog: this.params.awaitLog }) as unknown as ProjectMemberRoleDAO<MetadataType, OperationMetadataType>) : new ProjectMemberRoleDAO({ entityManager: this, datasource: 'default', metadata: this.metadata, ...this.overrides?.projectMemberRole, collection: db.collection('projectMemberRoles'), middlewares: [...(this.overrides?.projectMemberRole?.middlewares || []), ...selectMiddleware('projectMemberRole', this.middlewares) as T.DAOMiddleware<ProjectMemberRoleDAOGenerics<MetadataType, OperationMetadataType>>[]], name: 'ProjectMemberRole', logger: this.logger, awaitLog: this.params.awaitLog })
     }
     return this._projectMemberRole
   }
   get user(): UserDAO<MetadataType, OperationMetadataType> {
     if(!this._user) {
       const db = this.mongodb.default
-      this._user = db === 'mock' ? (new InMemoryUserDAO({ entityManager: this, datasource: null, metadata: this.metadata, ...this.overrides?.user, middlewares: [...(this.overrides?.user?.middlewares || []), ...selectMiddleware('user', this.middlewares) as T.DAOMiddleware<UserDAOGenerics<MetadataType, OperationMetadataType>>[]], name: 'User', logger: this.logger }) as unknown as UserDAO<MetadataType, OperationMetadataType>) : new UserDAO({ entityManager: this, datasource: 'default', metadata: this.metadata, ...this.overrides?.user, collection: db.collection('users'), middlewares: [...(this.overrides?.user?.middlewares || []), ...selectMiddleware('user', this.middlewares) as T.DAOMiddleware<UserDAOGenerics<MetadataType, OperationMetadataType>>[]], name: 'User', logger: this.logger })
+      this._user = db === 'mock' ? (new InMemoryUserDAO({ entityManager: this, datasource: null, metadata: this.metadata, ...this.overrides?.user, middlewares: [...(this.overrides?.user?.middlewares || []), ...selectMiddleware('user', this.middlewares) as T.DAOMiddleware<UserDAOGenerics<MetadataType, OperationMetadataType>>[]], name: 'User', logger: this.logger, awaitLog: this.params.awaitLog }) as unknown as UserDAO<MetadataType, OperationMetadataType>) : new UserDAO({ entityManager: this, datasource: 'default', metadata: this.metadata, ...this.overrides?.user, collection: db.collection('users'), middlewares: [...(this.overrides?.user?.middlewares || []), ...selectMiddleware('user', this.middlewares) as T.DAOMiddleware<UserDAOGenerics<MetadataType, OperationMetadataType>>[]], name: 'User', logger: this.logger, awaitLog: this.params.awaitLog })
     }
     return this._user
   }
   get userLoginIdentity(): UserLoginIdentityDAO<MetadataType, OperationMetadataType> {
     if(!this._userLoginIdentity) {
       const db = this.mongodb.default
-      this._userLoginIdentity = db === 'mock' ? (new InMemoryUserLoginIdentityDAO({ entityManager: this, datasource: null, metadata: this.metadata, ...this.overrides?.userLoginIdentity, middlewares: [...(this.overrides?.userLoginIdentity?.middlewares || []), ...selectMiddleware('userLoginIdentity', this.middlewares) as T.DAOMiddleware<UserLoginIdentityDAOGenerics<MetadataType, OperationMetadataType>>[]], name: 'UserLoginIdentity', logger: this.logger }) as unknown as UserLoginIdentityDAO<MetadataType, OperationMetadataType>) : new UserLoginIdentityDAO({ entityManager: this, datasource: 'default', metadata: this.metadata, ...this.overrides?.userLoginIdentity, collection: db.collection('userLoginIdentitys'), middlewares: [...(this.overrides?.userLoginIdentity?.middlewares || []), ...selectMiddleware('userLoginIdentity', this.middlewares) as T.DAOMiddleware<UserLoginIdentityDAOGenerics<MetadataType, OperationMetadataType>>[]], name: 'UserLoginIdentity', logger: this.logger })
+      this._userLoginIdentity = db === 'mock' ? (new InMemoryUserLoginIdentityDAO({ entityManager: this, datasource: null, metadata: this.metadata, ...this.overrides?.userLoginIdentity, middlewares: [...(this.overrides?.userLoginIdentity?.middlewares || []), ...selectMiddleware('userLoginIdentity', this.middlewares) as T.DAOMiddleware<UserLoginIdentityDAOGenerics<MetadataType, OperationMetadataType>>[]], name: 'UserLoginIdentity', logger: this.logger, awaitLog: this.params.awaitLog }) as unknown as UserLoginIdentityDAO<MetadataType, OperationMetadataType>) : new UserLoginIdentityDAO({ entityManager: this, datasource: 'default', metadata: this.metadata, ...this.overrides?.userLoginIdentity, collection: db.collection('userLoginIdentitys'), middlewares: [...(this.overrides?.userLoginIdentity?.middlewares || []), ...selectMiddleware('userLoginIdentity', this.middlewares) as T.DAOMiddleware<UserLoginIdentityDAOGenerics<MetadataType, OperationMetadataType>>[]], name: 'UserLoginIdentity', logger: this.logger, awaitLog: this.params.awaitLog })
     }
     return this._userLoginIdentity
   }
   get userRole(): UserRoleDAO<MetadataType, OperationMetadataType> {
     if(!this._userRole) {
       const db = this.mongodb.default
-      this._userRole = db === 'mock' ? (new InMemoryUserRoleDAO({ entityManager: this, datasource: null, metadata: this.metadata, ...this.overrides?.userRole, middlewares: [...(this.overrides?.userRole?.middlewares || []), ...selectMiddleware('userRole', this.middlewares) as T.DAOMiddleware<UserRoleDAOGenerics<MetadataType, OperationMetadataType>>[]], name: 'UserRole', logger: this.logger }) as unknown as UserRoleDAO<MetadataType, OperationMetadataType>) : new UserRoleDAO({ entityManager: this, datasource: 'default', metadata: this.metadata, ...this.overrides?.userRole, collection: db.collection('userRoles'), middlewares: [...(this.overrides?.userRole?.middlewares || []), ...selectMiddleware('userRole', this.middlewares) as T.DAOMiddleware<UserRoleDAOGenerics<MetadataType, OperationMetadataType>>[]], name: 'UserRole', logger: this.logger })
+      this._userRole = db === 'mock' ? (new InMemoryUserRoleDAO({ entityManager: this, datasource: null, metadata: this.metadata, ...this.overrides?.userRole, middlewares: [...(this.overrides?.userRole?.middlewares || []), ...selectMiddleware('userRole', this.middlewares) as T.DAOMiddleware<UserRoleDAOGenerics<MetadataType, OperationMetadataType>>[]], name: 'UserRole', logger: this.logger, awaitLog: this.params.awaitLog }) as unknown as UserRoleDAO<MetadataType, OperationMetadataType>) : new UserRoleDAO({ entityManager: this, datasource: 'default', metadata: this.metadata, ...this.overrides?.userRole, collection: db.collection('userRoles'), middlewares: [...(this.overrides?.userRole?.middlewares || []), ...selectMiddleware('userRole', this.middlewares) as T.DAOMiddleware<UserRoleDAOGenerics<MetadataType, OperationMetadataType>>[]], name: 'UserRole', logger: this.logger, awaitLog: this.params.awaitLog })
     }
     return this._userRole
   }
   get userSocial(): UserSocialDAO<MetadataType, OperationMetadataType> {
     if(!this._userSocial) {
       const db = this.mongodb.default
-      this._userSocial = db === 'mock' ? (new InMemoryUserSocialDAO({ entityManager: this, datasource: null, metadata: this.metadata, ...this.overrides?.userSocial, middlewares: [...(this.overrides?.userSocial?.middlewares || []), ...selectMiddleware('userSocial', this.middlewares) as T.DAOMiddleware<UserSocialDAOGenerics<MetadataType, OperationMetadataType>>[]], name: 'UserSocial', logger: this.logger }) as unknown as UserSocialDAO<MetadataType, OperationMetadataType>) : new UserSocialDAO({ entityManager: this, datasource: 'default', metadata: this.metadata, ...this.overrides?.userSocial, collection: db.collection('userSocials'), middlewares: [...(this.overrides?.userSocial?.middlewares || []), ...selectMiddleware('userSocial', this.middlewares) as T.DAOMiddleware<UserSocialDAOGenerics<MetadataType, OperationMetadataType>>[]], name: 'UserSocial', logger: this.logger })
+      this._userSocial = db === 'mock' ? (new InMemoryUserSocialDAO({ entityManager: this, datasource: null, metadata: this.metadata, ...this.overrides?.userSocial, middlewares: [...(this.overrides?.userSocial?.middlewares || []), ...selectMiddleware('userSocial', this.middlewares) as T.DAOMiddleware<UserSocialDAOGenerics<MetadataType, OperationMetadataType>>[]], name: 'UserSocial', logger: this.logger, awaitLog: this.params.awaitLog }) as unknown as UserSocialDAO<MetadataType, OperationMetadataType>) : new UserSocialDAO({ entityManager: this, datasource: 'default', metadata: this.metadata, ...this.overrides?.userSocial, collection: db.collection('userSocials'), middlewares: [...(this.overrides?.userSocial?.middlewares || []), ...selectMiddleware('userSocial', this.middlewares) as T.DAOMiddleware<UserSocialDAOGenerics<MetadataType, OperationMetadataType>>[]], name: 'UserSocial', logger: this.logger, awaitLog: this.params.awaitLog })
     }
     return this._userSocial
   }

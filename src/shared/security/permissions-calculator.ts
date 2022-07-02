@@ -5,11 +5,16 @@ import { DefaultSecurityContext, OperationSecurityDomain, PermissionCode, Securi
 export class PermissionsCalculator {
   constructor(
     public securityContext: SecurityContext = DefaultSecurityContext,
-    public operationDomain: OperationSecurityDomain = {},
+    public operationDomain: OperationSecurityDomain | OperationSecurityDomain[] = {},
   ) {}
 
   withContext(securityContext: SecurityContext) {
     this.securityContext = securityContext;
+    return this;
+  }
+
+  withDomains(operationDomain: OperationSecurityDomain[]) {
+    this.operationDomain = operationDomain;
     return this;
   }
 
@@ -20,11 +25,19 @@ export class PermissionsCalculator {
 
   hasPermission(permissionCode: PermissionCode) {
     if (!this.securityContext) return false;
-    return isSecurityDomainValidForOpDomain(
-      permissionCode,
-      this.securityContext.permissions[permissionCode],
-      this.operationDomain,
-    );
+    if (Array.isArray(this.operationDomain)) {
+      for (const domain of this.operationDomain) {
+        if (isSecurityDomainValidForOpDomain(permissionCode, this.securityContext.permissions[permissionCode], domain))
+          return true;
+      }
+      return false;
+    } else {
+      return isSecurityDomainValidForOpDomain(
+        permissionCode,
+        this.securityContext.permissions[permissionCode],
+        this.operationDomain,
+      );
+    }
   }
 
   hasAllPermissions(...permissionCodes: PermissionCode[]) {

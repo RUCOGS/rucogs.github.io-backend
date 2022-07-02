@@ -75,7 +75,7 @@ export default {
         const permsCalc = makePermsCalc().withContext(context.securityContext);
         permsCalc
           .withDomain({
-            projectId: [args.input.id],
+            projectId: args.input.id,
           })
           .assertPermission(Permission.UpdateProject);
         if (isDefined(args.input.createdAt) || isDefined(args.input.completedAt)) {
@@ -212,7 +212,7 @@ export default {
         !makePermsCalc()
           .withContext(context.securityContext)
           .withDomain({
-            projectId: [args.id],
+            projectId: args.id,
           })
           .hasPermission(Permission.DeleteProject)
       ) {
@@ -284,7 +284,7 @@ export default {
         !makePermsCalc()
           .withContext(context.securityContext)
           .withDomain({
-            projectId: [args.projectId],
+            projectId: args.projectId,
           })
           .hasPermission(Permission.TransferProjectOwnership)
       ) {

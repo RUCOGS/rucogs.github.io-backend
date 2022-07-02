@@ -13,6 +13,7 @@ function getSecurityPolicy() {
         },
         defaultPermissions: {
           read: {
+            __typename: true,
             avatarLink: true,
             bannerLink: true,
             createdAt: true,

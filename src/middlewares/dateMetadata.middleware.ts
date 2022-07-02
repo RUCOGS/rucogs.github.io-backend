@@ -20,9 +20,12 @@ export function dateMetadataMiddleware(generateDate: () => any) {
       }
       const now: Date = generateDate();
       for (const field in context.schema) {
-        const metadata = context.schema[field].metadata;
-        if (metadata) {
-          if ((args.operation === 'insert' && metadata.createdAt) || metadata.updatedAt) {
+        const directives = context.schema[field].directives;
+        if (directives) {
+          if (
+            (args.operation === 'insert' && directives.createdAt !== undefined) ||
+            directives.updatedAt !== undefined
+          ) {
             (<any>changes)[field] = now;
           }
         }

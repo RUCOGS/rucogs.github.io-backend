@@ -13,7 +13,7 @@ Represents a set of objects
 export type BaseSecurityDomainFieldSet = Partial<SecurityDomainTemplate>;
 
 export type EntityManagerMetadata = {
-  securityDomain: OperationSecurityDomain;
+  securityDomains: OperationSecurityDomain[];
 };
 
 /**
@@ -23,24 +23,26 @@ The filter is shown in the example below:
 
 Ex. 
 const operationDomain = {
-  userId: ["dsfdsf2023f8j3f", "w023f920sdfdsf", "fj230f89fjfef" ],
-  roleCode: ["USER", "MODERATOR", "SUPER_ADMIN" ],
-  roleCode: ["USER", "MODERATOR", "SUPER_ADMIN" ],
+  userId: "dsfdsf2023f8j3f",
+  roleCode: "USER",
 }
+
+const operationDomainTwo = {
+  userId: "w023f920sdfdsf",
+  roleCode: "MODERATOR"
+}
+
+const securityDomains = [operationDomain, operationDomainTwo]
 
 This will filter for a set of entities such that
 for each entitiy:
 
-  userId == "dsfdsf2023f8j3f", OR "w023f920sdfdsf", OR "fj230f89fjfef",
-  AND
-  roleCode == "USER", OR "MODERATOR", OR "SUPER_ADMIN",
-  AND
-  roleCode == "USER", OR "MODERATOR", OR "SUPER_ADMIN",
+  userId == "dsfdsf2023f8j3f" AND roleCode == "USER"
+  OR
+  userId == "w023f920sdfdsf" AND roleCode == "MODERATOR"
 
  */
-export type OperationSecurityDomain = {
-  [K in keyof BaseSecurityDomainFieldSet]: SecurityDomainTemplate[K][];
-};
+export type OperationSecurityDomain = BaseSecurityDomainFieldSet;
 
 export type BaseSecurityDomain = BaseSecurityDomainFieldSet[] | true;
 export function isBaseSecurityDomain(object: any): object is BaseSecurityDomain {

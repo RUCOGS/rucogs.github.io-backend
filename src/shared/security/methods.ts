@@ -65,16 +65,7 @@ export function isBaseDomainValidForOpDomain(domain: BaseSecurityDomain, operati
     let matchedAllDomainProps = true;
     for (const key in operationDomain) {
       if (validDomain.hasOwnProperty(key)) {
-        // OperationSecurityDomain format:
-        // const operationDomain = {
-        //   userId: ["dsfdsf2023f8j3f", /*OR*/ "w023f920sdfdsf", /*OR*/ "fj230f89fjfef" ],
-        //   /*AND*/
-        //   roleCode: ["USER", /*OR*/ "MODERATOR", /*OR*/ "SUPER_ADMIN" ],
-        //   /*AND*/
-        //   roleCode: ["USER", /*OR*/ "MODERATOR", /*OR*/ "SUPER_ADMIN" ],
-        // }
-        // If we didn't get a match inside this array
-        if (!(<any>operationDomain)[key].some((x: any) => x === (<any>validDomain)[key])) {
+        if ((<any>operationDomain)[key] !== (<any>validDomain)[key]) {
           matchedAllDomainProps = false;
           break;
         }

@@ -55,7 +55,7 @@ export default {
       makePermsCalc()
         .withContext(context.securityContext)
         .withDomain({
-          userId: [args.input.userId],
+          userId: args.input.userId,
         })
         .assertPermission(Permission.ManageEboard);
 
@@ -91,11 +91,9 @@ export default {
         });
         if (!eBoard) throw new HttpError(400, "EBoard doesn't exist!");
 
-        const permCalc = makePermsCalc()
-          .withContext(context.securityContext)
-          .withDomain({
-            userId: [eBoard.userId],
-          });
+        const permCalc = makePermsCalc().withContext(context.securityContext).withDomain({
+          userId: eBoard.userId,
+        });
 
         permCalc.assertPermission(Permission.ManageEboard);
 
@@ -152,7 +150,7 @@ export default {
       makePermsCalc()
         .withContext(context.securityContext)
         .withDomain({
-          userId: [eBoard.userId],
+          userId: eBoard.userId,
         })
         .assertPermission(Permission.ManageEboard);
 
@@ -179,7 +177,7 @@ export default {
       makePermsCalc()
         .withContext(context.securityContext)
         .withDomain({
-          userId: [eBoard?.userId],
+          userId: eBoard?.userId,
         })
         .assertPermission(Permission.ManageEboard);
 
@@ -216,11 +214,9 @@ export default {
       });
       if (!eBoardTerm) throw new HttpError(400, "EBoard term doesn't exist!");
 
-      const permCalc = makePermsCalc()
-        .withContext(context.securityContext)
-        .withDomain({
-          userId: [eBoardTerm.eBoard.userId],
-        });
+      const permCalc = makePermsCalc().withContext(context.securityContext).withDomain({
+        userId: eBoardTerm.eBoard.userId,
+      });
       permCalc.assertPermission(Permission.ManageEboard);
 
       const error = await startEntityManagerTransaction(
@@ -281,7 +277,7 @@ export default {
       makePermsCalc()
         .withContext(context.securityContext)
         .withDomain({
-          userId: [eBoardTerm.eBoard.userId],
+          userId: eBoardTerm.eBoard.userId,
         })
         .assertPermission(Permission.ManageEboard);
 

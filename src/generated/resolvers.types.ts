@@ -356,6 +356,18 @@ export type ResolversParentTypes = {
   UserUpdateInput: types.UserUpdateInput;
 };
 
+export type CreatedAtDirectiveArgs = { };
+
+export type CreatedAtDirectiveResolver<Result, Parent, ContextType = any, Args = CreatedAtDirectiveArgs> = DirectiveResolverFn<Result, Parent, ContextType, Args>;
+
+export type UniqueDirectiveArgs = { };
+
+export type UniqueDirectiveResolver<Result, Parent, ContextType = any, Args = UniqueDirectiveArgs> = DirectiveResolverFn<Result, Parent, ContextType, Args>;
+
+export type UpdatedAtDirectiveArgs = { };
+
+export type UpdatedAtDirectiveResolver<Result, Parent, ContextType = any, Args = UpdatedAtDirectiveArgs> = DirectiveResolverFn<Result, Parent, ContextType, Args>;
+
 export interface DateScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['Date'], any> {
   name: 'Date';
 }
@@ -632,3 +644,8 @@ export type Resolvers<ContextType = any> = {
   UserSocial?: UserSocialResolvers<ContextType>;
 };
 
+export type DirectiveResolvers<ContextType = any> = {
+  createdAt?: CreatedAtDirectiveResolver<any, any, ContextType>;
+  unique?: UniqueDirectiveResolver<any, any, ContextType>;
+  updatedAt?: UpdatedAtDirectiveResolver<any, any, ContextType>;
+};

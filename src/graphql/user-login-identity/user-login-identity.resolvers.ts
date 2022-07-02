@@ -14,7 +14,7 @@ export default {
       makePermsCalc()
         .withContext(context.securityContext)
         .withDomain({
-          userId: [args.input.userId],
+          userId: args.input.userId,
         })
         .assertPermission(Permission.UpdateUserPrivate);
 
@@ -45,7 +45,7 @@ export default {
       makePermsCalc()
         .withContext(context.securityContext)
         .withDomain({
-          userId: [loginIdentity.userId],
+          userId: loginIdentity.userId,
         })
         .assertPermission(Permission.UpdateUserPrivate);
 
@@ -85,7 +85,7 @@ export default {
       makePermsCalc()
         .withContext(context.securityContext)
         .withDomain({
-          userId: [loginIdentity.userId],
+          userId: loginIdentity.userId,
         })
         .assertPermission(Permission.UpdateUserPrivate);
 

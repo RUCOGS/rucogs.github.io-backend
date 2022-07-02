@@ -2,7 +2,12 @@ import { securityContextToTypettaSecurityContext, SecurityPolicy } from '@src/co
 import { Permission } from '@src/generated/model.types';
 import { EntityManager, EntityManagerParams } from '@src/generated/typetta';
 import { dateMetadataMiddleware } from '@src/middlewares/dateMetadata.middleware';
-import { BaseSecurityDomainFieldSet, EntityManagerMetadata, SecurityContext } from '@src/shared/security';
+import {
+  BaseSecurityDomainFieldSet,
+  EntityManagerMetadata,
+  OperationSecurityDomain,
+  SecurityContext,
+} from '@src/shared/security';
 import { HttpError } from '@src/shared/utils';
 import { PERMISSION } from '@twinlogix/typetta';
 import { Db, ObjectId } from 'mongodb';
@@ -84,11 +89,29 @@ export function createSecureEntityManager(
       // Here you're specify how you want to fetch the current call's domain.
       // We're planning on storing our current domain under metadata.security.
       operationDomain: (operationMetadata) => {
+        let domains = operationMetadata?.securityDomains;
         if (overrideOperationMetadata) {
-          return overrideOperationMetadata.securityDomain;
+          domains = overrideOperationMetadata.securityDomains;
         }
-        return operationMetadata?.securityDomain;
+        return operationDomainsToTypettaOperationDomains(domains);
       },
     },
   });
+}
+
+type TypettaDomain = {
+  [key in keyof BaseSecurityDomainFieldSet]?: string[];
+};
+
+function operationDomainsToTypettaOperationDomains(domains: OperationSecurityDomain[] | undefined) {
+  if (!domains) return undefined;
+  const tyepttaDomains: TypettaDomain[] = [];
+  for (const domain of domains) {
+    const typettaDomain: TypettaDomain = {};
+    for (const field in domain) {
+      if ((<any>domain)[field] !== undefined) (<any>typettaDomain)[field] = [(<any>domain)[field]];
+    }
+    tyepttaDomains.push(typettaDomain);
+  }
+  return tyepttaDomains;
 }

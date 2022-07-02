@@ -30,12 +30,12 @@ const acceptProjectInvite: MutationResolvers['acceptProjectInvite'] = async (
   if (invite.type === InviteType.Incoming) {
     makePermsCalc()
       .withContext(context.securityContext)
-      .withDomain({ projectId: [invite.projectId] })
+      .withDomain({ projectId: invite.projectId })
       .assertPermission(Permission.UpdateProject);
   } else if (invite.type === InviteType.Outgoing) {
     makePermsCalc()
       .withContext(context.securityContext)
-      .withDomain({ projectInviteId: [args.inviteId] })
+      .withDomain({ projectInviteId: args.inviteId })
       .assertPermission(Permission.ManageProjectInvites);
   }
   const error = await startEntityManagerTransaction(
@@ -68,7 +68,7 @@ export default {
           !makePermsCalc()
             .withContext(context.securityContext)
             .withDomain({
-              projectId: [args.input.projectId],
+              projectId: args.input.projectId,
             })
             .hasPermission(Permission.UpdateProject)
         ) {
@@ -147,10 +147,10 @@ export default {
       const calc = makePermsCalc().withContext(context.securityContext);
 
       if (
-        !calc.withDomain({ projectId: [invite.projectId] }).hasPermission(Permission.UpdateProject) &&
+        !calc.withDomain({ projectId: invite.projectId }).hasPermission(Permission.UpdateProject) &&
         !calc
           .withContext(context.securityContext)
-          .withDomain({ projectInviteId: [invite.id] })
+          .withDomain({ projectInviteId: invite.id })
           .hasPermission(Permission.ManageProjectInvites)
       ) {
         throw new HttpError(403, 'Unauthorized');

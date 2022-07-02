@@ -68,11 +68,9 @@ export default {
       return projectMember.id;
     },
     updateProjectMember: async (parent, args, context: ApolloResolversContext, info) => {
-      const permCalc = makePermsCalc()
-        .withContext(context.securityContext)
-        .withDomain({
-          projectMemberId: [args.input.id],
-        });
+      const permCalc = makePermsCalc().withContext(context.securityContext).withDomain({
+        projectMemberId: args.input.id,
+      });
 
       permCalc.assertPermission(Permission.ManageProjectMember);
 
@@ -147,7 +145,7 @@ export default {
       makePermsCalc()
         .withContext(context.securityContext)
         .withDomain({
-          projectMemberId: [args.id],
+          projectMemberId: args.id,
         })
         .assertPermission(Permission.ManageProjectMember);
 

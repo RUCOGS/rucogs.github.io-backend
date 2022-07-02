@@ -3,6 +3,9 @@ import { gql } from 'apollo-server';
 export default gql`
   scalar Date
   scalar Json
+  directive @createdAt on FIELD_DEFINITION
+  directive @updatedAt on FIELD_DEFINITION
+  directive @unique on FIELD_DEFINITION
 
   enum RoleCode {
     SUPER_ADMIN
@@ -73,8 +76,8 @@ export default gql`
 
   type User @entity @mongodb {
     id: ID! @id(from: "db") @alias(value: "_id")
-    createdAt: Date @schema(metadata: [{ key: "createdAt", value: true }])
-    updatedAt: Date @schema(metadata: [{ key: "updatedAt", value: true }])
+    createdAt: Date @createdAt
+    updatedAt: Date @updatedAt
 
     email: String
     username: String!
@@ -95,8 +98,8 @@ export default gql`
     id: ID! @id(from: "db") @alias(value: "_id")
     user: User! @innerRef
     userId: ID!
-    createdAt: Date @schema(metadata: [{ key: "createdAt", value: true }])
-    updatedAt: Date @schema(metadata: [{ key: "updatedAt", value: true }])
+    createdAt: Date @createdAt
+    updatedAt: Date @updatedAt
     bio: String
     avatarLink: String
     terms: [EBoardTerm!]! @foreignRef(refFrom: "eBoardId")
@@ -119,9 +122,9 @@ export default gql`
 
   type UserRole @entity @mongodb {
     id: ID! @id(from: "db") @alias(value: "_id")
-    roleCode: RoleCode! @schema(metadata: [{ key: "unique", value: true }])
+    roleCode: RoleCode! @unique
     user: User! @innerRef
-    userId: ID! @schema(metadata: [{ key: "unique", value: true }])
+    userId: ID! @unique
   }
 
   type UserSocial @entity @mongodb {
@@ -135,7 +138,7 @@ export default gql`
 
   type UserLoginIdentity @entity @mongodb {
     id: ID! @id(from: "db") @alias(value: "_id")
-    name: String! @schema(metadata: [{ key: "unique", value: true }])
+    name: String! @unique
     identityId: String!
     data: Json
     user: User! @innerRef
@@ -144,8 +147,8 @@ export default gql`
 
   type Project @entity @mongodb {
     id: ID! @id(from: "db") @alias(value: "_id")
-    createdAt: Date @schema(metadata: [{ key: "createdAt", value: true }])
-    updatedAt: Date @schema(metadata: [{ key: "updatedAt", value: true }])
+    createdAt: Date @createdAt
+    updatedAt: Date @updatedAt
 
     completedAt: Date
     name: String!
@@ -165,8 +168,8 @@ export default gql`
 
   type ProjectDiscordConfig @entity @mongodb {
     id: ID! @id(from: "db") @alias(value: "_id")
-    createdAt: Date @schema(metadata: [{ key: "createdAt", value: true }])
-    updatedAt: Date @schema(metadata: [{ key: "updatedAt", value: true }])
+    createdAt: Date @createdAt
+    updatedAt: Date @updatedAt
 
     project: Project! @innerRef
     projectId: ID!
@@ -175,31 +178,31 @@ export default gql`
 
   type ProjectMember @entity @mongodb {
     id: ID! @id(from: "db") @alias(value: "_id")
-    createdAt: Date @schema(metadata: [{ key: "createdAt", value: true }])
-    updatedAt: Date @schema(metadata: [{ key: "updatedAt", value: true }])
+    createdAt: Date @createdAt
+    updatedAt: Date @updatedAt
 
     contributions: String
     roles: [ProjectMemberRole!]! @foreignRef(refFrom: "projectMemberId")
     project: Project! @innerRef
     projectId: ID!
     user: User! @innerRef
-    userId: ID! @schema(metadata: [{ key: "unique", value: true }])
+    userId: ID! @unique
   }
 
   type ProjectMemberRole @entity @mongodb {
     id: ID! @id(from: "db") @alias(value: "_id")
-    roleCode: RoleCode! @schema(metadata: [{ key: "unique", value: true }])
+    roleCode: RoleCode! @unique
     projectMember: ProjectMember! @innerRef
     projectMemberId: ID!
   }
 
   type ProjectInvite @entity @mongodb {
     id: ID! @id(from: "db") @alias(value: "_id")
-    createdAt: Date @schema(metadata: [{ key: "createdAt", value: true }])
+    createdAt: Date @createdAt
     type: InviteType!
     user: User! @innerRef
-    userId: ID! @schema(metadata: [{ key: "unique", value: true }])
+    userId: ID! @unique
     project: Project! @innerRef
-    projectId: ID! @schema(metadata: [{ key: "unique", value: true }])
+    projectId: ID! @unique
   }
 `;

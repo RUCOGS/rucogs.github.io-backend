@@ -45,7 +45,7 @@
   "dependencies": {
     "@graphql-tools/schema": "^8.3.14",
     "@svgdotjs/svg.js": "^3.1.2",
-    "@twinlogix/typetta": "^2.0.0-10",
+    "@twinlogix/typetta": "^2.1.1",
     "apollo-server": "^3.8.1",
     "apollo-server-core": "^3.8.2",
     "async-lock": "^1.3.2",

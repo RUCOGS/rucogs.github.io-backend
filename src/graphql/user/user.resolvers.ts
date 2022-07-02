@@ -55,11 +55,9 @@ export default {
 
     updateUser: async (parent, args, context: ApolloResolversContext, info) => {
       await updateUserLock.acquire('lock', async () => {
-        const permCalc = makePermsCalc()
-          .withContext(context.securityContext)
-          .withDomain({
-            userId: [args.input.id],
-          });
+        const permCalc = makePermsCalc().withContext(context.securityContext).withDomain({
+          userId: args.input.id,
+        });
 
         permCalc.assertPermission(Permission.UpdateUser);
         if (args.input.createdAt) permCalc.assertPermission(Permission.ManageMetadata);
@@ -224,7 +222,7 @@ export default {
       makePermsCalc()
         .withContext(context.securityContext)
         .withDomain({
-          userId: [args.id],
+          userId: args.id,
         })
         .assertPermission(Permission.DeleteUser);
 
