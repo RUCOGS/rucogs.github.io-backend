@@ -9,7 +9,7 @@ export default {
         // If we are querying for the security context of a another user,
         // then we must generate it, because we cannot reuse the security
         // context generated for ourselves.
-        return await getCompleteSecurityContext(context.entityManager, args.userId);
+        return await getCompleteSecurityContext(context.unsecureEntityManager, args.userId);
       }
       if (context.securityContext) return context.securityContext;
       return null;

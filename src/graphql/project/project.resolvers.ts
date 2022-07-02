@@ -238,10 +238,6 @@ export default {
 
       if (project.discordConfig) throw new HttpError(400, 'Cannot delete project with Discord presence!');
 
-      const invites = await context.unsecureEntityManager.projectInvite.findAll({
-        filter: { projectId: args.id },
-      });
-
       const error = await startEntityManagerTransaction(
         context.unsecureEntityManager,
         context.mongoClient,
@@ -274,7 +270,6 @@ export default {
         throw error;
       }
 
-      for (const invite of invites) pubsub.publish(PubSubEvents.ProjectInviteDeleted, invite);
       pubsub.publish(PubSubEvents.ProjectDeleted, project);
       return true;
     },

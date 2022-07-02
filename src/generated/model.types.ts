@@ -1281,102 +1281,102 @@ export type Subscription = {
 
 
 export type SubscriptionEBoardCreatedArgs = {
-  filter: EBoardSubscriptionFilter;
+  filter?: InputMaybe<EBoardSubscriptionFilter>;
 };
 
 
 export type SubscriptionEBoardDeletedArgs = {
-  filter: EBoardSubscriptionFilter;
+  filter?: InputMaybe<EBoardSubscriptionFilter>;
 };
 
 
 export type SubscriptionEBoardTermCreatedArgs = {
-  filter: EBoardTermSubscriptionFilter;
+  filter?: InputMaybe<EBoardTermSubscriptionFilter>;
 };
 
 
 export type SubscriptionEBoardTermDeletedArgs = {
-  filter: EBoardTermSubscriptionFilter;
+  filter?: InputMaybe<EBoardTermSubscriptionFilter>;
 };
 
 
 export type SubscriptionEBoardTermUpdatedArgs = {
-  filter: EBoardTermSubscriptionFilter;
+  filter?: InputMaybe<EBoardTermSubscriptionFilter>;
 };
 
 
 export type SubscriptionEBoardUpdatedArgs = {
-  filter: EBoardSubscriptionFilter;
+  filter?: InputMaybe<EBoardSubscriptionFilter>;
 };
 
 
 export type SubscriptionProjectCreatedArgs = {
-  filter: ProjectSubscriptionFilter;
+  filter?: InputMaybe<ProjectSubscriptionFilter>;
 };
 
 
 export type SubscriptionProjectDeletedArgs = {
-  filter: ProjectSubscriptionFilter;
+  filter?: InputMaybe<ProjectSubscriptionFilter>;
 };
 
 
 export type SubscriptionProjectInviteCreatedArgs = {
-  filter: ProjectInviteSubscriptionFilter;
+  filter?: InputMaybe<ProjectInviteSubscriptionFilter>;
 };
 
 
 export type SubscriptionProjectInviteDeletedArgs = {
-  filter: ProjectInviteSubscriptionFilter;
+  filter?: InputMaybe<ProjectInviteSubscriptionFilter>;
 };
 
 
 export type SubscriptionProjectMemberCreatedArgs = {
-  filter: ProjectMemberSubscriptionFilter;
+  filter?: InputMaybe<ProjectMemberSubscriptionFilter>;
 };
 
 
 export type SubscriptionProjectMemberDeletedArgs = {
-  filter: ProjectMemberSubscriptionFilter;
+  filter?: InputMaybe<ProjectMemberSubscriptionFilter>;
 };
 
 
 export type SubscriptionProjectMemberUpdatedArgs = {
-  filter: ProjectMemberSubscriptionFilter;
+  filter?: InputMaybe<ProjectMemberSubscriptionFilter>;
 };
 
 
 export type SubscriptionProjectUpdatedArgs = {
-  filter: ProjectSubscriptionFilter;
+  filter?: InputMaybe<ProjectSubscriptionFilter>;
 };
 
 
 export type SubscriptionUserCreatedArgs = {
-  filter: UserSubscriptionFilter;
+  filter?: InputMaybe<UserSubscriptionFilter>;
 };
 
 
 export type SubscriptionUserDeletedArgs = {
-  filter: UserSubscriptionFilter;
+  filter?: InputMaybe<UserSubscriptionFilter>;
 };
 
 
 export type SubscriptionUserLoginIdentityCreatedArgs = {
-  filter: UserLoginIdentitySubscriptionFilter;
+  filter?: InputMaybe<UserLoginIdentitySubscriptionFilter>;
 };
 
 
 export type SubscriptionUserLoginIdentityDeletedArgs = {
-  filter: UserLoginIdentitySubscriptionFilter;
+  filter?: InputMaybe<UserLoginIdentitySubscriptionFilter>;
 };
 
 
 export type SubscriptionUserLoginIdentityUpdatedArgs = {
-  filter: UserLoginIdentitySubscriptionFilter;
+  filter?: InputMaybe<UserLoginIdentitySubscriptionFilter>;
 };
 
 
 export type SubscriptionUserUpdatedArgs = {
-  filter: UserSubscriptionFilter;
+  filter?: InputMaybe<UserSubscriptionFilter>;
 };
 
 export type SubscriptionInsertInput = {

@@ -50,7 +50,7 @@ function getSecurityPolicy() {
       },
       userLoginIdentity: {
         domain: {
-          userId: 'id',
+          userId: 'userId',
         },
         permissions: {
           READ_USER_PRIVATE: PERMISSION.READ_ONLY,

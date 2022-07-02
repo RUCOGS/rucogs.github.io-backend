@@ -8,9 +8,9 @@ export default gql`
   }
 
   extend type Subscription {
-    projectMemberCreated(filter: ProjectMemberSubscriptionFilter!): ProjectMember
-    projectMemberUpdated(filter: ProjectMemberSubscriptionFilter!): ProjectMember
-    projectMemberDeleted(filter: ProjectMemberSubscriptionFilter!): ProjectMember
+    projectMemberCreated(filter: ProjectMemberSubscriptionFilter): ProjectMember
+    projectMemberUpdated(filter: ProjectMemberSubscriptionFilter): ProjectMember
+    projectMemberDeleted(filter: ProjectMemberSubscriptionFilter): ProjectMember
   }
 
   input ProjectMemberSubscriptionFilter {

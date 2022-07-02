@@ -46,15 +46,14 @@ const acceptProjectInvite: MutationResolvers['acceptProjectInvite'] = async (
         userId: invite.userId,
         projectId: invite.projectId,
       });
-      await transEntitymanager.projectInvite.deleteOne({
-        filter: { id: args.inviteId },
+      await deleteProjectInvites(transEntitymanager, {
+        id: args.inviteId,
       });
     },
   );
 
   if (error) throw error;
 
-  pubsub.publish(PubSubEvents.ProjectInviteDeleted, invite);
   return true;
 };
 
@@ -167,7 +166,6 @@ export default {
 
       if (error) throw error;
 
-      pubsub.publish(PubSubEvents.ProjectInviteDeleted, invite);
       return true;
     },
 

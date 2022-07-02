@@ -8,9 +8,9 @@ export default gql`
   }
 
   extend type Subscription {
-    userLoginIdentityCreated(filter: UserLoginIdentitySubscriptionFilter!): UserLoginIdentity
-    userLoginIdentityUpdated(filter: UserLoginIdentitySubscriptionFilter!): UserLoginIdentity
-    userLoginIdentityDeleted(filter: UserLoginIdentitySubscriptionFilter!): UserLoginIdentity
+    userLoginIdentityCreated(filter: UserLoginIdentitySubscriptionFilter): UserLoginIdentity
+    userLoginIdentityUpdated(filter: UserLoginIdentitySubscriptionFilter): UserLoginIdentity
+    userLoginIdentityDeleted(filter: UserLoginIdentitySubscriptionFilter): UserLoginIdentity
   }
 
   input UserLoginIdentitySubscriptionFilter {

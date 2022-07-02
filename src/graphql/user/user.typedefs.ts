@@ -8,9 +8,9 @@ export default gql`
   }
 
   extend type Subscription {
-    userCreated(filter: UserSubscriptionFilter!): User
-    userUpdated(filter: UserSubscriptionFilter!): User
-    userDeleted(filter: UserSubscriptionFilter!): User
+    userCreated(filter: UserSubscriptionFilter): User
+    userUpdated(filter: UserSubscriptionFilter): User
+    userDeleted(filter: UserSubscriptionFilter): User
   }
 
   input UserSubscriptionFilter {

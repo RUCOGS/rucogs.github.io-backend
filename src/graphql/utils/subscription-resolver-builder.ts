@@ -41,7 +41,7 @@ export class SubscriptionResolverBuilder {
 
   shallowOneToOneFilter(payloadTargetPath = '', filterObjectPath = 'filter') {
     this.filterFns.push((payload, args) => {
-      if (Object.keys(args.filter).length === 0) return false;
+      if (Object.keys(args.filter).length === 0) return true;
 
       const payloadTarget = payloadTargetPath ? payload[payloadTargetPath] : payload;
       for (const key in args.filter) {
