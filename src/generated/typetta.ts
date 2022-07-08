@@ -806,6 +806,14 @@ roles: { type: 'relation', relation: 'foreign',
       isExcluded: false,
       isId: false,
       generationStrategy: 'undefined' },
+rutgersEmail: { type: 'scalar', 
+      isList: false, 
+      astName: 'String', 
+      isRequired: false, 
+      isListElementRequired: false,
+      isExcluded: false,
+      isId: false,
+      generationStrategy: 'undefined' },
 socials: { type: 'relation', relation: 'foreign', 
       isList: true, 
       astName: 'UserSocial', 
@@ -2018,6 +2026,11 @@ export function userSchema(): T.Schema<ScalarsSpecification> {
                 dao: 'userRole',
                 isListElementRequired: true,required: true,isList: true,directives: {  }
               },
+  'rutgersEmail': {
+              type: 'scalar',
+              scalar: 'String',
+              directives: {  }
+            },
   'socials':{
                 type: 'relation',
                 astName: 'UserSocial',

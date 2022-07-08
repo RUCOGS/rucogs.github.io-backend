@@ -15,7 +15,7 @@ import { makeSubscriptionResolver } from '@src/graphql/utils/subscription-resolv
 import { ApolloResolversContext } from '@src/misc/context';
 import { makePermsCalc, RoleType } from '@src/shared/security';
 import { HttpError } from '@src/shared/utils';
-import { assertNoDuplicates } from '@src/shared/validation';
+import { assertEmailValid, assertNoDuplicates } from '@src/shared/validation';
 import {
   assertRequesterCanManageRoleCodes,
   assertRolesAreOfType,
@@ -279,6 +279,32 @@ export default {
       if (error instanceof Error) throw error;
 
       pubsub.publish(PubSubEvents.UserDeleted, user);
+      return true;
+    },
+
+    verifyUser: async (parent, args, context: ApolloResolversContext, info) => {
+      if (!args.input.userId) args.input.userId = context.securityContext.userId;
+      if (!args.input.userId) throw new HttpError(400, 'Expected a userId or a request that was sent by a user!');
+
+      assertEmailValid(args.input.rutgersEmail);
+
+      const user = await context.unsecureEntityManager.user.findOne({
+        filter: { id: args.input.userId },
+        projection: {
+          displayName: true,
+        },
+      });
+
+      await context.mailController
+        .withOptions({
+          to: args.input.rutgersEmail,
+          subject: 'Verify Email',
+        })
+        .withTemplate('verify', {
+          name: user?.displayName ?? 'user',
+        })
+        .sendMail();
+
       return true;
     },
   },

@@ -1,4 +1,16 @@
 {
-	"mongodbUrl": "",
-	"mongodbDbName": ""
+	"mongoDB": {
+		"url": "",
+		"dbName": ""
+	},
+
+	"nodemailer": {
+		"host": "",
+		"user": "",
+		"password": "",
+		"port": 357
+	},
+
+	"baseUrl": "",
+	"port": 3000
 }

@@ -1,0 +1,34 @@
+@import '../shared/shared.scss';
+
+.logo {
+	margin: auto;
+	display: block;
+}
+
+$padding: 32px;
+
+.header {
+	padding: $padding;
+	color: $blank;
+  background-color: $primary;
+}
+
+.content {
+	min-height: 15em;
+	padding: $padding;
+	color: $foreground;
+	background-color: $blank;
+}
+
+.footer {
+	margin-bottom: $padding;
+	padding: $padding;
+	font-size: small;
+	line-height: 1.5em;
+  background-color: $accent-dark;
+  color: $accent;
+}
+
+table {
+	background-color: $primary;
+}

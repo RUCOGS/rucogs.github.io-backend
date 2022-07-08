@@ -1,0 +1,4 @@
+{
+	"ignored_files": [ "**/*.template.json" ],
+	"use_ts_exclude": true
+}

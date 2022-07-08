@@ -92,6 +92,7 @@ export type Mutation = {
   updateProjectMember?: Maybe<Scalars['Boolean']>;
   updateUser?: Maybe<Scalars['Boolean']>;
   updateUserLoginIdentity?: Maybe<Scalars['Boolean']>;
+  verifyUser?: Maybe<Scalars['Boolean']>;
 };
 
 
@@ -210,6 +211,11 @@ export type MutationUpdateUserLoginIdentityArgs = {
   input: UpdateUserLoginIdentityInput;
 };
 
+
+export type MutationVerifyUserArgs = {
+  input: VerifyUserInput;
+};
+
 export type NewEBoardInput = {
   userId: Scalars['ID'];
 };
@@ -273,6 +279,7 @@ export const Permission = {
   ManageProjectMemberRoles: 'MANAGE_PROJECT_MEMBER_ROLES',
   ManageUserRoles: 'MANAGE_USER_ROLES',
   ReadUserPrivate: 'READ_USER_PRIVATE',
+  RutgersVerified: 'RUTGERS_VERIFIED',
   TransferProjectOwnership: 'TRANSFER_PROJECT_OWNERSHIP',
   UpdateProject: 'UPDATE_PROJECT',
   UpdateUser: 'UPDATE_USER',
@@ -610,6 +617,7 @@ export type User = {
   projectInvites: Array<ProjectInvite>;
   projectMembers: Array<ProjectMember>;
   roles: Array<UserRole>;
+  rutgersEmail?: Maybe<Scalars['String']>;
   socials: Array<UserSocial>;
   updatedAt?: Maybe<Scalars['Date']>;
   username: Scalars['String'];
@@ -649,6 +657,11 @@ export type UserSocial = {
 
 export type UserSubscriptionFilter = {
   id?: InputMaybe<Scalars['ID']>;
+};
+
+export type VerifyUserInput = {
+  rutgersEmail: Scalars['String'];
+  userId?: InputMaybe<Scalars['ID']>;
 };
 
 
@@ -772,6 +785,7 @@ export type ResolversTypes = {
   UserRole: ResolverTypeWrapper<UserRole>;
   UserSocial: ResolverTypeWrapper<UserSocial>;
   UserSubscriptionFilter: UserSubscriptionFilter;
+  VerifyUserInput: VerifyUserInput;
 };
 
 /** Mapping between all available schema types and the resolvers parents */
@@ -823,6 +837,7 @@ export type ResolversParentTypes = {
   UserRole: UserRole;
   UserSocial: UserSocial;
   UserSubscriptionFilter: UserSubscriptionFilter;
+  VerifyUserInput: VerifyUserInput;
 };
 
 export type CreatedAtDirectiveArgs = { };
@@ -898,6 +913,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   updateProjectMember?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationUpdateProjectMemberArgs, 'input'>>;
   updateUser?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationUpdateUserArgs, 'input'>>;
   updateUserLoginIdentity?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationUpdateUserLoginIdentityArgs, 'input'>>;
+  verifyUser?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationVerifyUserArgs, 'input'>>;
 };
 
 export type ProjectResolvers<ContextType = any, ParentType extends ResolversParentTypes['Project'] = ResolversParentTypes['Project']> = {
@@ -1010,6 +1026,7 @@ export type UserResolvers<ContextType = any, ParentType extends ResolversParentT
   projectInvites?: Resolver<Array<ResolversTypes['ProjectInvite']>, ParentType, ContextType>;
   projectMembers?: Resolver<Array<ResolversTypes['ProjectMember']>, ParentType, ContextType>;
   roles?: Resolver<Array<ResolversTypes['UserRole']>, ParentType, ContextType>;
+  rutgersEmail?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   socials?: Resolver<Array<ResolversTypes['UserSocial']>, ParentType, ContextType>;
   updatedAt?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
   username?: Resolver<ResolversTypes['String'], ParentType, ContextType>;

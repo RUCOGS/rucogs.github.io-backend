@@ -50,6 +50,7 @@ export default gql`
 
     CREATE_USER
     UPDATE_USER
+    RUTGERS_VERIFIED
     DELETE_USER
     MANAGE_USER_ROLES
     READ_USER_PRIVATE
@@ -80,6 +81,7 @@ export default gql`
     updatedAt: Date @updatedAt
 
     email: String
+    rutgersEmail: String
     username: String!
     displayName: String!
     classYear: Int

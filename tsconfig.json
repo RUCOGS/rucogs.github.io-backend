@@ -12,6 +12,7 @@
     "experimentalDecorators": true,
     "strict": true,
     "noErrorTruncation": true,
+    "rootDir": "src",
     "paths": {
       "@src/*": [ "src/*" ],
       "@config/*": [ "src/config/*" ],

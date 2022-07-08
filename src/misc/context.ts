@@ -1,4 +1,5 @@
 import { AnyEntityManager } from '@src/controllers/entity-manager.controller/entity-manager';
+import { MailController } from '@src/controllers/mail.controller/mail.controller';
 import { EntityManager } from '@src/generated/typetta';
 import { SecurityContext } from '@src/shared/security';
 import express from 'express';
@@ -9,6 +10,7 @@ export type ApolloResolversContext = {
   unsecureEntityManager: EntityManager;
   mongoClient: MongoClient;
   securityContext: SecurityContext;
+  mailController: MailController;
 };
 export type RequestContext = {
   unsecureEntityManager: EntityManager;

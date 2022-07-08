@@ -20,7 +20,16 @@ export const RoleBackendDataDict: {
         filter: { userId },
         projection: { id: true },
       });
+      const user = await entityManager.user.findOne({
+        filter: {
+          id: userId,
+        },
+        projection: {
+          rutgersEmail: true,
+        },
+      });
       return {
+        RUTGERS_VERIFIED: user?.rutgersEmail,
         READ_USER_PRIVATE: [{ userId }],
         UPDATE_USER: [{ userId }],
         MANAGE_USER_ROLES: [{ userId }],
