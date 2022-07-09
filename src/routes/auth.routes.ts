@@ -1,10 +1,11 @@
 import AuthConfig from '@src/config/auth.config.json';
 import * as authController from '@src/controllers/auth.controller';
-import * as verifyEmailController from '@src/controllers/verify-email.controller';
+import { jwtVerifyAsync } from '@src/controllers/jwt.controller';
+import { VerityNetIdPayload } from '@src/controllers/verify-netid.controller';
 import pubsub, { PubSubEvents } from '@src/graphql/utils/pubsub';
 import { RequestWithDefaultContext } from '@src/misc/context';
 import { HttpError } from '@src/shared/utils';
-import { assertRutgersEmailValid } from '@src/shared/validation';
+import { assertNetId } from '@src/shared/validation';
 import express from 'express';
 import passport from 'passport';
 
@@ -35,7 +36,7 @@ for (const providerName of keys(AuthConfig.oauth)) {
   );
 }
 
-router.get('/verify-rutgers-email', async (req: RequestWithDefaultContext, res) => {
+router.get('/verify-netid', async (req: RequestWithDefaultContext, res) => {
   if (!req.context) throw new HttpError(500, 'Expected a request context.');
 
   const url = new URL(req.context.serverConfig.frontendDomain + '/result');
@@ -58,8 +59,8 @@ router.get('/verify-rutgers-email', async (req: RequestWithDefaultContext, res) 
   }
 
   try {
-    const token = await verifyEmailController.jwtVerifyAsync(req.query.token);
-    assertRutgersEmailValid(token.verifiedEmail);
+    const token = await jwtVerifyAsync<VerityNetIdPayload>(req.query.token);
+    assertNetId(token.netId);
     const userExists = await req.context.unsecureEntityManager.user.exists({
       filter: { id: token.userId },
     });
@@ -67,8 +68,7 @@ router.get('/verify-rutgers-email', async (req: RequestWithDefaultContext, res) 
     await req.context.unsecureEntityManager.user.updateOne({
       filter: { id: token.userId },
       changes: {
-        rutgersEmail: token.verifiedEmail,
-        rutgersVerified: true,
+        netId: token.netId,
       },
     });
 

@@ -9,11 +9,11 @@ import { RequestWithDefaultContext } from '@src/misc/context';
 import { isDebug } from '@src/misc/server-constructor';
 import { HttpError } from '@src/shared/utils';
 import express from 'express';
-import jwt from 'jsonwebtoken';
 import passport, { PassportStatic } from 'passport';
 import { Strategy as DiscordStrategy } from 'passport-discord';
 import { Profile as GoogleStrategyProfile, Strategy as GoogleStrategy } from 'passport-google-oauth20';
 import OAuth2Strategy from 'passport-oauth2';
+import { jwtSignAsync, jwtVerifyAsync } from './jwt.controller';
 
 // #region // ----- AUTHENTICATION ----- //
 export interface OAuthStrategyConfig {
@@ -200,46 +200,13 @@ export async function authenticateBearerToken(args: string[]): Promise<AuthPaylo
       throw new HttpError(401, "Invalid JWT authentication! Format: 'bearer [token]'.");
 
     const token = args[1];
-    const payload = await jwtVerifyAsync(token);
+    const payload = await jwtVerifyAsync<AuthPayload>(token);
     return payload;
   } catch (error: any) {
     let errorMessage = 'Token unauthorized: ';
     if (error instanceof Error) errorMessage += error.message;
     throw new HttpError(401, errorMessage);
   }
-}
-
-export async function jwtVerifyAsync(token: string) {
-  return new Promise<AuthPayload>((resolve, reject) => {
-    jwt.verify(token, AuthConfig.jwt.secret, (err, decoded) => {
-      const payload = decoded as AuthPayload;
-
-      if (err || !payload) {
-        return reject(err);
-      }
-
-      resolve(payload);
-    });
-  });
-}
-
-export async function jwtSignAsync(payload: AuthPayload) {
-  return new Promise<string>((resolve, reject) => {
-    jwt.sign(
-      payload,
-      AuthConfig.jwt.secret,
-      {
-        expiresIn: '7d',
-        issuer: 'cogs.club',
-      },
-      (err, encoded) => {
-        if (err || !encoded) {
-          return reject(err);
-        }
-        resolve(encoded);
-      },
-    );
-  });
 }
 
 // Authenticates with passport and sends a JWT accessToken back.
@@ -256,7 +223,7 @@ export function passportAuthenticateUserAndSendAuthToken(strategy: string) {
       // Each passport strategy returns a different user,
       // therefore we have to customize how we return
       // a token using each type of user.
-      const authToken = await jwtSignAsync({ userId: user.id });
+      const authToken = await jwtSignAsync({ userId: user.id }, '7d');
       console.log(
         `Authenticated user:\n${JSON.stringify(user)}\n using strategy '${strategy}' with token '${authToken}'`,
       );

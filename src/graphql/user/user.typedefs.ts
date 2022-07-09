@@ -6,7 +6,7 @@ export default gql`
     updateUser(input: UpdateUserInput!): Boolean
     deleteUser(id: ID!): Boolean
 
-    verifyRutgersEmail(input: VerifyRutgersEmailInput!): Boolean
+    verifyRutgersNetId(input: VerifyRutgersNetIdInput!): Boolean
   }
 
   extend type Subscription {
@@ -15,9 +15,9 @@ export default gql`
     userDeleted(filter: UserSubscriptionFilter): User
   }
 
-  input VerifyRutgersEmailInput {
+  input VerifyRutgersNetIdInput {
     userId: ID
-    rutgersEmail: String!
+    netId: String!
   }
 
   input UserSubscriptionFilter {

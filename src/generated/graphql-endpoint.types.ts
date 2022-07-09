@@ -92,7 +92,7 @@ export type Mutation = {
   updateProjectMember?: Maybe<Scalars['Boolean']>;
   updateUser?: Maybe<Scalars['Boolean']>;
   updateUserLoginIdentity?: Maybe<Scalars['Boolean']>;
-  verifyRutgersEmail?: Maybe<Scalars['Boolean']>;
+  verifyRutgersNetId?: Maybe<Scalars['Boolean']>;
 };
 
 
@@ -212,8 +212,8 @@ export type MutationUpdateUserLoginIdentityArgs = {
 };
 
 
-export type MutationVerifyRutgersEmailArgs = {
-  input: VerifyRutgersEmailInput;
+export type MutationVerifyRutgersNetIdArgs = {
+  input: VerifyRutgersNetIdInput;
 };
 
 export type NewEBoardInput = {
@@ -615,11 +615,10 @@ export type User = {
   email?: Maybe<Scalars['String']>;
   id: Scalars['ID'];
   loginIdentities: Array<UserLoginIdentity>;
+  netId?: Maybe<Scalars['String']>;
   projectInvites: Array<ProjectInvite>;
   projectMembers: Array<ProjectMember>;
   roles: Array<UserRole>;
-  rutgersEmail?: Maybe<Scalars['String']>;
-  rutgersVerified?: Maybe<Scalars['Boolean']>;
   socials: Array<UserSocial>;
   updatedAt?: Maybe<Scalars['Date']>;
   username: Scalars['String'];
@@ -661,8 +660,8 @@ export type UserSubscriptionFilter = {
   id?: InputMaybe<Scalars['ID']>;
 };
 
-export type VerifyRutgersEmailInput = {
-  rutgersEmail: Scalars['String'];
+export type VerifyRutgersNetIdInput = {
+  netId: Scalars['String'];
   userId?: InputMaybe<Scalars['ID']>;
 };
 
@@ -787,7 +786,7 @@ export type ResolversTypes = {
   UserRole: ResolverTypeWrapper<UserRole>;
   UserSocial: ResolverTypeWrapper<UserSocial>;
   UserSubscriptionFilter: UserSubscriptionFilter;
-  VerifyRutgersEmailInput: VerifyRutgersEmailInput;
+  VerifyRutgersNetIdInput: VerifyRutgersNetIdInput;
 };
 
 /** Mapping between all available schema types and the resolvers parents */
@@ -839,7 +838,7 @@ export type ResolversParentTypes = {
   UserRole: UserRole;
   UserSocial: UserSocial;
   UserSubscriptionFilter: UserSubscriptionFilter;
-  VerifyRutgersEmailInput: VerifyRutgersEmailInput;
+  VerifyRutgersNetIdInput: VerifyRutgersNetIdInput;
 };
 
 export type CreatedAtDirectiveArgs = { };
@@ -915,7 +914,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   updateProjectMember?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationUpdateProjectMemberArgs, 'input'>>;
   updateUser?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationUpdateUserArgs, 'input'>>;
   updateUserLoginIdentity?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationUpdateUserLoginIdentityArgs, 'input'>>;
-  verifyRutgersEmail?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationVerifyRutgersEmailArgs, 'input'>>;
+  verifyRutgersNetId?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationVerifyRutgersNetIdArgs, 'input'>>;
 };
 
 export type ProjectResolvers<ContextType = any, ParentType extends ResolversParentTypes['Project'] = ResolversParentTypes['Project']> = {
@@ -1025,11 +1024,10 @@ export type UserResolvers<ContextType = any, ParentType extends ResolversParentT
   email?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   loginIdentities?: Resolver<Array<ResolversTypes['UserLoginIdentity']>, ParentType, ContextType>;
+  netId?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   projectInvites?: Resolver<Array<ResolversTypes['ProjectInvite']>, ParentType, ContextType>;
   projectMembers?: Resolver<Array<ResolversTypes['ProjectMember']>, ParentType, ContextType>;
   roles?: Resolver<Array<ResolversTypes['UserRole']>, ParentType, ContextType>;
-  rutgersEmail?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  rutgersVerified?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   socials?: Resolver<Array<ResolversTypes['UserSocial']>, ParentType, ContextType>;
   updatedAt?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
   username?: Resolver<ResolversTypes['String'], ParentType, ContextType>;

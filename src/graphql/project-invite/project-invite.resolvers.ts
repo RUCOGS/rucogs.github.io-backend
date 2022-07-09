@@ -71,19 +71,22 @@ async function verifySub(
     return;
   }
 
-  if (args.filter.projectId)
-    permCalc
-      .withDomain({
-        projectId: args.filter.projectId,
-      })
-      .assertPermission(Permission.UpdateProject);
-
-  if (args.filter.userId)
+  if ((args.filter.userId && args.filter.projectId) || args.filter.userId) {
     permCalc
       .withDomain({
         userId: args.filter.userId,
       })
       .assertPermission(Permission.UpdateUser);
+    return;
+  }
+
+  if (args.filter.projectId) {
+    permCalc
+      .withDomain({
+        projectId: args.filter.projectId,
+      })
+      .assertPermission(Permission.UpdateProject);
+  }
 }
 
 export default {

@@ -1,15 +1,10 @@
 import AuthConfig from '@config/auth.config.json';
 import jwt from 'jsonwebtoken';
 
-export type VerifyEmailPayload = {
-  userId: string;
-  verifiedEmail: string;
-};
-
-export async function jwtVerifyAsync(token: string) {
-  return new Promise<VerifyEmailPayload>((resolve, reject) => {
+export async function jwtVerifyAsync<T>(token: string) {
+  return new Promise<T>((resolve, reject) => {
     jwt.verify(token, AuthConfig.jwt.secret, (err, decoded) => {
-      const payload = decoded as VerifyEmailPayload;
+      const payload = decoded as T;
 
       if (err || !payload) {
         return reject(err);
@@ -20,13 +15,13 @@ export async function jwtVerifyAsync(token: string) {
   });
 }
 
-export async function jwtSignAsync(payload: VerifyEmailPayload) {
+export async function jwtSignAsync<T extends object>(payload: T, expiresIn: string = '1hr') {
   return new Promise<string>((resolve, reject) => {
     jwt.sign(
       payload,
       AuthConfig.jwt.secret,
       {
-        expiresIn: '1hr',
+        expiresIn,
         issuer: 'cogs.club',
       },
       (err, encoded) => {

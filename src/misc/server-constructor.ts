@@ -45,12 +45,7 @@ export async function startServer(debug: boolean, mock: boolean = false) {
   const unsecureEntityManager = createUnsecureEntityManager(mongoDb);
 
   const nodemailerTransporter = nodemailer.createTransport({
-    host: serverConfig.nodemailer.host,
-    port: serverConfig.nodemailer.port,
-    auth: {
-      user: serverConfig.nodemailer.user,
-      pass: serverConfig.nodemailer.password,
-    },
+    ...serverConfig.nodemailer,
     logger: true,
   });
   const mailController = new MailController(nodemailerTransporter);

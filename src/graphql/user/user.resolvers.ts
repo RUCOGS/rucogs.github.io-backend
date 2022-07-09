@@ -1,5 +1,6 @@
-import * as verifyEmailController from '@controllers/verify-email.controller';
 import { DataSize, fileUploadPromiseToCdn, tryDeleteFileIfSelfHosted } from '@src/controllers/cdn.controller';
+import { jwtSignAsync } from '@src/controllers/jwt.controller';
+import { VerityNetIdPayload } from '@src/controllers/verify-netid.controller';
 import {
   MutationResolvers,
   Permission,
@@ -17,7 +18,7 @@ import { makeSubscriptionResolver } from '@src/graphql/utils/subscription-resolv
 import { ApolloResolversContext } from '@src/misc/context';
 import { makePermsCalc, RoleType } from '@src/shared/security';
 import { HttpError } from '@src/shared/utils';
-import { assertNoDuplicates, assertRutgersEmailValid } from '@src/shared/validation';
+import { assertNetId, assertNoDuplicates } from '@src/shared/validation';
 import {
   assertRequesterCanManageRoleCodes,
   assertRolesAreOfType,
@@ -299,11 +300,20 @@ export default {
       return true;
     },
 
-    verifyRutgersEmail: async (parent, args, context: ApolloResolversContext, info) => {
+    verifyRutgersNetId: async (parent, args, context: ApolloResolversContext, info) => {
       if (!args.input.userId) args.input.userId = context.securityContext.userId;
       if (!args.input.userId) throw new HttpError(400, 'Expected a userId or a request that was sent by a user!');
 
-      assertRutgersEmailValid(args.input.rutgersEmail);
+      assertNetId(args.input.netId);
+
+      const existsNetId = await context.unsecureEntityManager.user.exists({
+        filter: {
+          netId: args.input.netId,
+        },
+      });
+      if (existsNetId) throw new HttpError(400, 'NetID is already linked to an account!');
+
+      const rutgersEmail = args.input.netId + `@rutgers.edu`;
 
       const user = await context.unsecureEntityManager.user.findOne({
         filter: { id: args.input.userId },
@@ -312,19 +322,19 @@ export default {
         },
       });
 
-      const token = await verifyEmailController.jwtSignAsync({
+      const token = await jwtSignAsync<VerityNetIdPayload>({
         userId: args.input.userId,
-        verifiedEmail: args.input.rutgersEmail,
+        netId: args.input.netId,
       });
 
       // Link for verification
-      const link = new URL(context.serverConfig.backendDomain + '/auth/verify-rutgers-email');
+      const link = new URL(context.serverConfig.backendDomain + '/auth/verify-netid');
       link.searchParams.append('token', token);
 
       await context.mailController
         .withOptions({
-          to: `${user?.displayName} <${args.input.rutgersEmail}>`,
-          subject: 'Verify Rutgers Email',
+          to: `${user?.displayName} <${rutgersEmail}>`,
+          subject: 'Verify COGS Rutgers',
         })
         .withTemplate('verify-rutgers', {
           name: user?.displayName ?? 'user',

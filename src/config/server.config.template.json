@@ -6,8 +6,10 @@
 
 	"nodemailer": {
 		"host": "",
-		"user": "",
-		"password": "",
+		"auth": {
+			"user": "",
+			"pass": ""
+		},
 		"port": 357
 	},
 

@@ -594,8 +594,7 @@ classYear: Int
 createdAt: Date
 displayName: String!
 email: String
-rutgersEmail: String
-rutgersVerified: Boolean
+netId: String
 updatedAt: Date
 username: String!
       }
@@ -607,8 +606,7 @@ classYear: Int
 createdAt: Date
 displayName: String
 email: String
-rutgersEmail: String
-rutgersVerified: Boolean
+netId: String
 updatedAt: Date
 username: String
       }
@@ -621,8 +619,7 @@ createdAt: SortDirection
 displayName: SortDirection
 email: SortDirection
 id: SortDirection
-rutgersEmail: SortDirection
-rutgersVerified: SortDirection
+netId: SortDirection
 updatedAt: SortDirection
 username: SortDirection
       }
@@ -635,8 +632,7 @@ createdAt: DateFilterInput
 displayName: StringFilterInput
 email: StringFilterInput
 id: IDFilterInput
-rutgersEmail: StringFilterInput
-rutgersVerified: BooleanFilterInput
+netId: StringFilterInput
 updatedAt: DateFilterInput
 username: StringFilterInput
           and_: [UserFilterInput!]

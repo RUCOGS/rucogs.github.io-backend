@@ -331,7 +331,7 @@ export type Mutation = {
   updateUserRoles?: Maybe<Scalars['Boolean']>;
   updateUserSocials?: Maybe<Scalars['Boolean']>;
   updateUsers?: Maybe<Scalars['Boolean']>;
-  verifyRutgersEmail?: Maybe<Scalars['Boolean']>;
+  verifyRutgersNetId?: Maybe<Scalars['Boolean']>;
 };
 
 
@@ -643,8 +643,8 @@ export type MutationUpdateUsersArgs = {
 };
 
 
-export type MutationVerifyRutgersEmailArgs = {
-  input: VerifyRutgersEmailInput;
+export type MutationVerifyRutgersNetIdArgs = {
+  input: VerifyRutgersNetIdInput;
 };
 
 export type NewEBoardInput = {
@@ -1565,11 +1565,10 @@ export type User = {
   email?: Maybe<Scalars['String']>;
   id: Scalars['ID'];
   loginIdentities: Array<UserLoginIdentity>;
+  netId?: Maybe<Scalars['String']>;
   projectInvites: Array<ProjectInvite>;
   projectMembers: Array<ProjectMember>;
   roles: Array<UserRole>;
-  rutgersEmail?: Maybe<Scalars['String']>;
-  rutgersVerified?: Maybe<Scalars['Boolean']>;
   socials: Array<UserSocial>;
   updatedAt?: Maybe<Scalars['Date']>;
   username: Scalars['String'];
@@ -1585,10 +1584,9 @@ export type UserFilterInput = {
   displayName?: InputMaybe<StringFilterInput>;
   email?: InputMaybe<StringFilterInput>;
   id?: InputMaybe<IdFilterInput>;
+  netId?: InputMaybe<StringFilterInput>;
   nor_?: InputMaybe<Array<UserFilterInput>>;
   or_?: InputMaybe<Array<UserFilterInput>>;
-  rutgersEmail?: InputMaybe<StringFilterInput>;
-  rutgersVerified?: InputMaybe<BooleanFilterInput>;
   updatedAt?: InputMaybe<DateFilterInput>;
   username?: InputMaybe<StringFilterInput>;
 };
@@ -1609,8 +1607,7 @@ export type UserInsertInput = {
   createdAt?: InputMaybe<Scalars['Date']>;
   displayName: Scalars['String'];
   email?: InputMaybe<Scalars['String']>;
-  rutgersEmail?: InputMaybe<Scalars['String']>;
-  rutgersVerified?: InputMaybe<Scalars['Boolean']>;
+  netId?: InputMaybe<Scalars['String']>;
   updatedAt?: InputMaybe<Scalars['Date']>;
   username: Scalars['String'];
 };
@@ -1792,8 +1789,7 @@ export type UserSortInput = {
   displayName?: InputMaybe<SortDirection>;
   email?: InputMaybe<SortDirection>;
   id?: InputMaybe<SortDirection>;
-  rutgersEmail?: InputMaybe<SortDirection>;
-  rutgersVerified?: InputMaybe<SortDirection>;
+  netId?: InputMaybe<SortDirection>;
   updatedAt?: InputMaybe<SortDirection>;
   username?: InputMaybe<SortDirection>;
 };
@@ -1810,13 +1806,12 @@ export type UserUpdateInput = {
   createdAt?: InputMaybe<Scalars['Date']>;
   displayName?: InputMaybe<Scalars['String']>;
   email?: InputMaybe<Scalars['String']>;
-  rutgersEmail?: InputMaybe<Scalars['String']>;
-  rutgersVerified?: InputMaybe<Scalars['Boolean']>;
+  netId?: InputMaybe<Scalars['String']>;
   updatedAt?: InputMaybe<Scalars['Date']>;
   username?: InputMaybe<Scalars['String']>;
 };
 
-export type VerifyRutgersEmailInput = {
-  rutgersEmail: Scalars['String'];
+export type VerifyRutgersNetIdInput = {
+  netId: Scalars['String'];
   userId?: InputMaybe<Scalars['ID']>;
 };

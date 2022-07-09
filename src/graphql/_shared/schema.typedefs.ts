@@ -82,8 +82,7 @@ export default gql`
     updatedAt: Date @updatedAt
 
     email: String
-    rutgersEmail: String
-    rutgersVerified: Boolean
+    netId: String
     username: String!
     displayName: String!
     classYear: Int
