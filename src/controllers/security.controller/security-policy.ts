@@ -19,6 +19,7 @@ function getSecurityPolicy() {
             createdAt: true,
             updatedAt: true,
             id: true,
+            rutgersVerified: true,
             username: true,
             displayName: true,
             projectMembers: true,

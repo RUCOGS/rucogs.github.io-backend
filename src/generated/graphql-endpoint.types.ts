@@ -270,6 +270,7 @@ export const Permission = {
   CreateUser: 'CREATE_USER',
   DeleteProject: 'DELETE_PROJECT',
   DeleteUser: 'DELETE_USER',
+  JoinProject: 'JOIN_PROJECT',
   ManageEboard: 'MANAGE_EBOARD',
   ManageEboardRoles: 'MANAGE_EBOARD_ROLES',
   ManageMetadata: 'MANAGE_METADATA',
@@ -618,6 +619,7 @@ export type User = {
   projectMembers: Array<ProjectMember>;
   roles: Array<UserRole>;
   rutgersEmail?: Maybe<Scalars['String']>;
+  rutgersVerified?: Maybe<Scalars['Boolean']>;
   socials: Array<UserSocial>;
   updatedAt?: Maybe<Scalars['Date']>;
   username: Scalars['String'];
@@ -1027,6 +1029,7 @@ export type UserResolvers<ContextType = any, ParentType extends ResolversParentT
   projectMembers?: Resolver<Array<ResolversTypes['ProjectMember']>, ParentType, ContextType>;
   roles?: Resolver<Array<ResolversTypes['UserRole']>, ParentType, ContextType>;
   rutgersEmail?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  rutgersVerified?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   socials?: Resolver<Array<ResolversTypes['UserSocial']>, ParentType, ContextType>;
   updatedAt?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
   username?: Resolver<ResolversTypes['String'], ParentType, ContextType>;

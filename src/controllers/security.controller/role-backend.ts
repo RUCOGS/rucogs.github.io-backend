@@ -26,15 +26,18 @@ export const RoleBackendDataDict: {
         },
         projection: {
           rutgersEmail: true,
+          rutgersVerified: true,
         },
       });
+      const rutgersVerified = user?.rutgersVerified === true;
       return {
-        RUTGERS_VERIFIED: user?.rutgersEmail,
+        RUTGERS_VERIFIED: rutgersVerified,
         READ_USER_PRIVATE: [{ userId }],
         UPDATE_USER: [{ userId }],
         MANAGE_USER_ROLES: [{ userId }],
-        MANAGE_PROJECT_INVITES: invites.map((x) => ({ projectInviteId: x.id })),
-        CREATE_PROJECT: true,
+        ...(rutgersVerified && { JOIN_PROJECT: true }),
+        ...(rutgersVerified && { MANAGE_PROJECT_INVITES: invites.map((x) => ({ projectInviteId: x.id })) }),
+        ...(rutgersVerified && { CREATE_PROJECT: true }),
       };
     },
   },

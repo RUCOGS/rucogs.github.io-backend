@@ -814,6 +814,14 @@ rutgersEmail: { type: 'scalar',
       isExcluded: false,
       isId: false,
       generationStrategy: 'undefined' },
+rutgersVerified: { type: 'scalar', 
+      isList: false, 
+      astName: 'Boolean', 
+      isRequired: false, 
+      isListElementRequired: false,
+      isExcluded: false,
+      isId: false,
+      generationStrategy: 'undefined' },
 socials: { type: 'relation', relation: 'foreign', 
       isList: true, 
       astName: 'UserSocial', 
@@ -2029,6 +2037,11 @@ export function userSchema(): T.Schema<ScalarsSpecification> {
   'rutgersEmail': {
               type: 'scalar',
               scalar: 'String',
+              directives: {  }
+            },
+  'rutgersVerified': {
+              type: 'scalar',
+              scalar: 'Boolean',
               directives: {  }
             },
   'socials':{

@@ -6,7 +6,7 @@ import {
   RoleCode,
   SubscriptionResolvers,
 } from '@src/generated/graphql-endpoint.types';
-import { Access } from '@src/generated/model.types';
+import { Access, SubscriptionProjectInviteCreatedArgs } from '@src/generated/model.types';
 import { EntityManager, ProjectDAO, ProjectInviteFilter, ProjectMemberInsert } from '@src/generated/typetta';
 import pubsub, { PubSubEvents } from '@src/graphql/utils/pubsub';
 import { makeSubscriptionResolver } from '@src/graphql/utils/subscription-resolver-builder';
@@ -38,6 +38,7 @@ const acceptProjectInvite: MutationResolvers['acceptProjectInvite'] = async (
       .withDomain({ projectInviteId: args.inviteId })
       .assertPermission(Permission.ManageProjectInvites);
   }
+
   const error = await startEntityManagerTransaction(
     context.unsecureEntityManager,
     context.mongoClient,
@@ -56,6 +57,34 @@ const acceptProjectInvite: MutationResolvers['acceptProjectInvite'] = async (
 
   return true;
 };
+
+// Add verification for subscriptions because invites are private information
+async function verifySub(
+  parent: any,
+  args: SubscriptionProjectInviteCreatedArgs,
+  context: ApolloResolversContext,
+  info: any,
+) {
+  const permCalc = makePermsCalc().withContext(context.securityContext);
+  if (!args.filter || Object.keys(args.filter).length == 0) {
+    permCalc.assertPermission(Permission.ManageProjectInvites);
+    return;
+  }
+
+  if (args.filter.projectId)
+    permCalc
+      .withDomain({
+        projectId: args.filter.projectId,
+      })
+      .assertPermission(Permission.UpdateProject);
+
+  if (args.filter.userId)
+    permCalc
+      .withDomain({
+        userId: args.filter.userId,
+      })
+      .assertPermission(Permission.UpdateUser);
+}
 
 export default {
   Mutation: {
@@ -181,6 +210,13 @@ export default {
       });
       if (!project) throw new HttpError(400, "Project doesn't exist!");
 
+      makePermsCalc()
+        .withContext(context.securityContext)
+        .withDomain({
+          projectId: args.projectId,
+        })
+        .assertPermission(Permission.JoinProject);
+
       if (project.access !== Access.Open) throw new HttpError(403, "Project access is not 'OPEN'!");
 
       const error = await startEntityManagerTransaction(
@@ -203,11 +239,13 @@ export default {
     projectInviteCreated: makeSubscriptionResolver()
       .pubsub(PubSubEvents.ProjectInviteCreated)
       .shallowOneToOneFilter()
+      .secure(verifySub)
       .build(),
 
     projectInviteDeleted: makeSubscriptionResolver()
       .pubsub(PubSubEvents.ProjectInviteDeleted)
       .shallowOneToOneFilter()
+      .secure(verifySub)
       .build(),
   },
 } as {

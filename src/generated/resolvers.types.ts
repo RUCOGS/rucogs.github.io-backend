@@ -214,7 +214,7 @@ export type ResolversTypes = {
   UserSortInput: types.UserSortInput;
   UserSubscriptionFilter: types.UserSubscriptionFilter;
   UserUpdateInput: types.UserUpdateInput;
-  VerifyUserInput: types.VerifyUserInput;
+  VerifyRutgersEmailInput: types.VerifyRutgersEmailInput;
 };
 
 /** Mapping between all available schema types and the resolvers parents */
@@ -355,7 +355,7 @@ export type ResolversParentTypes = {
   UserSortInput: types.UserSortInput;
   UserSubscriptionFilter: types.UserSubscriptionFilter;
   UserUpdateInput: types.UserUpdateInput;
-  VerifyUserInput: types.VerifyUserInput;
+  VerifyRutgersEmailInput: types.VerifyRutgersEmailInput;
 };
 
 export type CreatedAtDirectiveArgs = { };
@@ -467,7 +467,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   updateUserRoles?: Resolver<types.Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<types.MutationUpdateUserRolesArgs, 'changes' | 'filter'>>;
   updateUserSocials?: Resolver<types.Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<types.MutationUpdateUserSocialsArgs, 'changes' | 'filter'>>;
   updateUsers?: Resolver<types.Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<types.MutationUpdateUsersArgs, 'changes' | 'filter'>>;
-  verifyUser?: Resolver<types.Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<types.MutationVerifyUserArgs, 'input'>>;
+  verifyRutgersEmail?: Resolver<types.Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<types.MutationVerifyRutgersEmailArgs, 'input'>>;
 };
 
 export type ProjectResolvers<ContextType = any, ParentType extends ResolversParentTypes['Project'] = ResolversParentTypes['Project']> = {
@@ -593,6 +593,7 @@ export type UserResolvers<ContextType = any, ParentType extends ResolversParentT
   projectMembers?: Resolver<Array<ResolversTypes['ProjectMember']>, ParentType, ContextType>;
   roles?: Resolver<Array<ResolversTypes['UserRole']>, ParentType, ContextType>;
   rutgersEmail?: Resolver<types.Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  rutgersVerified?: Resolver<types.Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   socials?: Resolver<Array<ResolversTypes['UserSocial']>, ParentType, ContextType>;
   updatedAt?: Resolver<types.Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
   username?: Resolver<ResolversTypes['String'], ParentType, ContextType>;

@@ -331,7 +331,7 @@ export type Mutation = {
   updateUserRoles?: Maybe<Scalars['Boolean']>;
   updateUserSocials?: Maybe<Scalars['Boolean']>;
   updateUsers?: Maybe<Scalars['Boolean']>;
-  verifyUser?: Maybe<Scalars['Boolean']>;
+  verifyRutgersEmail?: Maybe<Scalars['Boolean']>;
 };
 
 
@@ -643,8 +643,8 @@ export type MutationUpdateUsersArgs = {
 };
 
 
-export type MutationVerifyUserArgs = {
-  input: VerifyUserInput;
+export type MutationVerifyRutgersEmailArgs = {
+  input: VerifyRutgersEmailInput;
 };
 
 export type NewEBoardInput = {
@@ -701,6 +701,7 @@ export const Permission = {
   CreateUser: 'CREATE_USER',
   DeleteProject: 'DELETE_PROJECT',
   DeleteUser: 'DELETE_USER',
+  JoinProject: 'JOIN_PROJECT',
   ManageEboard: 'MANAGE_EBOARD',
   ManageEboardRoles: 'MANAGE_EBOARD_ROLES',
   ManageMetadata: 'MANAGE_METADATA',
@@ -1568,6 +1569,7 @@ export type User = {
   projectMembers: Array<ProjectMember>;
   roles: Array<UserRole>;
   rutgersEmail?: Maybe<Scalars['String']>;
+  rutgersVerified?: Maybe<Scalars['Boolean']>;
   socials: Array<UserSocial>;
   updatedAt?: Maybe<Scalars['Date']>;
   username: Scalars['String'];
@@ -1586,6 +1588,7 @@ export type UserFilterInput = {
   nor_?: InputMaybe<Array<UserFilterInput>>;
   or_?: InputMaybe<Array<UserFilterInput>>;
   rutgersEmail?: InputMaybe<StringFilterInput>;
+  rutgersVerified?: InputMaybe<BooleanFilterInput>;
   updatedAt?: InputMaybe<DateFilterInput>;
   username?: InputMaybe<StringFilterInput>;
 };
@@ -1607,6 +1610,7 @@ export type UserInsertInput = {
   displayName: Scalars['String'];
   email?: InputMaybe<Scalars['String']>;
   rutgersEmail?: InputMaybe<Scalars['String']>;
+  rutgersVerified?: InputMaybe<Scalars['Boolean']>;
   updatedAt?: InputMaybe<Scalars['Date']>;
   username: Scalars['String'];
 };
@@ -1789,6 +1793,7 @@ export type UserSortInput = {
   email?: InputMaybe<SortDirection>;
   id?: InputMaybe<SortDirection>;
   rutgersEmail?: InputMaybe<SortDirection>;
+  rutgersVerified?: InputMaybe<SortDirection>;
   updatedAt?: InputMaybe<SortDirection>;
   username?: InputMaybe<SortDirection>;
 };
@@ -1806,11 +1811,12 @@ export type UserUpdateInput = {
   displayName?: InputMaybe<Scalars['String']>;
   email?: InputMaybe<Scalars['String']>;
   rutgersEmail?: InputMaybe<Scalars['String']>;
+  rutgersVerified?: InputMaybe<Scalars['Boolean']>;
   updatedAt?: InputMaybe<Scalars['Date']>;
   username?: InputMaybe<Scalars['String']>;
 };
 
-export type VerifyUserInput = {
+export type VerifyRutgersEmailInput = {
   rutgersEmail: Scalars['String'];
   userId?: InputMaybe<Scalars['ID']>;
 };

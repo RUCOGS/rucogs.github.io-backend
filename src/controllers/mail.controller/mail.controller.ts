@@ -37,8 +37,9 @@ export class MailController {
   async sendMail() {
     let html = this.options.html;
     let attachments = this.options.attachments;
+    let text = this.options.text;
     if (this.templatePath) {
-      const [templateHtml, templateAttachments] = await this.useTemplate(this.templatePath, {
+      const [templateHtml, templateAttachments, templateText] = await this.useTemplate(this.templatePath, {
         // Templates should use {{{content}}} to inject html content into themselves
         content: this.options.html?.toString() ?? undefined,
         ...this.templateData,
@@ -48,6 +49,7 @@ export class MailController {
         if (attachments) attachments.concat(templateAttachments);
         else attachments = templateAttachments;
       }
+      if (templateText) text = templateText;
     }
     const options = this.options;
 
@@ -57,10 +59,14 @@ export class MailController {
       ...options,
       html,
       attachments,
+      text,
     });
   }
 
-  private async useTemplate(templatePath: string, data: any = {}): Promise<[string, SendMailOptions['attachments']]> {
+  private async useTemplate(
+    templatePath: string,
+    data: any = {},
+  ): Promise<[string, SendMailOptions['attachments'], string]> {
     const config: TemplateConfig = (await import(path.join(__dirname, templatePath, '/config'))).default;
     const templateHtml = String(await inlineSass(path.join(__dirname, templatePath, '/template.html')));
 
@@ -77,16 +83,20 @@ export class MailController {
       });
     }
 
+    let text = '';
+    if (config.text) text = config.text(data);
+
     // Apply all the templates that this template extends
     if (config.extends) {
-      const [newHtml, newAttachments] = await this.useTemplate(config.extends, {
+      const [newHtml, newAttachments, newText] = await this.useTemplate(config.extends, {
         ...data,
         content: html,
       });
       html = newHtml;
       if (newAttachments) attachments = [...(attachments ?? []), ...newAttachments];
+      if (newText) text = newText;
     }
 
-    return [html, attachments];
+    return [html, attachments, text];
   }
 }

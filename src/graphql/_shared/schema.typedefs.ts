@@ -41,6 +41,7 @@ export default gql`
     DELETE_PROJECT
     UPDATE_PROJECT
     TRANSFER_PROJECT_OWNERSHIP
+    JOIN_PROJECT
 
     MANAGE_PROJECT_INVITES
 
@@ -82,6 +83,7 @@ export default gql`
 
     email: String
     rutgersEmail: String
+    rutgersVerified: Boolean
     username: String!
     displayName: String!
     classYear: Int

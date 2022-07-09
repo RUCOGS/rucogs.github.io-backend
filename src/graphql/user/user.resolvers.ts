@@ -1,3 +1,4 @@
+import * as verifyEmailController from '@controllers/verify-email.controller';
 import { DataSize, fileUploadPromiseToCdn, tryDeleteFileIfSelfHosted } from '@src/controllers/cdn.controller';
 import {
   MutationResolvers,
@@ -8,6 +9,7 @@ import {
   UpdateUserSocialInput,
   UploadOperation,
 } from '@src/generated/graphql-endpoint.types';
+import { SubscriptionUserCreatedArgs } from '@src/generated/model.types';
 import { EntityManager, UserInsert, UserSocialFilter, UserSocialInsert } from '@src/generated/typetta';
 import { deleteProjectInvites } from '@src/graphql/project-invite/project-invite.resolvers';
 import pubsub, { PubSubEvents } from '@src/graphql/utils/pubsub';
@@ -33,6 +35,21 @@ async function getRequesterRoles(unsecureEntityManager: EntityManager, requester
 }
 
 const updateUserLock = new AsyncLock();
+
+// Add verification for subscriptions because it can contain private information
+async function verifySub(parent: any, args: SubscriptionUserCreatedArgs, context: ApolloResolversContext, info: any) {
+  if (!args.filter || Object.keys(args.filter).length == 0) {
+    makePermsCalc().withContext(context.securityContext).assertPermission(Permission.UpdateUser);
+    return;
+  }
+
+  makePermsCalc()
+    .withContext(context.securityContext)
+    .withDomain({
+      userId: args.filter.id!,
+    })
+    .assertPermission(Permission.UpdateUser);
+}
 
 export default {
   Mutation: {
@@ -295,14 +312,23 @@ export default {
         },
       });
 
+      const token = await verifyEmailController.jwtSignAsync({
+        userId: args.input.userId,
+        verifiedEmail: args.input.rutgersEmail,
+      });
+
+      // Link for verification
+      const link = new URL(context.serverConfig.backendDomain + '/auth/verify-rutgers-email');
+      link.searchParams.append('token', token);
+
       await context.mailController
         .withOptions({
-          to: args.input.rutgersEmail,
+          to: `${user?.displayName} <${args.input.rutgersEmail}>`,
           subject: 'Verify Rutgers Email',
         })
         .withTemplate('verify-rutgers', {
           name: user?.displayName ?? 'user',
-          link: context.serverConfig.backendDomain + '/auth/verify-rutgers-email',
+          link,
         })
         .sendMail();
 
@@ -311,11 +337,23 @@ export default {
   },
 
   Subscription: {
-    userCreated: makeSubscriptionResolver().pubsub(PubSubEvents.UserCreated).shallowOneToOneFilter().build(),
+    userCreated: makeSubscriptionResolver()
+      .pubsub(PubSubEvents.UserCreated)
+      .shallowOneToOneFilter()
+      .secure(verifySub)
+      .build(),
 
-    userUpdated: makeSubscriptionResolver().pubsub(PubSubEvents.UserUpdated).shallowOneToOneFilter().build(),
+    userUpdated: makeSubscriptionResolver()
+      .pubsub(PubSubEvents.UserUpdated)
+      .shallowOneToOneFilter()
+      .secure(verifySub)
+      .build(),
 
-    userDeleted: makeSubscriptionResolver().pubsub(PubSubEvents.UserDeleted).shallowOneToOneFilter().build(),
+    userDeleted: makeSubscriptionResolver()
+      .pubsub(PubSubEvents.UserDeleted)
+      .shallowOneToOneFilter()
+      .secure(verifySub)
+      .build(),
   },
 } as {
   Query: QueryResolvers;

@@ -14,6 +14,6 @@
 	"baseUrl": "",
 	"port": 3000,
 
-	"backendDomain": "https://localhost:3000",
-	"frontendDomain": "https://localhost:8081"
+	"backendDomain": "http://localhost:3000",
+	"frontendDomain": "http://localhost:8081"
 }

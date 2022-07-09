@@ -595,6 +595,7 @@ createdAt: Date
 displayName: String!
 email: String
 rutgersEmail: String
+rutgersVerified: Boolean
 updatedAt: Date
 username: String!
       }
@@ -607,6 +608,7 @@ createdAt: Date
 displayName: String
 email: String
 rutgersEmail: String
+rutgersVerified: Boolean
 updatedAt: Date
 username: String
       }
@@ -620,6 +622,7 @@ displayName: SortDirection
 email: SortDirection
 id: SortDirection
 rutgersEmail: SortDirection
+rutgersVerified: SortDirection
 updatedAt: SortDirection
 username: SortDirection
       }
@@ -633,6 +636,7 @@ displayName: StringFilterInput
 email: StringFilterInput
 id: IDFilterInput
 rutgersEmail: StringFilterInput
+rutgersVerified: BooleanFilterInput
 updatedAt: DateFilterInput
 username: StringFilterInput
           and_: [UserFilterInput!]

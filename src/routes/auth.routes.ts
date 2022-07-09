@@ -1,6 +1,7 @@
 import AuthConfig from '@src/config/auth.config.json';
 import * as authController from '@src/controllers/auth.controller';
 import * as verifyEmailController from '@src/controllers/verify-email.controller';
+import pubsub, { PubSubEvents } from '@src/graphql/utils/pubsub';
 import { RequestWithDefaultContext } from '@src/misc/context';
 import { HttpError } from '@src/shared/utils';
 import { assertRutgersEmailValid } from '@src/shared/validation';
@@ -63,12 +64,18 @@ router.get('/verify-rutgers-email', async (req: RequestWithDefaultContext, res) 
       filter: { id: token.userId },
     });
     if (!userExists) throw new HttpError(500, 'Expected user to exist!');
-    req.context.unsecureEntityManager.user.updateOne({
+    await req.context.unsecureEntityManager.user.updateOne({
       filter: { id: token.userId },
       changes: {
         rutgersEmail: token.verifiedEmail,
+        rutgersVerified: true,
       },
     });
+
+    const updatedUser = await req.context.unsecureEntityManager.user.findOne({
+      filter: { id: token.userId },
+    });
+    pubsub.publish(PubSubEvents.UserUpdated, updatedUser);
   } catch (e) {
     failMessage();
     return;
