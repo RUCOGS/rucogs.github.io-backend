@@ -13,12 +13,14 @@ async function assets() {
   // Let Typescript handle these file extensions and retrieve all other files with the given asset extensions.
   const typescriptExtensions = [Extension.Ts, Extension.Tsx, Extension.Js, Extension.Jsx];
   const parsed = getParsedCommandLineOfConfigFile('tsconfig.json', {}, sys, undefined, undefined, assetExtensions.map(asExtension));
-  const assetFiles = parsed.fileNames.filter(fileName => !typescriptExtensions.includes(extname(fileName)))
-    .map(fileName => relative(parsed.options.rootDir, fileName));
+  const assetFiles = parsed.fileNames.filter(fileName => !typescriptExtensions.includes(extname(fileName)));
 
 	console.log(assetFiles);
+	console.log(parsed.options.rootDir + " -> " + parsed.options.outDir);
 
-  return src(assetFiles, { cwd: parsed.options.rootDir }).pipe(dest(parsed.options.outDir))
+  const base = relative(parsed.options.baseUrl, parsed.options.rootDir);
+
+  return src(assetFiles, { base, cwd: parsed.options.baseUrl }).pipe(dest(parsed.options.outDir))
 }
 
 module.exports = { assets };
