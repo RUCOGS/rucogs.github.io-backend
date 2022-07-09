@@ -15,7 +15,7 @@ import { makeSubscriptionResolver } from '@src/graphql/utils/subscription-resolv
 import { ApolloResolversContext } from '@src/misc/context';
 import { makePermsCalc, RoleType } from '@src/shared/security';
 import { HttpError } from '@src/shared/utils';
-import { assertEmailValid, assertNoDuplicates } from '@src/shared/validation';
+import { assertNoDuplicates, assertRutgersEmailValid } from '@src/shared/validation';
 import {
   assertRequesterCanManageRoleCodes,
   assertRolesAreOfType,
@@ -282,11 +282,11 @@ export default {
       return true;
     },
 
-    verifyUser: async (parent, args, context: ApolloResolversContext, info) => {
+    verifyRutgersEmail: async (parent, args, context: ApolloResolversContext, info) => {
       if (!args.input.userId) args.input.userId = context.securityContext.userId;
       if (!args.input.userId) throw new HttpError(400, 'Expected a userId or a request that was sent by a user!');
 
-      assertEmailValid(args.input.rutgersEmail);
+      assertRutgersEmailValid(args.input.rutgersEmail);
 
       const user = await context.unsecureEntityManager.user.findOne({
         filter: { id: args.input.userId },
@@ -298,10 +298,11 @@ export default {
       await context.mailController
         .withOptions({
           to: args.input.rutgersEmail,
-          subject: 'Verify Email',
+          subject: 'Verify Rutgers Email',
         })
-        .withTemplate('verify', {
+        .withTemplate('verify-rutgers', {
           name: user?.displayName ?? 'user',
+          link: context.serverConfig.backendDomain + '/auth/verify-rutgers-email',
         })
         .sendMail();
 

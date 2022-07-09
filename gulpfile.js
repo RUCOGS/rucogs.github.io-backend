@@ -1,0 +1,24 @@
+const { src, dest } = require('gulp');
+const { relative, extname, join } = require('path');
+const { getParsedCommandLineOfConfigFile, sys, ScriptKind, Extension } = require('typescript');
+
+function asExtension(extension) {
+  return { extension, scriptKind: ScriptKind.Deferred };
+}
+
+async function assets() {
+  // File extensions we want to copy as assets.
+  const assetExtensions = ['.png', '.jpg', '.html', '.scss', '.css'];
+
+  // Let Typescript handle these file extensions and retrieve all other files with the given asset extensions.
+  const typescriptExtensions = [Extension.Ts, Extension.Tsx, Extension.Js, Extension.Jsx];
+  const parsed = getParsedCommandLineOfConfigFile('tsconfig.json', {}, sys, undefined, undefined, assetExtensions.map(asExtension));
+  const assetFiles = parsed.fileNames.filter(fileName => !typescriptExtensions.includes(extname(fileName)))
+    .map(fileName => relative(parsed.options.rootDir, fileName));
+
+	console.log(assetFiles);
+
+  return src(assetFiles, { cwd: parsed.options.rootDir }).pipe(dest(parsed.options.outDir))
+}
+
+module.exports = { assets };

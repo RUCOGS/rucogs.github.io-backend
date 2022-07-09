@@ -230,7 +230,7 @@ export async function jwtSignAsync(payload: AuthPayload) {
       AuthConfig.jwt.secret,
       {
         expiresIn: '7d',
-        issuer: 'rucogs.club',
+        issuer: 'cogs.club',
       },
       (err, encoded) => {
         if (err || !encoded) {

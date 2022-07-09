@@ -6,6 +6,7 @@ import path from 'path';
 export type TemplateConfig = {
   attachments?: SendMailOptions['attachments'];
   extends?: string;
+  text?: (data: any) => string;
 };
 
 export class MailController {

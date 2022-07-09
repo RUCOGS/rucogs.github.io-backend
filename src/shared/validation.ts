@@ -56,6 +56,14 @@ export function assertEmailValid(email: string) {
   if (!isEmailValid(email)) throw new HttpError(400, 'Expected a valid email!');
 }
 
+export function assertRutgersEmailValid(email: string) {
+  if (!isRutgersEmail(email)) throw new HttpError(400, 'Expected a valid rutgers scaletmail email!');
+}
+
+export function isRutgersEmail(email: string) {
+  return isEmailValid(email) && email.endsWith('@scarletmail.rutgers.edu');
+}
+
 var emailRegex =
   /^[-!#$%&'*+\/0-9=?A-Z^_a-z{|}~](\.?[-!#$%&'*+\/0-9=?A-Z^_a-z`{|}~])*@[a-zA-Z0-9](-*\.?[a-zA-Z0-9])*\.[a-zA-Z](-?[a-zA-Z0-9])+$/;
 export function isEmailValid(email: string) {

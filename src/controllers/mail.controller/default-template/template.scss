@@ -5,10 +5,10 @@
 	display: block;
 }
 
-$padding: 32px;
+$padding: 42px;
 
 .header {
-	padding: $padding;
+	padding: $padding / 1.5;
 	color: $blank;
   background-color: $primary;
 }

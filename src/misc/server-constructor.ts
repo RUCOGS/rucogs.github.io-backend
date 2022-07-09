@@ -24,7 +24,7 @@ import nodemailer from 'nodemailer';
 import passport from 'passport';
 import { WebSocketServer } from 'ws';
 
-type ServerConfig = typeof import('@src/config/server.config.json');
+export type ServerConfig = typeof import('@src/config/server.config.json');
 
 let globalDebug = false;
 export function isDebug() {
@@ -124,6 +124,7 @@ async function startApolloServer(options: {
             mongoClient: options.mongoClient,
             securityContext: DefaultSecurityContext,
             mailController: options.mailController,
+            serverConfig: options.serverConfig,
           };
         }
         case AuthScheme.Bearer:
@@ -140,6 +141,7 @@ async function startApolloServer(options: {
             securityContext,
             mongoClient: options.mongoClient,
             mailController: options.mailController,
+            serverConfig: options.serverConfig,
           };
         }
       }
@@ -152,6 +154,7 @@ async function startApolloServer(options: {
         securityContext: DefaultSecurityContext,
         mongoClient: options.mongoClient,
         mailController: options.mailController,
+        serverConfig: options.serverConfig,
       };
     }
   }
@@ -255,6 +258,7 @@ function configExpress(options: {
     req.context = {
       unsecureEntityManager: options.entityManager,
       mongoClient: options.mongoClient,
+      serverConfig: options.serverConfig,
     };
     next();
   });

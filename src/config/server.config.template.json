@@ -12,5 +12,8 @@
 	},
 
 	"baseUrl": "",
-	"port": 3000
+	"port": 3000,
+
+	"backendDomain": "https://localhost:3000",
+	"frontendDomain": "https://localhost:8081"
 }
