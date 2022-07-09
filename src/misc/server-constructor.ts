@@ -24,7 +24,7 @@ import nodemailer from 'nodemailer';
 import passport from 'passport';
 import { WebSocketServer } from 'ws';
 
-export type ServerConfig = typeof import('@src/config/server.config.json');
+export type ServerConfig = Omit<typeof import('@src/config/server.config.json'), 'nodemailer'> & { nodemailer: any };
 
 let globalDebug = false;
 export function isDebug() {

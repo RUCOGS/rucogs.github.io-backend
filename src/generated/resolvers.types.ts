@@ -214,7 +214,7 @@ export type ResolversTypes = {
   UserSortInput: types.UserSortInput;
   UserSubscriptionFilter: types.UserSubscriptionFilter;
   UserUpdateInput: types.UserUpdateInput;
-  VerifyRutgersNetIdInput: types.VerifyRutgersNetIdInput;
+  VerifyNetIdInput: types.VerifyNetIdInput;
 };
 
 /** Mapping between all available schema types and the resolvers parents */
@@ -355,7 +355,7 @@ export type ResolversParentTypes = {
   UserSortInput: types.UserSortInput;
   UserSubscriptionFilter: types.UserSubscriptionFilter;
   UserUpdateInput: types.UserUpdateInput;
-  VerifyRutgersNetIdInput: types.VerifyRutgersNetIdInput;
+  VerifyNetIdInput: types.VerifyNetIdInput;
 };
 
 export type CreatedAtDirectiveArgs = { };
@@ -467,7 +467,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   updateUserRoles?: Resolver<types.Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<types.MutationUpdateUserRolesArgs, 'changes' | 'filter'>>;
   updateUserSocials?: Resolver<types.Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<types.MutationUpdateUserSocialsArgs, 'changes' | 'filter'>>;
   updateUsers?: Resolver<types.Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<types.MutationUpdateUsersArgs, 'changes' | 'filter'>>;
-  verifyRutgersNetId?: Resolver<types.Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<types.MutationVerifyRutgersNetIdArgs, 'input'>>;
+  verifyNetId?: Resolver<types.Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<types.MutationVerifyNetIdArgs, 'input'>>;
 };
 
 export type ProjectResolvers<ContextType = any, ParentType extends ResolversParentTypes['Project'] = ResolversParentTypes['Project']> = {

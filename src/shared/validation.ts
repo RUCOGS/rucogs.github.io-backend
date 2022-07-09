@@ -56,7 +56,7 @@ export function assertEmailValid(email: string) {
   if (!isEmailValid(email)) throw new HttpError(400, 'Expected a valid email!');
 }
 
-const netIdRegex = /^[a-z]*[0-9]*$/;
+const netIdRegex = /^[a-z]*[0-9]+$/;
 export function isNetId(netId: string) {
   if (!netId) return false;
   return netIdRegex.test(netId);
@@ -71,7 +71,7 @@ export function assertRutgersEmailValid(email: string) {
 }
 
 export function isRutgersEmail(email: string) {
-  return isEmailValid(email) && email.endsWith('@scarletmail.rutgers.edu');
+  return isEmailValid(email) && email.endsWith('rutgers.edu');
 }
 
 const emailRegex =

@@ -92,7 +92,7 @@ export type Mutation = {
   updateProjectMember?: Maybe<Scalars['Boolean']>;
   updateUser?: Maybe<Scalars['Boolean']>;
   updateUserLoginIdentity?: Maybe<Scalars['Boolean']>;
-  verifyRutgersNetId?: Maybe<Scalars['Boolean']>;
+  verifyNetId?: Maybe<Scalars['Boolean']>;
 };
 
 
@@ -212,8 +212,8 @@ export type MutationUpdateUserLoginIdentityArgs = {
 };
 
 
-export type MutationVerifyRutgersNetIdArgs = {
-  input: VerifyRutgersNetIdInput;
+export type MutationVerifyNetIdArgs = {
+  input: VerifyNetIdInput;
 };
 
 export type NewEBoardInput = {
@@ -660,7 +660,7 @@ export type UserSubscriptionFilter = {
   id?: InputMaybe<Scalars['ID']>;
 };
 
-export type VerifyRutgersNetIdInput = {
+export type VerifyNetIdInput = {
   netId: Scalars['String'];
   userId?: InputMaybe<Scalars['ID']>;
 };
@@ -786,7 +786,7 @@ export type ResolversTypes = {
   UserRole: ResolverTypeWrapper<UserRole>;
   UserSocial: ResolverTypeWrapper<UserSocial>;
   UserSubscriptionFilter: UserSubscriptionFilter;
-  VerifyRutgersNetIdInput: VerifyRutgersNetIdInput;
+  VerifyNetIdInput: VerifyNetIdInput;
 };
 
 /** Mapping between all available schema types and the resolvers parents */
@@ -838,7 +838,7 @@ export type ResolversParentTypes = {
   UserRole: UserRole;
   UserSocial: UserSocial;
   UserSubscriptionFilter: UserSubscriptionFilter;
-  VerifyRutgersNetIdInput: VerifyRutgersNetIdInput;
+  VerifyNetIdInput: VerifyNetIdInput;
 };
 
 export type CreatedAtDirectiveArgs = { };
@@ -914,7 +914,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   updateProjectMember?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationUpdateProjectMemberArgs, 'input'>>;
   updateUser?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationUpdateUserArgs, 'input'>>;
   updateUserLoginIdentity?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationUpdateUserLoginIdentityArgs, 'input'>>;
-  verifyRutgersNetId?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationVerifyRutgersNetIdArgs, 'input'>>;
+  verifyNetId?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationVerifyNetIdArgs, 'input'>>;
 };
 
 export type ProjectResolvers<ContextType = any, ParentType extends ResolversParentTypes['Project'] = ResolversParentTypes['Project']> = {

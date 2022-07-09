@@ -331,7 +331,7 @@ export type Mutation = {
   updateUserRoles?: Maybe<Scalars['Boolean']>;
   updateUserSocials?: Maybe<Scalars['Boolean']>;
   updateUsers?: Maybe<Scalars['Boolean']>;
-  verifyRutgersNetId?: Maybe<Scalars['Boolean']>;
+  verifyNetId?: Maybe<Scalars['Boolean']>;
 };
 
 
@@ -643,8 +643,8 @@ export type MutationUpdateUsersArgs = {
 };
 
 
-export type MutationVerifyRutgersNetIdArgs = {
-  input: VerifyRutgersNetIdInput;
+export type MutationVerifyNetIdArgs = {
+  input: VerifyNetIdInput;
 };
 
 export type NewEBoardInput = {
@@ -1811,7 +1811,7 @@ export type UserUpdateInput = {
   username?: InputMaybe<Scalars['String']>;
 };
 
-export type VerifyRutgersNetIdInput = {
+export type VerifyNetIdInput = {
   netId: Scalars['String'];
   userId?: InputMaybe<Scalars['ID']>;
 };

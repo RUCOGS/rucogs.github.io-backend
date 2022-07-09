@@ -25,11 +25,10 @@ export const RoleBackendDataDict: {
           id: userId,
         },
         projection: {
-          rutgersEmail: true,
-          rutgersVerified: true,
+          netId: true,
         },
       });
-      const rutgersVerified = user?.rutgersVerified === true;
+      const rutgersVerified = user?.netId != undefined;
       return {
         RUTGERS_VERIFIED: rutgersVerified,
         READ_USER_PRIVATE: [{ userId }],
@@ -45,6 +44,7 @@ export const RoleBackendDataDict: {
     async getSecurityPermissions(entityManager, userId) {
       return {
         UPDATE_USER: true,
+        JOIN_PROJECT: true,
         CREATE_PROJECT: true,
         UPDATE_PROJECT: true,
         READ_USER_PRIVATE: true,

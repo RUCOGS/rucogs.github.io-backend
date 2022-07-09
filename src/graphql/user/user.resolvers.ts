@@ -300,7 +300,7 @@ export default {
       return true;
     },
 
-    verifyRutgersNetId: async (parent, args, context: ApolloResolversContext, info) => {
+    verifyNetId: async (parent, args, context: ApolloResolversContext, info) => {
       if (!args.input.userId) args.input.userId = context.securityContext.userId;
       if (!args.input.userId) throw new HttpError(400, 'Expected a userId or a request that was sent by a user!');
 
