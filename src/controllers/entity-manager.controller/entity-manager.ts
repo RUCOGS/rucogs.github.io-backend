@@ -28,6 +28,7 @@ export type SecureEntityManagerParams = EntityManagerParams<
   Permission,
   BaseSecurityDomainFieldSet
 >;
+export type UnsecureEntityManagerParams = EntityManagerParams<never, never, never, never>;
 
 function getScalars() {
   return {
@@ -44,7 +45,7 @@ function getScalars() {
     Date: {
       generate: () => Date.now(),
     },
-  };
+  } as EntityManagerParams<never, never, never, never>['scalars'];
 }
 
 export function getOperationMetadataFromRequest(req: any) {
