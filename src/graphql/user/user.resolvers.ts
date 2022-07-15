@@ -334,7 +334,7 @@ export default {
       await context.mailController
         .withOptions({
           to: `${user?.displayName} <${rutgersEmail}>`,
-          subject: 'Verify COGS Rutgers',
+          subject: 'Verify NetID for COGS Account',
         })
         .withTemplate('verify-rutgers', {
           name: user?.displayName ?? 'user',
