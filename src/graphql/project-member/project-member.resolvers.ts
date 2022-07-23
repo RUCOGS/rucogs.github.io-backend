@@ -15,7 +15,7 @@ import {
   startEntityManagerTransaction,
 } from '@src/utils';
 import { PartialDeep } from 'type-fest';
-import { makeProjectMember } from '../project-invite/project-invite.resolvers';
+import { deleteProjectInvites, makeProjectMember } from '../project-invite/project-invite.resolvers';
 
 async function getRequesterRoles(unsecureEntityManager: EntityManager, requesterUserId: string, roleEntityId: string) {
   const requesterUser = await unsecureEntityManager.user.findOne({
@@ -61,11 +61,24 @@ export default {
     newProjectMember: async (parent, args, context: ApolloResolversContext, info) => {
       makePermsCalc().withContext(context.securityContext).assertPermission(Permission.CreateProjectMember);
 
-      const projectMember = await makeProjectMember(context.unsecureEntityManager, {
-        ...args.input,
-      });
+      let projectMemberId = '';
+      const error = await startEntityManagerTransaction(
+        context.unsecureEntityManager,
+        context.mongoClient,
+        async (transEntityManager) => {
+          await deleteProjectInvites(context.unsecureEntityManager, {
+            userId: args.input.userId,
+            projectId: args.input.projectId,
+          });
+          const projectMember = await makeProjectMember(context.unsecureEntityManager, {
+            ...args.input,
+          });
+          projectMemberId = projectMember.id;
+        },
+      );
+      if (error) throw error;
 
-      return projectMember.id;
+      return projectMemberId;
     },
     updateProjectMember: async (parent, args, context: ApolloResolversContext, info) => {
       const permCalc = makePermsCalc().withContext(context.securityContext).withDomain({
