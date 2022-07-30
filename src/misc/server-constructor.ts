@@ -24,7 +24,9 @@ import nodemailer from 'nodemailer';
 import passport from 'passport';
 import { WebSocketServer } from 'ws';
 
-export type ServerConfig = Omit<typeof import('@src/config/server.config.json'), 'nodemailer'> & { nodemailer: any };
+export type ServerConfig = Omit<typeof import('@src/config/server.config.template.json'), 'nodemailer'> & {
+  nodemailer: any;
+};
 
 let globalDebug = false;
 export function isDebug() {
@@ -33,8 +35,8 @@ export function isDebug() {
 
 export async function startServer(debug: boolean, mock: boolean = false) {
   const serverConfig: ServerConfig = debug
-    ? await import('@src/config/server.debug.config.json')
-    : await import('@src/config/server.config.json');
+    ? require('@src/config/server.debug.config.json')
+    : require('@src/config/server.config.json');
 
   globalDebug = debug;
   const mongoClient = new MongoClient(serverConfig.mongoDB.url);
