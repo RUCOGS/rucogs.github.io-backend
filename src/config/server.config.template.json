@@ -1,9 +1,9 @@
 {
+	"type": "debug",
 	"mongoDB": {
 		"url": "",
 		"dbName": ""
 	},
-
 	"nodemailer": {
 		"host": "",
 		"auth": {
@@ -12,10 +12,8 @@
 		},
 		"port": 357
 	},
-
 	"baseUrl": "",
 	"port": 3000,
-
 	"backendDomain": "http://localhost:3000",
 	"frontendDomain": "http://localhost:8081"
 }
