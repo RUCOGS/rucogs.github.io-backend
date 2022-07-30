@@ -41,6 +41,7 @@ export const RoleData: {
       RoleCode.VicePresident,
       RoleCode.Eboard,
       RoleCode.EventCoordinator,
+      RoleCode.CommunityManager,
       RoleCode.Webmaster,
       RoleCode.Treasurer,
       RoleCode.Outreach,
