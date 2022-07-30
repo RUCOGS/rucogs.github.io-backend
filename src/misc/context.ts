@@ -4,7 +4,7 @@ import { EntityManager } from '@src/generated/typetta';
 import { SecurityContext } from '@src/shared/security';
 import express from 'express';
 import { MongoClient } from 'mongodb';
-import { ServerConfig } from './server-constructor';
+import { ServerConfig } from './config';
 
 export type ApolloResolversContext = {
   entityManager: AnyEntityManager;

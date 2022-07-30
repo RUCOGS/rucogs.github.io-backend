@@ -23,10 +23,7 @@ import { Db, MongoClient } from 'mongodb';
 import nodemailer from 'nodemailer';
 import passport from 'passport';
 import { WebSocketServer } from 'ws';
-
-export type ServerConfig = Omit<typeof import('@src/config/server.config.template.json'), 'nodemailer'> & {
-  nodemailer: any;
-};
+import { ServerConfig } from './config';
 
 let globalDebug = false;
 export function isDebug() {
