@@ -70,6 +70,7 @@ export const RoleBackendDataDict: {
         CREATE_PROJECT_MEMBER: true,
         MANAGE_METADATA: true,
         UPDATE_USER_PRIVATE: true,
+        DEBUG_DISCORD_BOT: true,
       };
     },
   },

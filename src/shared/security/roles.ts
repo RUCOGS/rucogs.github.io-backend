@@ -107,6 +107,10 @@ export const RoleData: {
     type: [RoleType.EBoard],
     name: '🌃 Event Coordinator',
   },
+  [RoleCode.CommunityManager]: {
+    type: [RoleType.EBoard],
+    name: '🧑‍🤝‍🧑 Community Manager',
+  },
   [RoleCode.Outreach]: {
     type: [RoleType.EBoard],
     name: '📤 Outreach',

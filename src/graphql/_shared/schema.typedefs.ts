@@ -26,6 +26,7 @@ export default gql`
     OUTREACH
     BOT_DEVELOPER
     CLUB_GRAPHIC_ARTIST
+    COMMUNITY_MANAGER
 
     # Public roles
     ARTIST
@@ -63,6 +64,8 @@ export default gql`
     MANAGE_PROJECT_DISCORD
 
     MANAGE_METADATA
+
+    DEBUG_DISCORD_BOT
   }
 
   enum Access {
