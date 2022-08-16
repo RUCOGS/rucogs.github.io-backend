@@ -322,10 +322,13 @@ export default {
         },
       });
 
-      const token = await jwtSignAsync<VerityNetIdPayload>({
-        userId: args.input.userId,
-        netId: args.input.netId,
-      });
+      const token = await jwtSignAsync<VerityNetIdPayload>(
+        {
+          userId: args.input.userId,
+          netId: args.input.netId,
+        },
+        '1hr',
+      );
 
       // Link for verification
       const link = new URL(context.serverConfig.backendDomain + '/auth/verify-netid');
