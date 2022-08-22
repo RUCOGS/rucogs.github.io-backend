@@ -21,9 +21,9 @@ async function startMockServer() {
   await startServer(true, true);
 
   const unsecure = createUnsecureEntityManager('mock');
-  const userIds = await generateUsers(unsecure, 100);
-  const projectIds = await generateProjects(unsecure, userIds, 50);
-  const eboardIds = await generateEBoard(unsecure, userIds, 10);
+  const userIds = await generateUsers(unsecure, 37);
+  const projectIds = await generateProjects(unsecure, userIds, 30);
+  const eboardIds = await generateEBoard(unsecure, userIds, 12);
 
   console.log('🥸 Mock server configured!');
 }
@@ -313,6 +313,7 @@ async function generateUsers(unsecure: EntityManager, count: number) {
     'Finlay Nguyen',
   ];
 
+  let includeClassYearCounts = count - 2;
   const users: UserInsertInput[] = [];
   for (let i = 0; i < count; i++) {
     const username = getRandElem(usernames) + randId(5);
@@ -323,13 +324,14 @@ async function generateUsers(unsecure: EntityManager, count: number) {
     const bio = paragraph(randInst.range(4) + 1);
     const currYear = new Date().getFullYear();
     const classYear = currYear + randInst.range(6) - 3;
+    let includeClassYear = i < includeClassYearCounts;
     users.push({
       username,
       displayName,
       email,
       avatarLink,
       bannerLink,
-      classYear,
+      ...(includeClassYear ? { classYear } : {}),
       bio,
     });
   }
