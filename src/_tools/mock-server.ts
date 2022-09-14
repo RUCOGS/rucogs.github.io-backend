@@ -358,6 +358,27 @@ async function generateUsers(unsecure: EntityManager, count: number) {
     }
   }
 
+  // Test name collisions
+  await unsecure.user.insertOne({
+    record: {
+      username: 'atlinxnet',
+      displayName: 'AtlinxNet Clone',
+    },
+  });
+  // Test worst case name collision
+  await unsecure.user.insertOne({
+    record: {
+      username: 'atlinx',
+      displayName: 'Atlinx Clone',
+    },
+  });
+  await unsecure.user.insertOne({
+    record: {
+      username: 'atlinx9623',
+      displayName: 'Atlinx Unique Clone',
+    },
+  });
+
   return (await unsecure.user.findAll({ projection: { id: true } })).map((x) => x.id);
 }
 
