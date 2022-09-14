@@ -55,6 +55,7 @@ export function configPassport(passport: PassportStatic, entityManager: EntityMa
             : '',
           displayName: profile.username,
         }),
+        async (profile) => profile.username.toLowerCase() + profile.discriminator,
         async (profile) => ({}),
       ),
     ),
@@ -77,6 +78,7 @@ export function configPassport(passport: PassportStatic, entityManager: EntityMa
             : '',
           bannerLink: '',
         }),
+        async (profile) => profile.displayName.replace(' ', '_').toLowerCase() + profile.id,
         async (profile) => ({}),
       ),
     ),
@@ -88,6 +90,7 @@ function getOAuthStrategyPassportCallback<TProfile extends passport.Profile>(
   strategyName: string,
   profileToIdentityID: (profile: TProfile) => Promise<string>,
   profileToNewUser: (profile: TProfile) => Promise<UserInsert>,
+  profileToUniqueUsername: (profile: TProfile) => Promise<string>,
   profileToData: (profile: TProfile) => Promise<unknown>,
 ) {
   // Use the arguments to construct the specialized callback funciton
@@ -115,7 +118,28 @@ function getOAuthStrategyPassportCallback<TProfile extends passport.Profile>(
         return user;
       }
 
-      const newUser = await makeUser(entityManager, await profileToNewUser(profile));
+      let userInsert = await profileToNewUser(profile);
+
+      // If the user exists, then force this user to use the unique username
+      let userExists = await entityManager.user.exists({ filter: { username: userInsert.username } });
+      if (userExists) {
+        let uniqueUsername = await profileToUniqueUsername(profile);
+        let currUniqueUsername = uniqueUsername;
+        let uniqueIndex = 0;
+
+        // Last resort:
+        // Brute force username to the next free one appending a number to the end of the unique name
+        userExists = await entityManager.user.exists({ filter: { username: currUniqueUsername } });
+        while (userExists) {
+          currUniqueUsername = uniqueUsername + uniqueIndex;
+          userExists = await entityManager.user.exists({ filter: { username: currUniqueUsername } });
+          uniqueIndex++;
+        }
+
+        userInsert.username = currUniqueUsername;
+      }
+
+      const newUser = await makeUser(entityManager, userInsert);
 
       if (isDebug()) {
         // Self-promote in debug mode to make testing easier
