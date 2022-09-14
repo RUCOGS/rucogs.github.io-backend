@@ -39,7 +39,7 @@ export async function startServer(debug: boolean, mock: boolean = false) {
   const mongoClient = new MongoClient(serverConfig.mongoDB.url);
   const mongoDb = mock ? 'mock' : mongoClient.db(serverConfig.mongoDB.dbName);
 
-  await mongoClient.connect();
+  if (!mock) await mongoClient.connect();
 
   const unsecureEntityManager = createUnsecureEntityManager(mongoDb);
 
