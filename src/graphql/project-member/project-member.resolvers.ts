@@ -154,6 +154,7 @@ export default {
                 contributions: args.input.contributions,
               }),
             },
+            roles: args.input.roles,
             subFuncQueue: postTransFuncQueue,
           });
         },
@@ -254,7 +255,7 @@ export async function updateProjectMember(options: {
   entityManager: EntityManager;
   filter: ProjectMemberFilter;
   changes: ProjectMemberUpdate;
-  roles?: RoleCode[];
+  roles?: RoleCode[] | null;
   emitSubscription?: boolean;
   subFuncQueue?: FuncQueue;
 }) {
