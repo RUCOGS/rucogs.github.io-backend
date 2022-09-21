@@ -1,6 +1,10 @@
 import { gql } from 'apollo-server';
 
 export default gql`
+  extend type Query {
+    userCount: Int
+  }
+
   extend type Mutation {
     newUser(input: NewUserInput!): ID
     updateUser(input: UpdateUserInput!): Boolean

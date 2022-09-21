@@ -62,6 +62,11 @@ async function verifySub(parent: any, args: SubscriptionUserCreatedArgs, context
 }
 
 export default {
+  Query: {
+    userCount: async (parent, args, context: ApolloResolversContext, info) => {
+      return context.unsecureEntityManager.user.count();
+    },
+  },
   Mutation: {
     newUser: async (parent, args, context: ApolloResolversContext, info) => {
       makePermsCalc().withContext(context.securityContext).assertPermission(Permission.CreateUser);

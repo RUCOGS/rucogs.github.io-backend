@@ -39,6 +39,11 @@ import { deleteAllProjectMembers, makeProjectMember } from '../project-member/pr
 const updateProjectLock = new AsyncLock();
 
 export default {
+  Query: {
+    projectCount: async (parent, args, context: ApolloResolversContext, info) => {
+      return context.unsecureEntityManager.project.count();
+    },
+  },
   Mutation: {
     newProject: async (parent, args, context: ApolloResolversContext, info) => {
       if (!context.securityContext.userId) throw new HttpError(200, 'Expected context.securityContext.userId.');
