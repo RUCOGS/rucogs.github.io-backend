@@ -1,6 +1,14 @@
 import { MutationResolvers, QueryResolvers, SubscriptionResolvers } from '@src/generated/graphql-endpoint.types';
 import { Permission, Project, RoleCode } from '@src/generated/model.types';
-import { EntityManager, ProjectDAO, ProjectMemberDAO, ProjectMemberFilter, UserDAO } from '@src/generated/typetta';
+import {
+  EntityManager,
+  ProjectDAO,
+  ProjectMemberDAO,
+  ProjectMemberFilter,
+  ProjectMemberInsert,
+  ProjectMemberUpdate,
+  UserDAO,
+} from '@src/generated/typetta';
 import pubsub, { PubSubEvents } from '@src/graphql/utils/pubsub';
 import { makeSubscriptionResolver } from '@src/graphql/utils/subscription-resolver-builder';
 import { ApolloResolversContext } from '@src/misc/context';
@@ -11,11 +19,12 @@ import {
   assertRequesterCanManageRoleCodes,
   assertRolesAreOfType,
   daoInsertRolesBatch,
+  FuncQueue,
   isDefined,
   startEntityManagerTransaction,
 } from '@src/utils';
 import { PartialDeep } from 'type-fest';
-import { deleteProjectInvites, makeProjectMember } from '../project-invite/project-invite.resolvers';
+import { deleteAllProjectInvites } from '../project-invite/project-invite.resolvers';
 
 async function getRequesterRoles(unsecureEntityManager: EntityManager, requesterUserId: string, roleEntityId: string) {
   const requesterUser = await unsecureEntityManager.user.findOne({
@@ -66,9 +75,13 @@ export default {
         context.unsecureEntityManager,
         context.mongoClient,
         async (transEntityManager, postTransFuncQueue) => {
-          await deleteProjectInvites(context.unsecureEntityManager, {
-            userId: args.input.userId,
-            projectId: args.input.projectId,
+          await deleteAllProjectInvites({
+            entityManager: context.unsecureEntityManager,
+            filter: {
+              userId: args.input.userId,
+              projectId: args.input.projectId,
+            },
+            subFuncQueue: postTransFuncQueue,
           });
           const projectMember = await makeProjectMember({
             entityManager: context.unsecureEntityManager,
@@ -80,10 +93,11 @@ export default {
           projectMemberId = projectMember.id;
         },
       );
-      if (error) throw error;
+      if (error instanceof Error) throw new HttpError(400, error.message);
 
       return projectMemberId;
     },
+
     updateProjectMember: async (parent, args, context: ApolloResolversContext, info) => {
       const permCalc = makePermsCalc().withContext(context.securityContext).withDomain({
         projectMemberId: args.input.id,
@@ -130,31 +144,21 @@ export default {
 
             assertProjectHasOwner(project as PartialDeep<Project>);
             assertProjectHasMember(project as PartialDeep<Project>);
-
-            await daoInsertRolesBatch({
-              dao: transEntityManager.projectMemberRole,
-              roleCodes: args.input.roles,
-              idKey: 'projectMemberId',
-              id: args.input.id,
-            });
           }
 
-          await transEntityManager.projectMember.updateOne({
+          await updateProjectMember({
+            entityManager: transEntityManager,
             filter: { id: args.input.id },
             changes: {
               ...(isDefined(args.input.contributions) && {
                 contributions: args.input.contributions,
               }),
             },
+            subFuncQueue: postTransFuncQueue,
           });
         },
       );
-      if (error) throw error;
-
-      const updatedProjectMember = await context.unsecureEntityManager.projectMember.findOne({
-        filter: { id: args.input.id },
-      });
-      pubsub.publish(PubSubEvents.ProjectMemberUpdated, updatedProjectMember);
+      if (error instanceof Error) throw new HttpError(400, error.message);
       return true;
     },
 
@@ -193,11 +197,14 @@ export default {
         context.unsecureEntityManager,
         context.mongoClient,
         async (transEntityManager, postTransFuncQueue) => {
-          await deleteProjectMembers(transEntityManager, { id: args.id });
+          await deleteProjectMember({
+            entityManager: transEntityManager,
+            filter: { id: args.id },
+            subFuncQueue: postTransFuncQueue,
+          });
         },
       );
-      if (error) throw error;
-
+      if (error instanceof Error) throw new HttpError(400, error.message);
       return true;
     },
   },
@@ -224,26 +231,79 @@ export default {
   Subscription: SubscriptionResolvers;
 };
 
-export async function deleteProjectMembers(
-  entityManager: EntityManager,
-  filter: ProjectMemberFilter,
-  emitSubscription: boolean = true,
-) {
-  const members = await entityManager.projectMember.findAll({
-    filter,
+export async function makeProjectMember(options: {
+  entityManager: EntityManager;
+  record: ProjectMemberInsert;
+  additionalRoles?: RoleCode[];
+  emitSubscription?: boolean;
+  subFuncQueue?: FuncQueue;
+}) {
+  const { entityManager, record, additionalRoles = [], emitSubscription = true, subFuncQueue } = options;
+  const member = await entityManager.projectMember.insertOne({ record });
+  await daoInsertRolesBatch({
+    dao: entityManager.projectMemberRole,
+    roleCodes: [RoleCode.ProjectMember, ...additionalRoles],
+    idKey: 'projectMemberId',
+    id: member.id,
   });
+  if (emitSubscription) pubsub.publishOrAddToFuncQueue(PubSubEvents.ProjectMemberCreated, member, subFuncQueue);
+  return member;
+}
 
-  if (!members) throw new HttpError(500, "Project member doesn't exist!");
+export async function updateProjectMember(options: {
+  entityManager: EntityManager;
+  filter: ProjectMemberFilter;
+  changes: ProjectMemberUpdate;
+  roles?: RoleCode[];
+  emitSubscription?: boolean;
+  subFuncQueue?: FuncQueue;
+}) {
+  const { entityManager, filter, changes, roles, emitSubscription = true, subFuncQueue } = options;
+  const member = await entityManager.projectMember.findOne({ filter, projection: { id: true } });
+  if (!member) throw new HttpError(400, 'Expected ProjectMember to not be null during update!');
+  await entityManager.projectMember.updateOne({ filter, changes });
+  if (roles)
+    await daoInsertRolesBatch({
+      dao: entityManager.projectMemberRole,
+      roleCodes: roles,
+      idKey: 'projectMemberId',
+      id: member.id,
+    });
+  const updatedMember = await entityManager.projectMember.findOne({ filter });
+  if (emitSubscription) pubsub.publishOrAddToFuncQueue(PubSubEvents.ProjectMemberUpdated, updatedMember, subFuncQueue);
+  return member;
+}
 
+export async function deleteProjectMember(options: {
+  entityManager: EntityManager;
+  filter: ProjectMemberFilter;
+  emitSubscription?: boolean;
+  subFuncQueue?: FuncQueue;
+}) {
+  const { entityManager, filter, emitSubscription = true, subFuncQueue } = options;
+  const member = await entityManager.projectMember.findOne({ filter });
+  if (!member) throw new HttpError(400, 'Expected ProjectMember to not be null during delete!');
+  await entityManager.projectMemberRole.deleteOne({
+    filter: { projectMemberId: member.id },
+  });
+  await entityManager.projectMember.deleteOne({ filter });
+  if (emitSubscription) pubsub.publishOrAddToFuncQueue(PubSubEvents.ProjectMemberDeleted, member, subFuncQueue);
+}
+
+export async function deleteAllProjectMembers(options: {
+  entityManager: EntityManager;
+  filter: ProjectMemberFilter;
+  emitSubscription?: boolean;
+  subFuncQueue?: FuncQueue;
+}) {
+  const { entityManager, filter, emitSubscription = true, subFuncQueue } = options;
+  const members = await entityManager.projectMember.findAll({ filter });
   await entityManager.projectMemberRole.deleteAll({
     filter: { projectMemberId: { in: members.map((x) => x.id) } },
   });
-
-  await entityManager.projectMember.deleteAll({
-    filter,
-  });
-
+  await entityManager.projectMember.deleteAll({ filter });
   if (emitSubscription) {
-    for (const member of members) pubsub.publish(PubSubEvents.ProjectMemberDeleted, member);
+    for (const member of members)
+      pubsub.publishOrAddToFuncQueue(PubSubEvents.ProjectMemberDeleted, member, subFuncQueue);
   }
 }

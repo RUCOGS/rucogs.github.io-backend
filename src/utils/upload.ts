@@ -3,7 +3,7 @@
 import { deleteSelfHostedFile, isSelfHostedFile, relativeToSelfHostedFilePath } from '@src/controllers/cdn.controller';
 import { RoleCode } from '@src/generated/graphql-endpoint.types';
 import { EntityManager } from '@src/generated/typetta';
-import { RequestContext, RequestWithContext } from '@src/misc/context';
+import { ApolloResolversContext, RequestContext, RequestWithContext } from '@src/misc/context';
 import { HttpError } from '@src/shared/utils';
 import { AbstractDAO } from '@twinlogix/typetta';
 import express from 'express';
@@ -52,6 +52,18 @@ export async function getRoleCodes(roleDao: AbstractDAO<any>, idKey: string, id:
   ).map((x) => x.roleCode as RoleCode);
 }
 
+export async function startEntityManagerTransactionGraphQL(
+  context: ApolloResolversContext,
+  fn: (
+    transactionEntityManager: EntityManager & {
+      __transaction_enabled__: true;
+    },
+    postTransactionFuncQueue: FuncQueue,
+  ) => Promise<void>,
+) {
+  return startEntityManagerTransaction(context.unsecureEntityManager, context.mongoClient, fn);
+}
+
 export async function startEntityManagerTransaction(
   entityManager: EntityManager,
   mongoClient: MongoClient,
@@ -69,7 +81,7 @@ export async function startEntityManagerTransaction(
   });
 
   // Accrue methods that should be executed after the transaction
-  const methodQueue = new FuncQueue();
+  const postTransFuncQueue = new FuncQueue();
   let error: Error | undefined = undefined;
   try {
     await entityManager.transaction(
@@ -80,7 +92,7 @@ export async function startEntityManagerTransaction(
     );
     await session.commitTransaction();
     // Execute accrued methods
-    methodQueue.executeQueue();
+    postTransFuncQueue.executeQueue();
   } catch (err) {
     if (err instanceof Error) error = err;
     await session.abortTransaction();

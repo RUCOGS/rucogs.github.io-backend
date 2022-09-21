@@ -3,17 +3,17 @@ import {
   MutationResolvers,
   Permission,
   QueryResolvers,
-  RoleCode,
   SubscriptionResolvers,
 } from '@src/generated/graphql-endpoint.types';
 import { Access, SubscriptionProjectInviteCreatedArgs } from '@src/generated/model.types';
-import { EntityManager, ProjectDAO, ProjectInviteFilter, ProjectMemberInsert } from '@src/generated/typetta';
+import { EntityManager, ProjectDAO, ProjectInviteFilter, ProjectInviteInsert } from '@src/generated/typetta';
 import pubsub, { PubSubEvents } from '@src/graphql/utils/pubsub';
 import { makeSubscriptionResolver } from '@src/graphql/utils/subscription-resolver-builder';
 import { ApolloResolversContext } from '@src/misc/context';
 import { makePermsCalc } from '@src/shared/security';
 import { HttpError } from '@src/shared/utils';
-import { daoInsertRolesBatch, FuncQueue, startEntityManagerTransaction } from '@src/utils';
+import { FuncQueue, startEntityManagerTransactionGraphQL } from '@src/utils';
+import { makeProjectMember } from '../project-member/project-member.resolvers';
 
 const acceptProjectInvite: MutationResolvers['acceptProjectInvite'] = async (
   parent,
@@ -39,28 +39,23 @@ const acceptProjectInvite: MutationResolvers['acceptProjectInvite'] = async (
       .assertPermission(Permission.ManageProjectInvites);
   }
 
-  const error = await startEntityManagerTransaction(
-    context.unsecureEntityManager,
-    context.mongoClient,
-    async (transEntityManager, postTransFuncQueue) => {
-      await makeProjectMember({
-        entityManager: transEntityManager,
-        record: {
-          userId: invite.userId,
-          projectId: invite.projectId,
-        },
-        subFuncQueue: postTransFuncQueue,
-      });
-      await deleteProjectInvites({
-        entityManager: transEntityManager,
-        record: {
-          id: args.inviteId,
-        },
-      });
-      // TODO NOW: Finish converting all deleteProjectInvites into a func that takes in one options param.
-      // TODO NEXT: Refactor all other creation/update/destruction to use postTransFuncQueue to defer pubsub calls
-    },
-  );
+  const error = await startEntityManagerTransactionGraphQL(context, async (transEntityManager, postTransFuncQueue) => {
+    await makeProjectMember({
+      entityManager: transEntityManager,
+      record: {
+        userId: invite.userId,
+        projectId: invite.projectId,
+      },
+      subFuncQueue: postTransFuncQueue,
+    });
+    await deleteAllProjectInvites({
+      entityManager: transEntityManager,
+      filter: {
+        id: args.inviteId,
+      },
+      subFuncQueue: postTransFuncQueue,
+    });
+  });
 
   if (error) throw error;
 
@@ -111,9 +106,8 @@ export default {
               projectId: args.input.projectId,
             })
             .hasPermission(Permission.UpdateProject)
-        ) {
+        )
           throw new HttpError(401, 'Not authorized!');
-        }
 
       const userExists = await context.unsecureEntityManager.user.exists({
         filter: { id: args.input.userId },
@@ -162,16 +156,21 @@ export default {
         );
         return;
       } else {
-        const insertedInvite = await context.unsecureEntityManager.projectInvite.insertOne({
-          record: {
-            type: args.input.type,
-            projectId: args.input.projectId,
-            userId: args.input.userId,
-          },
+        let insertedInviteId = '';
+        const error = startEntityManagerTransactionGraphQL(context, async (transEntityManager, postTransFuncQueue) => {
+          const insertedInvite = await makeProjectInvite({
+            entityManager: transEntityManager,
+            record: {
+              type: args.input.type,
+              projectId: args.input.projectId,
+              userId: args.input.userId,
+            },
+            subFuncQueue: postTransFuncQueue,
+          });
+          insertedInviteId = insertedInvite.id;
         });
-
-        pubsub.publish(PubSubEvents.ProjectInviteCreated, insertedInvite);
-        return insertedInvite.id;
+        if (error instanceof Error) throw new HttpError(400, error.message);
+        return insertedInviteId;
       }
     },
 
@@ -195,17 +194,19 @@ export default {
       ) {
         throw new HttpError(403, 'Unauthorized');
       }
-      const error = await startEntityManagerTransaction(
-        context.unsecureEntityManager,
-        context.mongoClient,
+      const error = await startEntityManagerTransactionGraphQL(
+        context,
         async (transEntityManager, postTransFuncQueue) => {
-          await deleteProjectInvites(transEntityManager, {
-            id: args.inviteId,
+          await deleteAllProjectInvites({
+            entityManager: transEntityManager,
+            filter: {
+              id: args.inviteId,
+            },
+            subFuncQueue: postTransFuncQueue,
           });
         },
       );
-
-      if (error) throw error;
+      if (error instanceof Error) throw new HttpError(400, error.message);
 
       return true;
     },
@@ -231,10 +232,17 @@ export default {
 
       if (project.access !== Access.Open) throw new HttpError(403, "Project access is not 'OPEN'!");
 
-      const error = await startEntityManagerTransaction(
-        context.unsecureEntityManager,
-        context.mongoClient,
+      const error = await startEntityManagerTransactionGraphQL(
+        context,
         async (transEntityManager, postTransFuncQueue) => {
+          await deleteAllProjectInvites({
+            entityManager: transEntityManager,
+            filter: {
+              projectId: args.projectId,
+              userId: userId,
+            },
+          });
+
           await makeProjectMember({
             entityManager: transEntityManager,
             record: {
@@ -245,7 +253,7 @@ export default {
           });
         },
       );
-      if (error) throw error;
+      if (error instanceof Error) throw new HttpError(400, error.message);
 
       return true;
     },
@@ -270,51 +278,44 @@ export default {
   Subscription: SubscriptionResolvers;
 };
 
-export async function deleteProjectInvites(options: {
+export async function makeProjectInvite(options: {
+  entityManager: EntityManager;
+  record: ProjectInviteInsert;
+  emitSubscription?: boolean;
+  subFuncQueue?: FuncQueue;
+}) {
+  const { entityManager, record, emitSubscription = true, subFuncQueue } = options;
+  const projectInvite = await entityManager.projectInvite.insertOne({
+    record,
+  });
+  if (emitSubscription) pubsub.publishOrAddToFuncQueue(PubSubEvents.ProjectInviteCreated, projectInvite, subFuncQueue);
+  return projectInvite;
+}
+
+export async function deleteProjectInvite(options: {
   entityManager: EntityManager;
   filter: ProjectInviteFilter;
   emitSubscription?: boolean;
   subFuncQueue?: FuncQueue;
 }) {
-  let invites;
-  if (options.emitSubscription) {
-    invites = await options.entityManager.projectInvite.findAll({
-      filter: options.filter,
-    });
-  }
-
-  await options.entityManager.projectInvite.deleteAll({
-    filter: options.filter,
-  });
-
-  if (invites && options.emitSubscription) {
-    for (const invite of invites)
-      pubsub.publishOrAddToFuncQueue(PubSubEvents.ProjectInviteDeleted, invite, options.subFuncQueue);
-  }
+  const { entityManager, filter, emitSubscription = true, subFuncQueue } = options;
+  const invite = await entityManager.projectInvite.findOne({ filter });
+  if (!invite) throw new HttpError(400, 'Expected ProjectInvite to not be null during delete!');
+  await entityManager.projectInvite.deleteOne({ filter });
+  if (emitSubscription) pubsub.publishOrAddToFuncQueue(PubSubEvents.ProjectInviteDeleted, invite, subFuncQueue);
 }
 
-export async function makeProjectMember(options: {
+export async function deleteAllProjectInvites(options: {
   entityManager: EntityManager;
-  record: ProjectMemberInsert;
-  additionalRoles?: RoleCode[];
+  filter: ProjectInviteFilter;
   emitSubscription?: boolean;
   subFuncQueue?: FuncQueue;
 }) {
-  if (!options.additionalRoles) options.additionalRoles = [];
-
-  const member = await options.entityManager.projectMember.insertOne({
-    record: options.record,
-  });
-
-  await daoInsertRolesBatch({
-    dao: options.entityManager.projectMemberRole,
-    roleCodes: [RoleCode.ProjectMember, ...options.additionalRoles],
-    idKey: 'projectMemberId',
-    id: member.id,
-  });
-
-  if (options.emitSubscription)
-    pubsub.publishOrAddToFuncQueue(PubSubEvents.ProjectMemberCreated, member, options.subFuncQueue);
-
-  return member;
+  const { entityManager, filter, emitSubscription = true, subFuncQueue } = options;
+  const invites = await entityManager.projectInvite.findAll({ filter });
+  await entityManager.projectInvite.deleteAll({ filter });
+  if (emitSubscription) {
+    for (const invite of invites)
+      pubsub.publishOrAddToFuncQueue(PubSubEvents.ProjectInviteDeleted, invite, subFuncQueue);
+  }
 }

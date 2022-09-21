@@ -2,13 +2,15 @@ import AuthConfig from '@src/config/auth.config.json';
 import { downloadToCdn } from '@src/controllers/cdn.controller';
 import { getCompleteSecurityContext } from '@src/controllers/security.controller/security-context';
 import { RoleCode, User } from '@src/generated/model.types';
-import { EntityManager, UserInsert } from '@src/generated/typetta';
+import { EntityManager, UserInsert, UserPlainModel } from '@src/generated/typetta';
 import { makeUserLoginIdentity } from '@src/graphql/user-login-identity/user-login-identity.resolvers';
 import { makeUser } from '@src/graphql/user/user.resolvers';
 import { RequestWithDefaultContext } from '@src/misc/context';
 import { isDebug } from '@src/misc/server-constructor';
 import { HttpError } from '@src/shared/utils';
+import { startEntityManagerTransaction } from '@src/utils';
 import express from 'express';
+import { MongoClient } from 'mongodb';
 import passport, { PassportStatic } from 'passport';
 import { Strategy as DiscordStrategy } from 'passport-discord';
 import { Profile as GoogleStrategyProfile, Strategy as GoogleStrategy } from 'passport-google-oauth20';
@@ -30,12 +32,13 @@ export interface OAuthStrategyConfig {
   };
 }
 
-export function configPassport(passport: PassportStatic, entityManager: EntityManager) {
+export function configPassport(passport: PassportStatic, entityManager: EntityManager, mongoClient: MongoClient) {
   passport.use(
     new DiscordStrategy(
       <DiscordStrategy.StrategyOptions>AuthConfig.oauth.discord.strategyConfig,
       getOAuthStrategyPassportCallback<DiscordStrategy.Profile>(
         entityManager,
+        mongoClient,
         'discord',
         async (profile) => profile.id,
         async (profile) => ({
@@ -65,6 +68,7 @@ export function configPassport(passport: PassportStatic, entityManager: EntityMa
       AuthConfig.oauth.google.strategyConfig,
       getOAuthStrategyPassportCallback<GoogleStrategyProfile>(
         entityManager,
+        mongoClient,
         'google',
         async (profile) => profile.id,
         async (profile) => ({
@@ -87,6 +91,7 @@ export function configPassport(passport: PassportStatic, entityManager: EntityMa
 
 function getOAuthStrategyPassportCallback<TProfile extends passport.Profile>(
   entityManager: EntityManager,
+  mongoClient: MongoClient,
   strategyName: string,
   profileToIdentityID: (profile: TProfile) => Promise<string>,
   profileToNewUser: (profile: TProfile) => Promise<UserInsert>,
@@ -139,26 +144,42 @@ function getOAuthStrategyPassportCallback<TProfile extends passport.Profile>(
         userInsert.username = currUniqueUsername;
       }
 
-      const newUser = await makeUser(entityManager, userInsert);
+      let newUser: UserPlainModel | undefined;
+      const error = await startEntityManagerTransaction(
+        entityManager,
+        mongoClient,
+        async (transEntityManager, postTransFuncQueue) => {
+          newUser = await makeUser({
+            entityManager: entityManager,
+            record: userInsert,
+            subFuncQueue: postTransFuncQueue,
+          });
 
-      if (isDebug()) {
-        // Self-promote in debug mode to make testing easier
-        if (newUser.username === 'atlinx') {
-          await entityManager.userRole.insertOne({
+          if (isDebug()) {
+            // Self-promote in debug mode to make testing easier
+            if (newUser.username === 'atlinx') {
+              await entityManager.userRole.insertOne({
+                record: {
+                  roleCode: RoleCode.SuperAdmin,
+                  userId: newUser.id,
+                },
+              });
+            }
+          }
+
+          await makeUserLoginIdentity({
+            entityManager,
             record: {
-              roleCode: RoleCode.SuperAdmin,
+              name: strategyName,
+              identityId: identityId,
+              data: await profileToData(profile),
               userId: newUser.id,
             },
+            subFuncQueue: postTransFuncQueue,
           });
-        }
-      }
-
-      await makeUserLoginIdentity(entityManager, {
-        name: strategyName,
-        identityId: identityId,
-        data: await profileToData(profile),
-        userId: newUser.id,
-      });
+        },
+      );
+      if (error) throw error;
 
       return newUser;
     })()
