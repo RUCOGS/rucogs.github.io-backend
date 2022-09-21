@@ -65,13 +65,17 @@ export default {
       const error = await startEntityManagerTransaction(
         context.unsecureEntityManager,
         context.mongoClient,
-        async (transEntityManager) => {
+        async (transEntityManager, postTransFuncQueue) => {
           await deleteProjectInvites(context.unsecureEntityManager, {
             userId: args.input.userId,
             projectId: args.input.projectId,
           });
-          const projectMember = await makeProjectMember(context.unsecureEntityManager, {
-            ...args.input,
+          const projectMember = await makeProjectMember({
+            entityManager: context.unsecureEntityManager,
+            record: {
+              ...args.input,
+            },
+            subFuncQueue: postTransFuncQueue,
           });
           projectMemberId = projectMember.id;
         },
@@ -98,7 +102,7 @@ export default {
       const error = await startEntityManagerTransaction(
         context.unsecureEntityManager,
         context.mongoClient,
-        async (transEntityManager) => {
+        async (transEntityManager, postTransFuncQueue) => {
           if (!context.securityContext.userId) throw new HttpError(400, 'Expected context.securityContext.userId!');
 
           if (isDefined(args.input.roles)) {
@@ -188,7 +192,7 @@ export default {
       const error = await startEntityManagerTransaction(
         context.unsecureEntityManager,
         context.mongoClient,
-        async (transEntityManager) => {
+        async (transEntityManager, postTransFuncQueue) => {
           await deleteProjectMembers(transEntityManager, { id: args.id });
         },
       );

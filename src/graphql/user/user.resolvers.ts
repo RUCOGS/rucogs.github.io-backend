@@ -61,7 +61,7 @@ export default {
       const error = await startEntityManagerTransaction(
         context.unsecureEntityManager,
         context.mongoClient,
-        async (transEntityManager) => {
+        async (transEntityManager, postTransFuncQueue) => {
           const user = await makeUser(transEntityManager, args.input);
           userId = user.id;
         },
@@ -97,7 +97,7 @@ export default {
         const error = await startEntityManagerTransaction(
           context.unsecureEntityManager,
           context.mongoClient,
-          async (transEntityManager) => {
+          async (transEntityManager, postTransFuncQueue) => {
             if (!context.securityContext.userId) throw new HttpError(400, 'Expected context.securityContext.userId!');
 
             if (isDefined(args.input.displayName)) {
@@ -263,7 +263,7 @@ export default {
       const error = await startEntityManagerTransaction(
         context.unsecureEntityManager,
         context.mongoClient,
-        async (transEntityManager) => {
+        async (transEntityManager, postTransFuncQueue) => {
           await transEntityManager.userRole.deleteAll({
             filter: {
               userId: args.id,

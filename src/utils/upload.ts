@@ -8,6 +8,7 @@ import { HttpError } from '@src/shared/utils';
 import { AbstractDAO } from '@twinlogix/typetta';
 import express from 'express';
 import { MongoClient } from 'mongodb';
+import { FuncQueue } from './func-queue';
 
 export function isDefined<T>(value: T | undefined | null): value is T {
   return value !== undefined && value !== null;
@@ -58,6 +59,7 @@ export async function startEntityManagerTransaction(
     transactionEntityManager: EntityManager & {
       __transaction_enabled__: true;
     },
+    postTransactionFuncQueue: FuncQueue,
   ) => Promise<void>,
 ): Promise<Error | undefined> {
   const session = mongoClient.startSession();
@@ -66,15 +68,19 @@ export async function startEntityManagerTransaction(
     writeConcern: { w: 'majority' },
   });
 
+  // Accrue methods that should be executed after the transaction
+  const methodQueue = new FuncQueue();
   let error: Error | undefined = undefined;
   try {
     await entityManager.transaction(
       {
         mongodb: { default: session },
       },
-      fn,
+      (transEntityManager) => fn(transEntityManager, postTransFuncQueue),
     );
     await session.commitTransaction();
+    // Execute accrued methods
+    methodQueue.executeQueue();
   } catch (err) {
     if (err instanceof Error) error = err;
     await session.abortTransaction();
@@ -91,6 +97,7 @@ export async function startEntityManagerTransactionREST(
     transactionEntityManager: EntityManager & {
       __transaction_enabled__: true;
     },
+    postTransactionFuncQueue: FuncQueue,
   ) => Promise<void>,
 ): Promise<Error | undefined> {
   if (!req.context || !req.context.securityContext || !req.context.securityContext.userId) {

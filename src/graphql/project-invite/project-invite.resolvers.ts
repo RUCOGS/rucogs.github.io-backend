@@ -13,7 +13,7 @@ import { makeSubscriptionResolver } from '@src/graphql/utils/subscription-resolv
 import { ApolloResolversContext } from '@src/misc/context';
 import { makePermsCalc } from '@src/shared/security';
 import { HttpError } from '@src/shared/utils';
-import { daoInsertRolesBatch, startEntityManagerTransaction } from '@src/utils';
+import { daoInsertRolesBatch, FuncQueue, startEntityManagerTransaction } from '@src/utils';
 
 const acceptProjectInvite: MutationResolvers['acceptProjectInvite'] = async (
   parent,
@@ -42,14 +42,23 @@ const acceptProjectInvite: MutationResolvers['acceptProjectInvite'] = async (
   const error = await startEntityManagerTransaction(
     context.unsecureEntityManager,
     context.mongoClient,
-    async (transEntitymanager) => {
-      await makeProjectMember(transEntitymanager, {
-        userId: invite.userId,
-        projectId: invite.projectId,
+    async (transEntityManager, postTransFuncQueue) => {
+      await makeProjectMember({
+        entityManager: transEntityManager,
+        record: {
+          userId: invite.userId,
+          projectId: invite.projectId,
+        },
+        subFuncQueue: postTransFuncQueue,
       });
-      await deleteProjectInvites(transEntitymanager, {
-        id: args.inviteId,
+      await deleteProjectInvites({
+        entityManager: transEntityManager,
+        record: {
+          id: args.inviteId,
+        },
       });
+      // TODO NOW: Finish converting all deleteProjectInvites into a func that takes in one options param.
+      // TODO NEXT: Refactor all other creation/update/destruction to use postTransFuncQueue to defer pubsub calls
     },
   );
 
@@ -189,8 +198,8 @@ export default {
       const error = await startEntityManagerTransaction(
         context.unsecureEntityManager,
         context.mongoClient,
-        async (transEntitymanager) => {
-          await deleteProjectInvites(transEntitymanager, {
+        async (transEntityManager, postTransFuncQueue) => {
+          await deleteProjectInvites(transEntityManager, {
             id: args.inviteId,
           });
         },
@@ -225,10 +234,14 @@ export default {
       const error = await startEntityManagerTransaction(
         context.unsecureEntityManager,
         context.mongoClient,
-        async (transEntityManager) => {
-          await makeProjectMember(transEntityManager, {
-            userId,
-            projectId: args.projectId,
+        async (transEntityManager, postTransFuncQueue) => {
+          await makeProjectMember({
+            entityManager: transEntityManager,
+            record: {
+              userId,
+              projectId: args.projectId,
+            },
+            subFuncQueue: postTransFuncQueue,
           });
         },
       );
@@ -257,43 +270,51 @@ export default {
   Subscription: SubscriptionResolvers;
 };
 
-export async function deleteProjectInvites(
-  entityManager: EntityManager,
-  filter: ProjectInviteFilter,
-  emitSubscription: boolean = true,
-) {
+export async function deleteProjectInvites(options: {
+  entityManager: EntityManager;
+  filter: ProjectInviteFilter;
+  emitSubscription?: boolean;
+  subFuncQueue?: FuncQueue;
+}) {
   let invites;
-  if (emitSubscription) {
-    invites = await entityManager.projectInvite.findAll({
-      filter,
+  if (options.emitSubscription) {
+    invites = await options.entityManager.projectInvite.findAll({
+      filter: options.filter,
     });
   }
 
-  await entityManager.projectInvite.deleteAll({
-    filter,
+  await options.entityManager.projectInvite.deleteAll({
+    filter: options.filter,
   });
 
-  if (invites && emitSubscription) {
-    for (const invite of invites) pubsub.publish(PubSubEvents.ProjectInviteDeleted, invite);
+  if (invites && options.emitSubscription) {
+    for (const invite of invites)
+      pubsub.publishOrAddToFuncQueue(PubSubEvents.ProjectInviteDeleted, invite, options.subFuncQueue);
   }
 }
 
-export async function makeProjectMember(
-  entityManager: EntityManager,
-  record: ProjectMemberInsert,
-  additionalRoles: RoleCode[] = [],
-  emitSubscription: boolean = true,
-) {
-  const member = await entityManager.projectMember.insertOne({
-    record,
+export async function makeProjectMember(options: {
+  entityManager: EntityManager;
+  record: ProjectMemberInsert;
+  additionalRoles?: RoleCode[];
+  emitSubscription?: boolean;
+  subFuncQueue?: FuncQueue;
+}) {
+  if (!options.additionalRoles) options.additionalRoles = [];
+
+  const member = await options.entityManager.projectMember.insertOne({
+    record: options.record,
   });
+
   await daoInsertRolesBatch({
-    dao: entityManager.projectMemberRole,
-    roleCodes: [RoleCode.ProjectMember, ...additionalRoles],
+    dao: options.entityManager.projectMemberRole,
+    roleCodes: [RoleCode.ProjectMember, ...options.additionalRoles],
     idKey: 'projectMemberId',
     id: member.id,
   });
 
-  if (emitSubscription) pubsub.publish(PubSubEvents.ProjectMemberCreated, member);
+  if (options.emitSubscription)
+    pubsub.publishOrAddToFuncQueue(PubSubEvents.ProjectMemberCreated, member, options.subFuncQueue);
+
   return member;
 }

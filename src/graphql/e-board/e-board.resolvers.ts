@@ -68,8 +68,8 @@ export default {
       const error = await startEntityManagerTransaction(
         context.unsecureEntityManager,
         context.mongoClient,
-        async (transEntitymanager) => {
-          eBoard = await makeEBoard(transEntitymanager, args.input);
+        async (transEntityManager, postTransFuncQueue) => {
+          eBoard = await makeEBoard(transEntityManager, args.input);
         },
       );
 
@@ -100,7 +100,7 @@ export default {
         const error = await startEntityManagerTransaction(
           context.unsecureEntityManager,
           context.mongoClient,
-          async (transEntityManager) => {
+          async (transEntityManager, postTransFuncQueue) => {
             if (!context.securityContext.userId) throw new HttpError(400, 'Expected context.securityContext.userId!');
 
             let avatarSelfHostedFilePath = null;
@@ -157,7 +157,7 @@ export default {
       const error = await startEntityManagerTransaction(
         context.unsecureEntityManager,
         context.mongoClient,
-        async (transEntityManager) => {
+        async (transEntityManager, postTransFuncQueue) => {
           await deleteEBoard(transEntityManager, { id: args.id });
         },
       );
@@ -193,8 +193,8 @@ export default {
       const error = await startEntityManagerTransaction(
         context.unsecureEntityManager,
         context.mongoClient,
-        async (transEntitymanager) => {
-          eBoardTerm = await makeEBoardTerm(transEntitymanager, args.input);
+        async (transEntityManager, postTransFuncQueue) => {
+          eBoardTerm = await makeEBoardTerm(transEntityManager, args.input);
         },
       );
 
@@ -222,7 +222,7 @@ export default {
       const error = await startEntityManagerTransaction(
         context.unsecureEntityManager,
         context.mongoClient,
-        async (transEntityManager) => {
+        async (transEntityManager, postTransFuncQueue) => {
           if (!context.securityContext.userId) throw new HttpError(400, 'Expected context.securityContext.userId!');
 
           if (isDefined(args.input.roles)) {
@@ -284,7 +284,7 @@ export default {
       const error = await startEntityManagerTransaction(
         context.unsecureEntityManager,
         context.mongoClient,
-        async (transEntityManager) => {
+        async (transEntityManager, postTransFuncQueue) => {
           await deleteEBoardTerm(transEntityManager, { id: args.id });
         },
       );

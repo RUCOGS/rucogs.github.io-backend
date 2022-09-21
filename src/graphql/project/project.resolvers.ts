@@ -38,7 +38,7 @@ export default {
       const error = await startEntityManagerTransaction(
         context.unsecureEntityManager,
         context.mongoClient,
-        async (transEntityManager) => {
+        async (transEntityManager, postTransFuncQueue) => {
           project = await transEntityManager.project.insertOne({
             record: {
               name: args.input.name,
@@ -47,14 +47,15 @@ export default {
             },
           });
 
-          const projectOwner = await makeProjectMember(
-            transEntityManager,
-            {
+          const projectOwner = await makeProjectMember({
+            entityManager: transEntityManager,
+            record: {
               userId,
               projectId: project.id,
             },
-            [RoleCode.ProjectOwner],
-          );
+            additionalRoles: [RoleCode.ProjectOwner],
+            subFuncQueue: postTransFuncQueue,
+          });
 
           await daoInsertRolesBatch({
             dao: transEntityManager.projectMemberRole,
@@ -97,7 +98,7 @@ export default {
         const error = await startEntityManagerTransaction(
           context.unsecureEntityManager,
           context.mongoClient,
-          async (transEntityManager) => {
+          async (transEntityManager, postTransFuncQueue) => {
             let cardImageSelfHostedFilePath = null;
             if (isDefined(args.input.cardImage)) {
               if (
@@ -241,7 +242,7 @@ export default {
       const error = await startEntityManagerTransaction(
         context.unsecureEntityManager,
         context.mongoClient,
-        async (transEntityManager) => {
+        async (transEntityManager, postTransFuncQueue) => {
           await deleteProjectMembers(transEntityManager, {
             projectId: args.id,
           });
@@ -313,7 +314,7 @@ export default {
       const error = await startEntityManagerTransaction(
         context.unsecureEntityManager,
         context.mongoClient,
-        async (transEntityManager) => {
+        async (transEntityManager, postTransFuncQueue) => {
           await transEntityManager.projectMemberRole.deleteOne({
             filter: {
               projectMemberId: currentOwner.id,
