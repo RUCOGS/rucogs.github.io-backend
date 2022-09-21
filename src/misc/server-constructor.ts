@@ -238,7 +238,7 @@ function configExpress(options: {
   }
 
   // ----- PASSPORT ----- //
-  configPassport(passport, options.entityManager);
+  configPassport(passport, options.entityManager, options.mongoClient);
   options.app.use(passport.initialize());
 
   // We are using JWTs instead of sessions in order
