@@ -9,6 +9,7 @@ import { RequestWithDefaultContext } from '@src/misc/context';
 import { isDebug } from '@src/misc/server-constructor';
 import { HttpError } from '@src/shared/utils';
 import { startEntityManagerTransaction } from '@src/utils';
+import AsyncLock from 'async-lock';
 import express from 'express';
 import { MongoClient } from 'mongodb';
 import passport, { PassportStatic } from 'passport';
@@ -89,6 +90,8 @@ export function configPassport(passport: PassportStatic, entityManager: EntityMa
   );
 }
 
+const createNewUser = new AsyncLock();
+
 function getOAuthStrategyPassportCallback<TProfile extends passport.Profile>(
   entityManager: EntityManager,
   mongoClient: MongoClient,
@@ -103,85 +106,84 @@ function getOAuthStrategyPassportCallback<TProfile extends passport.Profile>(
     // Wrap the contents of this async function to convert the result into the done function
     (async () => {
       const identityId = await profileToIdentityID(profile);
-
-      const userLoginIdentity = await entityManager.userLoginIdentity.findOne({
-        filter: {
-          name: strategyName,
-          identityId,
-        },
-        projection: {
-          userId: true,
-        },
-      });
-
-      if (userLoginIdentity) {
-        const user = await entityManager.user.findOne({
+      return await createNewUser.acquire(identityId, async () => {
+        const userLoginIdentity = await entityManager.userLoginIdentity.findOne({
           filter: {
-            id: { eq: userLoginIdentity.userId },
+            name: strategyName,
+            identityId,
+          },
+          projection: {
+            userId: true,
           },
         });
-        return user;
-      }
 
-      let userInsert = await profileToNewUser(profile);
-
-      // If the user exists, then force this user to use the unique username
-      let userExists = await entityManager.user.exists({ filter: { username: userInsert.username } });
-      if (userExists) {
-        let uniqueUsername = await profileToUniqueUsername(profile);
-        let currUniqueUsername = uniqueUsername;
-        let uniqueIndex = 0;
-
-        // Last resort:
-        // Brute force username to the next free one appending a number to the end of the unique name
-        userExists = await entityManager.user.exists({ filter: { username: currUniqueUsername } });
-        while (userExists) {
-          currUniqueUsername = uniqueUsername + uniqueIndex;
-          userExists = await entityManager.user.exists({ filter: { username: currUniqueUsername } });
-          uniqueIndex++;
+        if (userLoginIdentity) {
+          const user = await entityManager.user.findOne({
+            filter: {
+              id: { eq: userLoginIdentity.userId },
+            },
+          });
+          return user;
         }
 
-        userInsert.username = currUniqueUsername;
-      }
+        const userInsert = await profileToNewUser(profile);
+        // If the user exists, then force this user to use the unique username
+        let userExists = await entityManager.user.exists({ filter: { username: userInsert.username } });
+        if (userExists) {
+          let uniqueUsername = await profileToUniqueUsername(profile);
+          let currUniqueUsername = uniqueUsername;
+          let uniqueIndex = 0;
 
-      let newUser: UserPlainModel | undefined;
-      const error = await startEntityManagerTransaction(
-        entityManager,
-        mongoClient,
-        async (transEntityManager, postTransFuncQueue) => {
-          newUser = await makeUser({
-            entityManager: entityManager,
-            record: userInsert,
-            subFuncQueue: postTransFuncQueue,
-          });
-
-          if (isDebug()) {
-            // Self-promote in debug mode to make testing easier
-            if (newUser.username === 'atlinx') {
-              await entityManager.userRole.insertOne({
-                record: {
-                  roleCode: RoleCode.SuperAdmin,
-                  userId: newUser.id,
-                },
-              });
-            }
+          // Last resort:
+          // Brute force username to the next free one appending a number to the end of the unique name
+          userExists = await entityManager.user.exists({ filter: { username: currUniqueUsername } });
+          while (userExists) {
+            currUniqueUsername = uniqueUsername + uniqueIndex;
+            userExists = await entityManager.user.exists({ filter: { username: currUniqueUsername } });
+            uniqueIndex++;
           }
 
-          await makeUserLoginIdentity({
-            entityManager,
-            record: {
-              name: strategyName,
-              identityId: identityId,
-              data: await profileToData(profile),
-              userId: newUser.id,
-            },
-            subFuncQueue: postTransFuncQueue,
-          });
-        },
-      );
-      if (error) throw error;
+          userInsert.username = currUniqueUsername;
+        }
 
-      return newUser;
+        let newUser: UserPlainModel | undefined;
+        const error = await startEntityManagerTransaction(
+          entityManager,
+          mongoClient,
+          async (transEntityManager, postTransFuncQueue) => {
+            newUser = await makeUser({
+              entityManager: transEntityManager,
+              record: userInsert,
+              subFuncQueue: postTransFuncQueue,
+            });
+
+            if (isDebug()) {
+              // Self-promote in debug mode to make testing easier
+              if (newUser.username === 'atlinx') {
+                await entityManager.userRole.insertOne({
+                  record: {
+                    roleCode: RoleCode.SuperAdmin,
+                    userId: newUser.id,
+                  },
+                });
+              }
+            }
+
+            await makeUserLoginIdentity({
+              entityManager: transEntityManager,
+              record: {
+                name: strategyName,
+                identityId: identityId,
+                data: await profileToData(profile),
+                userId: newUser.id,
+              },
+              subFuncQueue: postTransFuncQueue,
+            });
+          },
+        );
+        if (error) throw error;
+        return newUser;
+      });
     })()
       .then((user: any) => {
         done(null, user);
