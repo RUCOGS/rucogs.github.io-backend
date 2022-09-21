@@ -159,7 +159,7 @@ function getOAuthStrategyPassportCallback<TProfile extends passport.Profile>(
 
             if (isDebug()) {
               // Self-promote in debug mode to make testing easier
-              if (newUser.username === 'atlinx') {
+              if (newUser.username === 'atlinx96230') {
                 await entityManager.userRole.insertOne({
                   record: {
                     roleCode: RoleCode.SuperAdmin,
