@@ -12,20 +12,38 @@ import {
   SubscriptionResolvers,
   UploadOperation,
 } from '@src/generated/graphql-endpoint.types';
-import { ProjectDAO, ProjectPlainModel } from '@src/generated/typetta';
+import {
+  EntityManager,
+  ProjectDAO,
+  ProjectFilter,
+  ProjectInsert,
+  ProjectPlainModel,
+  ProjectUpdate,
+} from '@src/generated/typetta';
 import pubsub, { PubSubEvents } from '@src/graphql/utils/pubsub';
 import { makeSubscriptionResolver } from '@src/graphql/utils/subscription-resolver-builder';
 import { ApolloResolversContext } from '@src/misc/context';
 import { makePermsCalc } from '@src/shared/security';
 import { HttpError } from '@src/shared/utils';
-import { daoInsertRolesBatch, isDefined, startEntityManagerTransaction } from '@src/utils';
+import {
+  daoInsertRolesBatch,
+  FuncQueue,
+  isDefined,
+  startEntityManagerTransaction,
+  startEntityManagerTransactionGraphQL,
+} from '@src/utils';
 import AsyncLock from 'async-lock';
-import { deleteProjectInvites, makeProjectMember } from '../project-invite/project-invite.resolvers';
-import { deleteProjectMembers } from '../project-member/project-member.resolvers';
+import { deleteAllProjectInvites } from '../project-invite/project-invite.resolvers';
+import { deleteAllProjectMembers, makeProjectMember } from '../project-member/project-member.resolvers';
 
 const updateProjectLock = new AsyncLock();
 
 export default {
+  Query: {
+    projectCount: async (parent, args, context: ApolloResolversContext, info) => {
+      return context.unsecureEntityManager.project.count();
+    },
+  },
   Mutation: {
     newProject: async (parent, args, context: ApolloResolversContext, info) => {
       if (!context.securityContext.userId) throw new HttpError(200, 'Expected context.securityContext.userId.');
@@ -35,38 +53,22 @@ export default {
       const userId = context.securityContext.userId;
 
       let project: ProjectPlainModel | undefined;
-      const error = await startEntityManagerTransaction(
-        context.unsecureEntityManager,
-        context.mongoClient,
-        async (transEntityManager) => {
-          project = await transEntityManager.project.insertOne({
+      const error = await startEntityManagerTransactionGraphQL(
+        context,
+        async (transEntityManager, postTransFuncQueue) => {
+          project = await makeProject({
+            entityManager: transEntityManager,
             record: {
               name: args.input.name,
               pitch: args.input.pitch,
               access: args.input.access,
             },
-          });
-
-          const projectOwner = await makeProjectMember(
-            transEntityManager,
-            {
-              userId,
-              projectId: project.id,
-            },
-            [RoleCode.ProjectOwner],
-          );
-
-          await daoInsertRolesBatch({
-            dao: transEntityManager.projectMemberRole,
-            roleCodes: [RoleCode.ProjectMember, RoleCode.ProjectOwner],
-            idKey: 'projectMemberId',
-            id: projectOwner.id,
+            subFuncQueue: postTransFuncQueue,
+            ownerUserId: userId,
           });
         },
       );
-      if (error) throw new HttpError(400, error.message);
-
-      pubsub.publish(PubSubEvents.ProjectCreated, project);
+      if (error instanceof Error) throw new HttpError(400, error.message);
       return project?.id;
     },
 
@@ -94,10 +96,9 @@ export default {
           throw new HttpError(401, 'Invalid projectid!');
         }
 
-        const error = await startEntityManagerTransaction(
-          context.unsecureEntityManager,
-          context.mongoClient,
-          async (transEntityManager) => {
+        const error = await startEntityManagerTransactionGraphQL(
+          context,
+          async (transEntityManager, postTransFuncQueue) => {
             let cardImageSelfHostedFilePath = null;
             if (isDefined(args.input.cardImage)) {
               if (
@@ -155,7 +156,8 @@ export default {
               }
             }
 
-            await transEntityManager.project.updateOne({
+            await updateProject({
+              entityManager: transEntityManager,
               filter: {
                 id: args.input.id,
               },
@@ -192,18 +194,12 @@ export default {
                   bannerLink: bannerSelfHostedFilePath,
                 }),
               },
+              subFuncQueue: postTransFuncQueue,
             });
           },
         );
-        if (error) {
-          throw error;
-        }
+        if (error instanceof Error) throw new HttpError(400, error.message);
       });
-
-      const updatedProject = await context.unsecureEntityManager.project.findOne({
-        filter: { id: args.input.id },
-      });
-      pubsub.publish(PubSubEvents.ProjectUpdated, updatedProject);
       return true;
     },
 
@@ -235,42 +231,20 @@ export default {
         }),
       });
       if (!project) throw new HttpError(400, "Project doesn't exist!");
-
       if (project.discordConfig) throw new HttpError(400, 'Cannot delete project with Discord presence!');
 
       const error = await startEntityManagerTransaction(
         context.unsecureEntityManager,
         context.mongoClient,
-        async (transEntityManager) => {
-          await deleteProjectMembers(transEntityManager, {
-            projectId: args.id,
-          });
-
-          await deleteProjectInvites(
-            transEntityManager,
-            {
-              projectId: args.id,
-            },
-            true,
-          );
-
-          tryDeleteFileIfSelfHosted(project.cardImageLink);
-          tryDeleteFileIfSelfHosted(project.bannerLink);
-          if (project.galleryImageLinks) {
-            for (const galleryImaageLink of project.galleryImageLinks) tryDeleteFileIfSelfHosted(galleryImaageLink);
-          }
-
-          await transEntityManager.project.deleteOne({
+        async (transEntityManager, postTransFuncQueue) => {
+          await deleteProject({
+            entityManager: transEntityManager,
             filter: { id: args.id },
+            subFuncQueue: postTransFuncQueue,
           });
         },
       );
-
-      if (error) {
-        throw error;
-      }
-
-      pubsub.publish(PubSubEvents.ProjectDeleted, project);
+      if (error instanceof Error) throw new HttpError(400, error.message);
       return true;
     },
 
@@ -313,7 +287,7 @@ export default {
       const error = await startEntityManagerTransaction(
         context.unsecureEntityManager,
         context.mongoClient,
-        async (transEntityManager) => {
+        async (transEntityManager, postTransFuncQueue) => {
           await transEntityManager.projectMemberRole.deleteOne({
             filter: {
               projectMemberId: currentOwner.id,
@@ -327,15 +301,12 @@ export default {
               roleCode: RoleCode.ProjectOwner,
             },
           });
+
+          pubsub.publishOrAddToFuncQueue(PubSubEvents.ProjectMemberUpdated, member, postTransFuncQueue);
+          pubsub.publishOrAddToFuncQueue(PubSubEvents.ProjectMemberUpdated, currentOwner, postTransFuncQueue);
         },
       );
-
-      if (error) {
-        throw error;
-      }
-
-      pubsub.publish(PubSubEvents.ProjectMemberUpdated, member);
-      pubsub.publish(PubSubEvents.ProjectMemberUpdated, currentOwner);
+      if (error) throw new HttpError(400, error.message);
       return true;
     },
   },
@@ -351,3 +322,87 @@ export default {
   Mutation: MutationResolvers;
   Subscription: SubscriptionResolvers;
 };
+
+export async function makeProject(options: {
+  entityManager: EntityManager;
+  record: ProjectInsert;
+  emitSubscription?: boolean;
+  subFuncQueue?: FuncQueue;
+  ownerUserId: string;
+}) {
+  const { entityManager, record, emitSubscription = true, subFuncQueue, ownerUserId } = options;
+  const project = await entityManager.project.insertOne({
+    record,
+  });
+
+  if (ownerUserId) {
+    const projectOwner = await makeProjectMember({
+      entityManager,
+      record: {
+        userId: ownerUserId,
+        projectId: project.id,
+      },
+      additionalRoles: [RoleCode.ProjectOwner],
+      subFuncQueue,
+    });
+
+    await daoInsertRolesBatch({
+      dao: entityManager.projectMemberRole,
+      roleCodes: [RoleCode.ProjectMember, RoleCode.ProjectOwner],
+      idKey: 'projectMemberId',
+      id: projectOwner.id,
+    });
+  }
+
+  if (emitSubscription) pubsub.publishOrAddToFuncQueue(PubSubEvents.ProjectCreated, project, subFuncQueue);
+  return project;
+}
+
+export async function updateProject(options: {
+  entityManager: EntityManager;
+  filter: ProjectFilter;
+  changes: ProjectUpdate;
+  emitSubscription?: boolean;
+  subFuncQueue?: FuncQueue;
+}) {
+  const { entityManager, filter, changes, emitSubscription = true, subFuncQueue } = options;
+  await entityManager.project.updateOne({ filter, changes });
+  const updatedProject = await entityManager.project.findOne({ filter });
+  if (!updatedProject) throw new HttpError(400, 'Expected Project to not be null during update!');
+  if (emitSubscription) pubsub.publishOrAddToFuncQueue(PubSubEvents.ProjectUpdated, updatedProject, subFuncQueue);
+}
+
+export async function deleteProject(options: {
+  entityManager: EntityManager;
+  filter: ProjectFilter;
+  emitSubscription?: boolean;
+  subFuncQueue?: FuncQueue;
+}) {
+  const { entityManager, filter, emitSubscription = true, subFuncQueue } = options;
+  const project = await entityManager.project.findOne({ filter });
+  if (!project) throw new HttpError(400, 'Expected Project to not be null during delete!');
+
+  await deleteAllProjectMembers({
+    entityManager,
+    filter: { projectId: project.id },
+    subFuncQueue,
+  });
+
+  await deleteAllProjectInvites({
+    entityManager,
+    filter: { projectId: project.id },
+    subFuncQueue,
+  });
+
+  tryDeleteFileIfSelfHosted(project.cardImageLink);
+  tryDeleteFileIfSelfHosted(project.bannerLink);
+  if (project.galleryImageLinks)
+    for (const galleryImaageLink of project.galleryImageLinks) tryDeleteFileIfSelfHosted(galleryImaageLink);
+
+  await entityManager.project.deleteOne({
+    filter: { id: project.id },
+  });
+
+  await entityManager.project.deleteOne({ filter });
+  if (emitSubscription) pubsub.publishOrAddToFuncQueue(PubSubEvents.ProjectDeleted, project, subFuncQueue);
+}

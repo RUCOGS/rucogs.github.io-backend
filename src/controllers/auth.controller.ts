@@ -1,14 +1,17 @@
-import AuthConfig from '@src/config/auth.config.json';
 import { downloadToCdn } from '@src/controllers/cdn.controller';
 import { getCompleteSecurityContext } from '@src/controllers/security.controller/security-context';
 import { RoleCode, User } from '@src/generated/model.types';
-import { EntityManager, UserInsert } from '@src/generated/typetta';
+import { EntityManager, UserInsert, UserPlainModel } from '@src/generated/typetta';
 import { makeUserLoginIdentity } from '@src/graphql/user-login-identity/user-login-identity.resolvers';
 import { makeUser } from '@src/graphql/user/user.resolvers';
+import { AuthConfig } from '@src/misc/config';
 import { RequestWithDefaultContext } from '@src/misc/context';
 import { isDebug } from '@src/misc/server-constructor';
 import { HttpError } from '@src/shared/utils';
+import { startEntityManagerTransaction } from '@src/utils';
+import AsyncLock from 'async-lock';
 import express from 'express';
+import { MongoClient } from 'mongodb';
 import passport, { PassportStatic } from 'passport';
 import { Strategy as DiscordStrategy } from 'passport-discord';
 import { Profile as GoogleStrategyProfile, Strategy as GoogleStrategy } from 'passport-google-oauth20';
@@ -30,12 +33,19 @@ export interface OAuthStrategyConfig {
   };
 }
 
-export function configPassport(passport: PassportStatic, entityManager: EntityManager) {
+let authConfig: AuthConfig;
+
+export function configAuthController(injectedAuthConfig: AuthConfig) {
+  authConfig = injectedAuthConfig;
+}
+
+export function configPassport(passport: PassportStatic, entityManager: EntityManager, mongoClient: MongoClient) {
   passport.use(
     new DiscordStrategy(
-      <DiscordStrategy.StrategyOptions>AuthConfig.oauth.discord.strategyConfig,
+      <DiscordStrategy.StrategyOptions>authConfig.oauth.discord.strategyConfig,
       getOAuthStrategyPassportCallback<DiscordStrategy.Profile>(
         entityManager,
+        mongoClient,
         'discord',
         async (profile) => profile.id,
         async (profile) => ({
@@ -62,9 +72,10 @@ export function configPassport(passport: PassportStatic, entityManager: EntityMa
   );
   passport.use(
     new GoogleStrategy(
-      AuthConfig.oauth.google.strategyConfig,
+      authConfig.oauth.google.strategyConfig,
       getOAuthStrategyPassportCallback<GoogleStrategyProfile>(
         entityManager,
+        mongoClient,
         'google',
         async (profile) => profile.id,
         async (profile) => ({
@@ -85,8 +96,11 @@ export function configPassport(passport: PassportStatic, entityManager: EntityMa
   );
 }
 
+const createNewUser = new AsyncLock();
+
 function getOAuthStrategyPassportCallback<TProfile extends passport.Profile>(
   entityManager: EntityManager,
+  mongoClient: MongoClient,
   strategyName: string,
   profileToIdentityID: (profile: TProfile) => Promise<string>,
   profileToNewUser: (profile: TProfile) => Promise<UserInsert>,
@@ -98,69 +112,84 @@ function getOAuthStrategyPassportCallback<TProfile extends passport.Profile>(
     // Wrap the contents of this async function to convert the result into the done function
     (async () => {
       const identityId = await profileToIdentityID(profile);
-
-      const userLoginIdentity = await entityManager.userLoginIdentity.findOne({
-        filter: {
-          name: strategyName,
-          identityId,
-        },
-        projection: {
-          userId: true,
-        },
-      });
-
-      if (userLoginIdentity) {
-        const user = await entityManager.user.findOne({
+      return await createNewUser.acquire(identityId, async () => {
+        const userLoginIdentity = await entityManager.userLoginIdentity.findOne({
           filter: {
-            id: { eq: userLoginIdentity.userId },
+            name: strategyName,
+            identityId,
+          },
+          projection: {
+            userId: true,
           },
         });
-        return user;
-      }
 
-      let userInsert = await profileToNewUser(profile);
-
-      // If the user exists, then force this user to use the unique username
-      let userExists = await entityManager.user.exists({ filter: { username: userInsert.username } });
-      if (userExists) {
-        let uniqueUsername = await profileToUniqueUsername(profile);
-        let currUniqueUsername = uniqueUsername;
-        let uniqueIndex = 0;
-
-        // Last resort:
-        // Brute force username to the next free one appending a number to the end of the unique name
-        userExists = await entityManager.user.exists({ filter: { username: currUniqueUsername } });
-        while (userExists) {
-          currUniqueUsername = uniqueUsername + uniqueIndex;
-          userExists = await entityManager.user.exists({ filter: { username: currUniqueUsername } });
-          uniqueIndex++;
-        }
-
-        userInsert.username = currUniqueUsername;
-      }
-
-      const newUser = await makeUser(entityManager, userInsert);
-
-      if (isDebug()) {
-        // Self-promote in debug mode to make testing easier
-        if (newUser.username === 'atlinx') {
-          await entityManager.userRole.insertOne({
-            record: {
-              roleCode: RoleCode.SuperAdmin,
-              userId: newUser.id,
+        if (userLoginIdentity) {
+          const user = await entityManager.user.findOne({
+            filter: {
+              id: { eq: userLoginIdentity.userId },
             },
           });
+          return user;
         }
-      }
 
-      await makeUserLoginIdentity(entityManager, {
-        name: strategyName,
-        identityId: identityId,
-        data: await profileToData(profile),
-        userId: newUser.id,
+        const userInsert = await profileToNewUser(profile);
+        // If the user exists, then force this user to use the unique username
+        let userExists = await entityManager.user.exists({ filter: { username: userInsert.username } });
+        if (userExists) {
+          let uniqueUsername = await profileToUniqueUsername(profile);
+          let currUniqueUsername = uniqueUsername;
+          let uniqueIndex = 0;
+
+          // Last resort:
+          // Brute force username to the next free one appending a number to the end of the unique name
+          userExists = await entityManager.user.exists({ filter: { username: currUniqueUsername } });
+          while (userExists) {
+            currUniqueUsername = uniqueUsername + uniqueIndex;
+            userExists = await entityManager.user.exists({ filter: { username: currUniqueUsername } });
+            uniqueIndex++;
+          }
+
+          userInsert.username = currUniqueUsername;
+        }
+
+        let newUser: UserPlainModel | undefined;
+        const error = await startEntityManagerTransaction(
+          entityManager,
+          mongoClient,
+          async (transEntityManager, postTransFuncQueue) => {
+            newUser = await makeUser({
+              entityManager: transEntityManager,
+              record: userInsert,
+              subFuncQueue: postTransFuncQueue,
+            });
+
+            if (isDebug()) {
+              // Self-promote in debug mode to make testing easier
+              if (newUser.username === 'atlinx96230') {
+                await entityManager.userRole.insertOne({
+                  record: {
+                    roleCode: RoleCode.SuperAdmin,
+                    userId: newUser.id,
+                  },
+                });
+              }
+            }
+
+            await makeUserLoginIdentity({
+              entityManager: transEntityManager,
+              record: {
+                name: strategyName,
+                identityId: identityId,
+                data: await profileToData(profile),
+                userId: newUser.id,
+              },
+              subFuncQueue: postTransFuncQueue,
+            });
+          },
+        );
+        if (error) throw error;
+        return newUser;
       });
-
-      return newUser;
     })()
       .then((user: any) => {
         done(null, user);
@@ -211,7 +240,7 @@ export async function authenticateBasicRootUserPassword(args: string[]): Promise
       401,
       "Basic authentication needs username and password. Format: 'basic [username]:[password]'.",
     );
-  const authorized = AuthConfig.rootUsers.some(
+  const authorized = authConfig.rootUsers.some(
     (user) => user.username === usernamePassword[0] && user.password === usernamePassword[1],
   );
   if (!authorized) throw new HttpError(401, 'Invalid username/password.');

@@ -11,8 +11,14 @@ import {
   UploadOperation,
 } from '@src/generated/graphql-endpoint.types';
 import { SubscriptionUserCreatedArgs } from '@src/generated/model.types';
-import { EntityManager, UserInsert, UserSocialFilter, UserSocialInsert } from '@src/generated/typetta';
-import { deleteProjectInvites } from '@src/graphql/project-invite/project-invite.resolvers';
+import {
+  EntityManager,
+  UserFilter,
+  UserInsert,
+  UserSocialFilter,
+  UserSocialInsert,
+  UserUpdate,
+} from '@src/generated/typetta';
 import pubsub, { PubSubEvents } from '@src/graphql/utils/pubsub';
 import { makeSubscriptionResolver } from '@src/graphql/utils/subscription-resolver-builder';
 import { ApolloResolversContext } from '@src/misc/context';
@@ -24,12 +30,15 @@ import {
   assertRolesAreOfType,
   daoInsertBatch,
   daoInsertRolesBatch,
+  FuncQueue,
   getEntityRoleCodes,
   isDefined,
-  startEntityManagerTransaction,
+  startEntityManagerTransactionGraphQL,
 } from '@src/utils';
 import AsyncLock from 'async-lock';
-import { deleteEBoard } from '../e-board/e-board.resolvers';
+import { deleteAllEBoards } from '../e-board/e-board.resolvers';
+import { deleteAllProjectInvites } from '../project-invite/project-invite.resolvers';
+import { deleteAllUserLoginIdentity as deleteAllUserLoginIdentities } from '../user-login-identity/user-login-identity.resolvers';
 
 async function getRequesterRoles(unsecureEntityManager: EntityManager, requesterUserId: string, roleEntityId: string) {
   return getEntityRoleCodes(unsecureEntityManager.userRole, 'userId', requesterUserId);
@@ -53,21 +62,28 @@ async function verifySub(parent: any, args: SubscriptionUserCreatedArgs, context
 }
 
 export default {
+  Query: {
+    userCount: async (parent, args, context: ApolloResolversContext, info) => {
+      return context.unsecureEntityManager.user.count();
+    },
+  },
   Mutation: {
     newUser: async (parent, args, context: ApolloResolversContext, info) => {
       makePermsCalc().withContext(context.securityContext).assertPermission(Permission.CreateUser);
 
-      let userId: string | undefined;
-      const error = await startEntityManagerTransaction(
-        context.unsecureEntityManager,
-        context.mongoClient,
-        async (transEntityManager) => {
-          const user = await makeUser(transEntityManager, args.input);
-          userId = user.id;
+      let userId = '';
+      const error = await startEntityManagerTransactionGraphQL(
+        context,
+        async (transEntityManager, postTransFuncQueue) => {
+          const user = await makeUser({
+            entityManager: transEntityManager,
+            record: args.input,
+            subFuncQueue: postTransFuncQueue,
+          });
+          userId = userId;
         },
       );
-      if (error) throw error;
-
+      if (error instanceof Error) throw new HttpError(400, error.message);
       return userId;
     },
 
@@ -94,10 +110,9 @@ export default {
           throw new HttpError(401, 'Invalid userId!');
         }
 
-        const error = await startEntityManagerTransaction(
-          context.unsecureEntityManager,
-          context.mongoClient,
-          async (transEntityManager) => {
+        const error = await startEntityManagerTransactionGraphQL(
+          context,
+          async (transEntityManager, postTransFuncQueue) => {
             if (!context.securityContext.userId) throw new HttpError(400, 'Expected context.securityContext.userId!');
 
             if (isDefined(args.input.displayName)) {
@@ -198,10 +213,9 @@ export default {
               }
             }
 
-            await transEntityManager.user.updateOne({
-              filter: {
-                id: args.input.id,
-              },
+            await updateUser({
+              entityManager: transEntityManager,
+              filter: { id: args.input.id },
               changes: {
                 ...(isDefined(args.input.email) && {
                   email: args.input.email,
@@ -223,16 +237,12 @@ export default {
                   bannerLink: bannerSelfHostedFilePath,
                 }),
               },
+              subFuncQueue: postTransFuncQueue,
             });
           },
         );
-        if (error instanceof Error) throw error;
+        if (error instanceof Error) throw new HttpError(400, error.message);
       });
-
-      const updatedUser = await context.unsecureEntityManager.user.findOne({
-        filter: { id: args.input.id },
-      });
-      pubsub.publish(PubSubEvents.UserUpdated, updatedUser);
       return true;
     },
 
@@ -244,12 +254,12 @@ export default {
         })
         .assertPermission(Permission.DeleteUser);
 
-      const user = await context.unsecureEntityManager.user.findOne({
+      const userExists = await context.unsecureEntityManager.user.exists({
         filter: {
           id: args.id,
         },
       });
-      if (!user) {
+      if (!userExists) {
         throw new HttpError(401, 'Invalid userId!');
       }
 
@@ -260,43 +270,17 @@ export default {
       });
       if (userProjectMemberExists) throw new HttpError(401, 'Cannot delete user that is in a project!');
 
-      const error = await startEntityManagerTransaction(
-        context.unsecureEntityManager,
-        context.mongoClient,
-        async (transEntityManager) => {
-          await transEntityManager.userRole.deleteAll({
-            filter: {
-              userId: args.id,
-            },
-          });
-
-          await deleteEBoard(transEntityManager, {
-            userId: args.id,
-          });
-
-          await transEntityManager.userLoginIdentity.deleteAll({
-            filter: {
-              userId: args.id,
-            },
-          });
-
-          await deleteProjectInvites(transEntityManager, {
-            userId: args.id,
-          });
-
-          tryDeleteFileIfSelfHosted(user.avatarLink);
-          tryDeleteFileIfSelfHosted(user.bannerLink);
-
-          await transEntityManager.user.deleteOne({
-            filter: {
-              id: args.id,
-            },
+      const error = await startEntityManagerTransactionGraphQL(
+        context,
+        async (transEntityManager, postTransFuncQueue) => {
+          await deleteUser({
+            entityManager: transEntityManager,
+            filter: { id: args.id },
+            subFuncQueue: postTransFuncQueue,
           });
         },
       );
-      if (error instanceof Error) throw error;
-
-      pubsub.publish(PubSubEvents.UserDeleted, user);
+      if (error instanceof Error) throw new HttpError(400, error.message);
       return true;
     },
 
@@ -374,20 +358,70 @@ export default {
   Subscription: SubscriptionResolvers;
 };
 
-export async function makeUser(entityManager: EntityManager, record: UserInsert, emitSubscription: boolean = true) {
-  const user = await entityManager.user.insertOne({
-    record,
-  });
-
+export async function makeUser(options: {
+  entityManager: EntityManager;
+  record: UserInsert;
+  emitSubscription?: boolean;
+  subFuncQueue?: FuncQueue;
+}) {
+  const { entityManager, record, emitSubscription = true, subFuncQueue } = options;
+  const user = await entityManager.user.insertOne({ record });
   await entityManager.userRole.insertOne({
     record: {
       roleCode: RoleCode.User,
       userId: user.id,
     },
   });
+  if (emitSubscription) pubsub.publishOrAddToFuncQueue(PubSubEvents.UserCreated, user, subFuncQueue);
+  return user;
+}
 
-  if (emitSubscription) {
-    pubsub.publish(PubSubEvents.UserCreated, user);
-  }
+export async function updateUser(options: {
+  entityManager: EntityManager;
+  filter: UserFilter;
+  changes: UserUpdate;
+  emitSubscription?: boolean;
+  subFuncQueue?: FuncQueue;
+}) {
+  const { entityManager, filter, changes, emitSubscription = true, subFuncQueue } = options;
+  await entityManager.user.updateOne({ filter, changes });
+  const updatedUser = await entityManager.user.findOne({ filter });
+  if (!updatedUser) throw new HttpError(400, 'Expected User to not be null during update!');
+  if (emitSubscription) pubsub.publishOrAddToFuncQueue(PubSubEvents.UserUpdated, updatedUser, subFuncQueue);
+}
+
+export async function deleteUser(options: {
+  entityManager: EntityManager;
+  filter: UserFilter;
+  emitSubscription?: boolean;
+  subFuncQueue?: FuncQueue;
+}) {
+  const { entityManager, filter, emitSubscription = true, subFuncQueue } = options;
+  const user = await entityManager.user.findOne({ filter });
+  if (!user) throw new HttpError(400, 'Expected User to not be null during delete!');
+  await entityManager.userRole.deleteAll({
+    filter: { userId: user.id },
+  });
+  await deleteAllEBoards({
+    entityManager,
+    filter: { userId: user.id },
+    subFuncQueue,
+  });
+  await deleteAllUserLoginIdentities({
+    entityManager,
+    filter: { userId: user.id },
+    subFuncQueue,
+  });
+  await deleteAllProjectInvites({
+    entityManager,
+    filter: { userId: user.id },
+    subFuncQueue,
+  });
+  tryDeleteFileIfSelfHosted(user.avatarLink);
+  tryDeleteFileIfSelfHosted(user.bannerLink);
+  await entityManager.user.deleteOne({
+    filter: { id: user.id },
+  });
+  if (emitSubscription) pubsub.publishOrAddToFuncQueue(PubSubEvents.UserDeleted, user, subFuncQueue);
   return user;
 }

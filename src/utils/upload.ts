@@ -3,11 +3,12 @@
 import { deleteSelfHostedFile, isSelfHostedFile, relativeToSelfHostedFilePath } from '@src/controllers/cdn.controller';
 import { RoleCode } from '@src/generated/graphql-endpoint.types';
 import { EntityManager } from '@src/generated/typetta';
-import { RequestContext, RequestWithContext } from '@src/misc/context';
+import { ApolloResolversContext, RequestContext, RequestWithContext } from '@src/misc/context';
 import { HttpError } from '@src/shared/utils';
 import { AbstractDAO } from '@twinlogix/typetta';
 import express from 'express';
 import { MongoClient } from 'mongodb';
+import { FuncQueue } from './func-queue';
 
 export function isDefined<T>(value: T | undefined | null): value is T {
   return value !== undefined && value !== null;
@@ -51,6 +52,18 @@ export async function getRoleCodes(roleDao: AbstractDAO<any>, idKey: string, id:
   ).map((x) => x.roleCode as RoleCode);
 }
 
+export async function startEntityManagerTransactionGraphQL(
+  context: ApolloResolversContext,
+  fn: (
+    transactionEntityManager: EntityManager & {
+      __transaction_enabled__: true;
+    },
+    postTransactionFuncQueue: FuncQueue,
+  ) => Promise<void>,
+) {
+  return startEntityManagerTransaction(context.unsecureEntityManager, context.mongoClient, fn);
+}
+
 export async function startEntityManagerTransaction(
   entityManager: EntityManager,
   mongoClient: MongoClient,
@@ -58,6 +71,7 @@ export async function startEntityManagerTransaction(
     transactionEntityManager: EntityManager & {
       __transaction_enabled__: true;
     },
+    postTransactionFuncQueue: FuncQueue,
   ) => Promise<void>,
 ): Promise<Error | undefined> {
   const session = mongoClient.startSession();
@@ -66,15 +80,19 @@ export async function startEntityManagerTransaction(
     writeConcern: { w: 'majority' },
   });
 
+  // Accrue methods that should be executed after the transaction
+  const postTransFuncQueue = new FuncQueue();
   let error: Error | undefined = undefined;
   try {
     await entityManager.transaction(
       {
         mongodb: { default: session },
       },
-      fn,
+      (transEntityManager) => fn(transEntityManager, postTransFuncQueue),
     );
     await session.commitTransaction();
+    // Execute accrued methods
+    postTransFuncQueue.executeQueue();
   } catch (err) {
     if (err instanceof Error) error = err;
     await session.abortTransaction();
@@ -91,6 +109,7 @@ export async function startEntityManagerTransactionREST(
     transactionEntityManager: EntityManager & {
       __transaction_enabled__: true;
     },
+    postTransactionFuncQueue: FuncQueue,
   ) => Promise<void>,
 ): Promise<Error | undefined> {
   if (!req.context || !req.context.securityContext || !req.context.securityContext.userId) {

@@ -538,6 +538,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   eBoardTerms?: Resolver<Array<ResolversTypes['EBoardTerm']>, ParentType, ContextType, Partial<types.QueryEBoardTermsArgs>>;
   eBoards?: Resolver<Array<ResolversTypes['EBoard']>, ParentType, ContextType, Partial<types.QueryEBoardsArgs>>;
   isAuthTokenValid?: Resolver<types.Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  projectCount?: Resolver<types.Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   projectDiscordConfigs?: Resolver<Array<ResolversTypes['ProjectDiscordConfig']>, ParentType, ContextType, Partial<types.QueryProjectDiscordConfigsArgs>>;
   projectInvites?: Resolver<Array<ResolversTypes['ProjectInvite']>, ParentType, ContextType, Partial<types.QueryProjectInvitesArgs>>;
   projectMemberRoles?: Resolver<Array<ResolversTypes['ProjectMemberRole']>, ParentType, ContextType, Partial<types.QueryProjectMemberRolesArgs>>;
@@ -545,6 +546,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   projects?: Resolver<Array<ResolversTypes['Project']>, ParentType, ContextType, Partial<types.QueryProjectsArgs>>;
   securityContext?: Resolver<types.Maybe<ResolversTypes['Json']>, ParentType, ContextType, Partial<types.QuerySecurityContextArgs>>;
   securityPolicy?: Resolver<types.Maybe<ResolversTypes['Json']>, ParentType, ContextType>;
+  userCount?: Resolver<types.Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   userLoginIdentitys?: Resolver<Array<ResolversTypes['UserLoginIdentity']>, ParentType, ContextType, Partial<types.QueryUserLoginIdentitysArgs>>;
   userRoles?: Resolver<Array<ResolversTypes['UserRole']>, ParentType, ContextType, Partial<types.QueryUserRolesArgs>>;
   userSocials?: Resolver<Array<ResolversTypes['UserSocial']>, ParentType, ContextType, Partial<types.QueryUserSocialsArgs>>;

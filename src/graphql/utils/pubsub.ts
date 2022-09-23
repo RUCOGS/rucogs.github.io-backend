@@ -1,3 +1,4 @@
+import { FuncQueue } from '@src/utils';
 import { PubSub } from 'graphql-subscriptions';
 
 export const PubSubEvents = {
@@ -30,5 +31,13 @@ export const PubSubEvents = {
 } as const;
 export type PubSubEvents = typeof PubSubEvents[keyof typeof PubSubEvents];
 
-export const pubsub = new PubSub();
+export class CustomPupSub extends PubSub {
+  publishOrAddToFuncQueue(triggerName: string, payload: any, funcQueue: FuncQueue | undefined) {
+    const publishFunc = () => this.publish(triggerName, payload);
+    if (funcQueue) funcQueue.addFunc(publishFunc);
+    else publishFunc();
+  }
+}
+
+export const pubsub = new CustomPupSub();
 export default pubsub;

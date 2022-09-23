@@ -369,8 +369,10 @@ export type ProjectSubscriptionFilter = {
 export type Query = {
   __typename?: 'Query';
   isAuthTokenValid?: Maybe<Scalars['Boolean']>;
+  projectCount?: Maybe<Scalars['Int']>;
   securityContext?: Maybe<Scalars['Json']>;
   securityPolicy?: Maybe<Scalars['Json']>;
+  userCount?: Maybe<Scalars['Int']>;
 };
 
 
@@ -984,8 +986,10 @@ export type ProjectMemberRoleResolvers<ContextType = any, ParentType extends Res
 
 export type QueryResolvers<ContextType = any, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = {
   isAuthTokenValid?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  projectCount?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   securityContext?: Resolver<Maybe<ResolversTypes['Json']>, ParentType, ContextType, Partial<QuerySecurityContextArgs>>;
   securityPolicy?: Resolver<Maybe<ResolversTypes['Json']>, ParentType, ContextType>;
+  userCount?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
 };
 
 export type SubscriptionResolvers<ContextType = any, ParentType extends ResolversParentTypes['Subscription'] = ResolversParentTypes['Subscription']> = {

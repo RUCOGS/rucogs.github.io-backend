@@ -1077,6 +1077,7 @@ export type Query = {
   eBoardTerms: Array<EBoardTerm>;
   eBoards: Array<EBoard>;
   isAuthTokenValid?: Maybe<Scalars['Boolean']>;
+  projectCount?: Maybe<Scalars['Int']>;
   projectDiscordConfigs: Array<ProjectDiscordConfig>;
   projectInvites: Array<ProjectInvite>;
   projectMemberRoles: Array<ProjectMemberRole>;
@@ -1084,6 +1085,7 @@ export type Query = {
   projects: Array<Project>;
   securityContext?: Maybe<Scalars['Json']>;
   securityPolicy?: Maybe<Scalars['Json']>;
+  userCount?: Maybe<Scalars['Int']>;
   userLoginIdentitys: Array<UserLoginIdentity>;
   userRoles: Array<UserRole>;
   userSocials: Array<UserSocial>;

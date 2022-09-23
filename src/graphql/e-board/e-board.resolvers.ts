@@ -9,10 +9,10 @@ import { Permission, RoleCode } from '@src/generated/model.types';
 import {
   EBoardFilter,
   EBoardInsert,
-  EBoardPlainModel,
   EBoardTermFilter,
   EBoardTermInsert,
-  EBoardTermPlainModel,
+  EBoardTermUpdate,
+  EBoardUpdate,
   EntityManager,
   UserDAO,
 } from '@src/generated/typetta';
@@ -25,8 +25,10 @@ import {
   assertRequesterCanManageRoleCodes,
   assertRolesAreOfType,
   daoInsertRolesBatch,
+  FuncQueue,
   isDefined,
   startEntityManagerTransaction,
+  startEntityManagerTransactionGraphQL,
 } from '@src/utils';
 import AsyncLock from 'async-lock';
 
@@ -64,20 +66,21 @@ export default {
       });
       if (exists) throw new HttpError(400, 'EBoard already exists for this user!');
 
-      let eBoard: EBoardPlainModel | undefined;
+      let eBoardId = '';
       const error = await startEntityManagerTransaction(
         context.unsecureEntityManager,
         context.mongoClient,
-        async (transEntitymanager) => {
-          eBoard = await makeEBoard(transEntitymanager, args.input);
+        async (transEntityManager, postTransFuncQueue) => {
+          const eBoard = await makeEBoard({
+            entityManager: transEntityManager,
+            record: args.input,
+            subFuncQueue: postTransFuncQueue,
+          });
+          eBoardId = eBoard.id;
         },
       );
-
-      if (error) throw error;
-
-      pubsub.publish(PubSubEvents.EBoardCreated, eBoard);
-
-      return eBoard?.id;
+      if (error instanceof Error) throw new HttpError(400, error.message);
+      return eBoardId;
     },
 
     updateEBoard: async (parent, args, context: ApolloResolversContext, info) => {
@@ -100,7 +103,7 @@ export default {
         const error = await startEntityManagerTransaction(
           context.unsecureEntityManager,
           context.mongoClient,
-          async (transEntityManager) => {
+          async (transEntityManager, postTransFuncQueue) => {
             if (!context.securityContext.userId) throw new HttpError(400, 'Expected context.securityContext.userId!');
 
             let avatarSelfHostedFilePath = null;
@@ -119,7 +122,8 @@ export default {
               }
             }
 
-            await transEntityManager.eBoard.updateOne({
+            await updateEBoard({
+              entityManager: transEntityManager,
               filter: { id: args.input.id },
               changes: {
                 ...(isDefined(args.input.avatar) && {
@@ -127,17 +131,12 @@ export default {
                 }),
                 ...(isDefined(args.input.bio) && { bio: args.input.bio }),
               },
+              subFuncQueue: postTransFuncQueue,
             });
           },
         );
-        if (error) throw error;
+        if (error instanceof Error) throw new HttpError(400, error.message);
       });
-
-      const updatedEBoard = await context.unsecureEntityManager.eBoard.findOne({
-        filter: { id: args.input.id },
-      });
-      pubsub.publish(PubSubEvents.EBoardUpdated, updatedEBoard);
-
       return true;
     },
 
@@ -154,17 +153,14 @@ export default {
         })
         .assertPermission(Permission.ManageEboard);
 
-      const error = await startEntityManagerTransaction(
-        context.unsecureEntityManager,
-        context.mongoClient,
-        async (transEntityManager) => {
-          await deleteEBoard(transEntityManager, { id: args.id });
-        },
-      );
-      if (error) throw error;
-
-      pubsub.publish(PubSubEvents.EBoardDeleted, eBoard);
-
+      const error = startEntityManagerTransactionGraphQL(context, async (transEntityManager, postTransFuncQueue) => {
+        await deleteEBoard({
+          entityManager: transEntityManager,
+          filter: { id: args.id },
+          subFuncQueue: postTransFuncQueue,
+        });
+      });
+      if (error instanceof Error) throw new HttpError(400, error.message);
       return true;
     },
 
@@ -189,18 +185,17 @@ export default {
       });
       if (exists) throw new HttpError(400, 'EBoard term already exists for this eboard member!');
 
-      let eBoardTerm: EBoardTermPlainModel | undefined;
-      const error = await startEntityManagerTransaction(
-        context.unsecureEntityManager,
-        context.mongoClient,
-        async (transEntitymanager) => {
-          eBoardTerm = await makeEBoardTerm(transEntitymanager, args.input);
-        },
-      );
-
-      if (error) throw error;
-
-      return eBoard?.id;
+      let eBoardTermId = '';
+      const error = startEntityManagerTransactionGraphQL(context, async (transEntityManager, postTransFuncQueue) => {
+        const eBoardTerm = await makeEBoardTerm({
+          entityManager: transEntityManager,
+          record: args.input,
+          subFuncQueue: postTransFuncQueue,
+        });
+        eBoardTermId = eBoardTerm.id;
+      });
+      if (error instanceof Error) throw new HttpError(400, error.message);
+      return eBoardTermId;
     },
 
     updateEBoardTerm: async (parent, args, context: ApolloResolversContext, info) => {
@@ -222,7 +217,7 @@ export default {
       const error = await startEntityManagerTransaction(
         context.unsecureEntityManager,
         context.mongoClient,
-        async (transEntityManager) => {
+        async (transEntityManager, postTransFuncQueue) => {
           if (!context.securityContext.userId) throw new HttpError(400, 'Expected context.securityContext.userId!');
 
           if (isDefined(args.input.roles)) {
@@ -236,29 +231,20 @@ export default {
               throw new HttpError(400, 'Eboard must have Eboard role!');
             assertRolesAreOfType(args.input.roles, RoleType.EBoard);
             assertRequesterCanManageRoleCodes(requesterRoleCodes, args.input.roles);
-            await daoInsertRolesBatch({
-              dao: transEntityManager.eBoardTermRole,
-              roleCodes: args.input.roles,
-              idKey: 'termId',
-              id: args.input.id,
-            });
           }
 
-          await transEntityManager.eBoardTerm.updateOne({
+          await updateEBoardTerm({
+            entityManager: transEntityManager,
             filter: { id: args.input.id },
             changes: {
               ...(isDefined(args.input.year) && { year: args.input.year }),
             },
+            roles: args.input.roles,
+            subFuncQueue: postTransFuncQueue,
           });
         },
       );
-      if (error) throw error;
-
-      const updatedEBoardTerm = await context.unsecureEntityManager.eBoardTerm.findOne({
-        filter: { id: args.input.id },
-      });
-      pubsub.publish(PubSubEvents.EBoardTermUpdated, updatedEBoardTerm);
-
+      if (error instanceof Error) throw new HttpError(400, error.message);
       return true;
     },
 
@@ -281,15 +267,17 @@ export default {
         })
         .assertPermission(Permission.ManageEboard);
 
-      const error = await startEntityManagerTransaction(
-        context.unsecureEntityManager,
-        context.mongoClient,
-        async (transEntityManager) => {
-          await deleteEBoardTerm(transEntityManager, { id: args.id });
+      const error = await startEntityManagerTransactionGraphQL(
+        context,
+        async (transEntityManager, postTransFuncQueue) => {
+          await deleteEBoardTerm({
+            entityManager: transEntityManager,
+            filter: { id: args.id },
+            subFuncQueue: postTransFuncQueue,
+          });
         },
       );
-      if (error) throw error;
-
+      if (error instanceof Error) throw new HttpError(400, error.message);
       return true;
     },
   },
@@ -322,60 +310,148 @@ export default {
   Subscription: SubscriptionResolvers;
 };
 
-export async function makeEBoard(entityManager: EntityManager, record: EBoardInsert, emitSubscription: boolean = true) {
-  const eBoard = await entityManager.eBoard.insertOne({
-    record,
-  });
-
-  if (emitSubscription) pubsub.publish(PubSubEvents.EBoardCreated, eBoard);
+export async function makeEBoard(options: {
+  entityManager: EntityManager;
+  record: EBoardInsert;
+  emitSubscription?: boolean;
+  subFuncQueue?: FuncQueue;
+}) {
+  const { entityManager, record, emitSubscription = true, subFuncQueue } = options;
+  const eBoard = await entityManager.eBoard.insertOne({ record });
+  if (emitSubscription) pubsub.publishOrAddToFuncQueue(PubSubEvents.EBoardCreated, eBoard, subFuncQueue);
   return eBoard;
 }
 
-export async function deleteEBoard(
-  entityManager: EntityManager,
-  filter: EBoardFilter,
-  emitSubscription: boolean = true,
-) {
-  const eBoards = await entityManager.eBoard.findAll({ filter });
-  for (const eBoard of eBoards) {
-    tryDeleteFileIfSelfHosted(eBoard.avatarLink);
-    deleteEBoardTerm(entityManager, {
-      eBoardId: eBoard.id,
-    });
-  }
-  await entityManager.eBoard.deleteAll({ filter });
+export async function updateEBoard(options: {
+  entityManager: EntityManager;
+  filter: EBoardFilter;
+  changes: EBoardUpdate;
+  emitSubscription?: boolean;
+  subFuncQueue?: FuncQueue;
+}) {
+  const { entityManager, filter, changes, emitSubscription = true, subFuncQueue } = options;
+  await entityManager.eBoard.updateOne({ filter, changes });
+  const updatedEBoard = await entityManager.eBoard.findOne({ filter });
+  if (!updateEBoard) throw new HttpError(400, 'Expected EBoard to not be null during update!');
+  if (emitSubscription) pubsub.publishOrAddToFuncQueue(PubSubEvents.EBoardUpdated, updatedEBoard, subFuncQueue);
+}
 
+export async function deleteEBoard(options: {
+  entityManager: EntityManager;
+  filter: EBoardFilter;
+  emitSubscription?: boolean;
+  subFuncQueue?: FuncQueue;
+}) {
+  const { entityManager, filter, emitSubscription = true, subFuncQueue } = options;
+  const eBoard = await entityManager.eBoard.findOne({ filter });
+  if (!eBoard) throw new HttpError(400, 'Expected EBoard to not be null during delete');
+  tryDeleteFileIfSelfHosted(eBoard.avatarLink);
+  await deleteAllEBoardTerms({
+    entityManager: entityManager,
+    filter: {
+      eBoardId: eBoard.id,
+    },
+    subFuncQueue,
+  });
+  await entityManager.eBoard.deleteOne({ filter: filter });
   if (emitSubscription) {
-    for (const eBoard of eBoards) pubsub.publish(PubSubEvents.EBoardDeleted, eBoard);
+    pubsub.publishOrAddToFuncQueue(PubSubEvents.EBoardDeleted, eBoard, subFuncQueue);
   }
 }
 
-export async function makeEBoardTerm(
-  entityManager: EntityManager,
-  record: EBoardTermInsert,
-  emitSubscription: boolean = true,
-) {
-  const term = await entityManager.eBoardTerm.insertOne({ record });
+export async function deleteAllEBoards(options: {
+  entityManager: EntityManager;
+  filter: EBoardFilter;
+  emitSubscription?: boolean;
+  subFuncQueue?: FuncQueue;
+}) {
+  const { entityManager, filter, emitSubscription = true, subFuncQueue } = options;
+  const eBoards = await entityManager.eBoard.findAll({ filter });
+  for (const eBoard of eBoards) {
+    tryDeleteFileIfSelfHosted(eBoard.avatarLink);
+    await deleteAllEBoardTerms({
+      entityManager: entityManager,
+      filter: {
+        eBoardId: eBoard.id,
+      },
+      subFuncQueue,
+    });
+  }
+  await entityManager.eBoard.deleteAll({ filter: filter });
+  if (emitSubscription) {
+    for (const eBoard of eBoards) pubsub.publishOrAddToFuncQueue(PubSubEvents.EBoardDeleted, eBoard, subFuncQueue);
+  }
+}
+
+export async function makeEBoardTerm(options: {
+  entityManager: EntityManager;
+  record: EBoardTermInsert;
+  emitSubscription?: boolean;
+  subFuncQueue?: FuncQueue;
+}) {
+  const { entityManager, record, emitSubscription = true, subFuncQueue } = options;
+
+  const term = await entityManager.eBoardTerm.insertOne({ record: record });
   await entityManager.eBoardTermRole.insertOne({
     record: {
       termId: term.id,
       roleCode: RoleCode.Eboard,
     },
   });
-  if (emitSubscription) pubsub.publish(PubSubEvents.EBoardTermCreated, term);
+  if (emitSubscription) pubsub.publishOrAddToFuncQueue(PubSubEvents.EBoardTermCreated, term, subFuncQueue);
   return term;
 }
 
-export async function deleteEBoardTerm(
-  entityManager: EntityManager,
-  filter: EBoardTermFilter,
-  emitSubscription: boolean = true,
-) {
+export async function updateEBoardTerm(options: {
+  entityManager: EntityManager;
+  filter: EBoardTermFilter;
+  changes: EBoardTermUpdate;
+  roles?: RoleCode[] | null;
+  emitSubscription?: boolean;
+  subFuncQueue?: FuncQueue;
+}) {
+  const { entityManager, filter, changes, roles, emitSubscription = true, subFuncQueue } = options;
+  await entityManager.eBoardTerm.updateOne({ filter, changes });
+  const updatedEBoardTerm = await entityManager.eBoardTerm.findOne({ filter });
+  if (!updatedEBoardTerm) throw new HttpError(400, 'Expected EBoardTerm to not be null during update!');
+  if (roles)
+    await daoInsertRolesBatch({
+      dao: entityManager.eBoardTermRole,
+      roleCodes: roles,
+      idKey: 'termId',
+      id: updatedEBoardTerm.id,
+    });
+  if (emitSubscription) pubsub.publishOrAddToFuncQueue(PubSubEvents.EBoardTermUpdated, updatedEBoardTerm, subFuncQueue);
+}
+
+export async function deleteEBoardTerm(options: {
+  entityManager: EntityManager;
+  filter: EBoardTermFilter;
+  emitSubscription?: boolean;
+  subFuncQueue?: FuncQueue;
+}) {
+  const { entityManager, filter, emitSubscription = true, subFuncQueue } = options;
+  const term = await entityManager.eBoardTerm.findOne({ filter });
+  if (!term) throw new HttpError(400, 'Expected EBoardTerm to not be null during delete!');
+  await entityManager.eBoardTermRole.deleteOne({
+    filter: { termId: term.id },
+  });
+  await entityManager.eBoardTerm.deleteOne({ filter });
+  if (emitSubscription) pubsub.publishOrAddToFuncQueue(PubSubEvents.EBoardTermDeleted, term, subFuncQueue);
+}
+
+export async function deleteAllEBoardTerms(options: {
+  entityManager: EntityManager;
+  filter: EBoardTermFilter;
+  emitSubscription?: boolean;
+  subFuncQueue?: FuncQueue;
+}) {
+  const { entityManager, filter, emitSubscription = true, subFuncQueue } = options;
   const terms = await entityManager.eBoardTerm.findAll({ filter });
   await entityManager.eBoardTermRole.deleteAll({
     filter: { termId: { in: terms.map((x) => x.id) } },
   });
   await entityManager.eBoardTerm.deleteAll({ filter });
-
-  if (emitSubscription) for (const term of terms) pubsub.publish(PubSubEvents.EBoardTermDeleted, term);
+  if (emitSubscription)
+    for (const term of terms) pubsub.publishOrAddToFuncQueue(PubSubEvents.EBoardTermDeleted, term, subFuncQueue);
 }
