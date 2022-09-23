@@ -1,10 +1,10 @@
-import AuthConfig from '@src/config/auth.config.json';
 import { downloadToCdn } from '@src/controllers/cdn.controller';
 import { getCompleteSecurityContext } from '@src/controllers/security.controller/security-context';
 import { RoleCode, User } from '@src/generated/model.types';
 import { EntityManager, UserInsert, UserPlainModel } from '@src/generated/typetta';
 import { makeUserLoginIdentity } from '@src/graphql/user-login-identity/user-login-identity.resolvers';
 import { makeUser } from '@src/graphql/user/user.resolvers';
+import { AuthConfig } from '@src/misc/config';
 import { RequestWithDefaultContext } from '@src/misc/context';
 import { isDebug } from '@src/misc/server-constructor';
 import { HttpError } from '@src/shared/utils';
@@ -33,10 +33,16 @@ export interface OAuthStrategyConfig {
   };
 }
 
+let authConfig: AuthConfig;
+
+export function configAuthController(injectedAuthConfig: AuthConfig) {
+  authConfig = injectedAuthConfig;
+}
+
 export function configPassport(passport: PassportStatic, entityManager: EntityManager, mongoClient: MongoClient) {
   passport.use(
     new DiscordStrategy(
-      <DiscordStrategy.StrategyOptions>AuthConfig.oauth.discord.strategyConfig,
+      <DiscordStrategy.StrategyOptions>authConfig.oauth.discord.strategyConfig,
       getOAuthStrategyPassportCallback<DiscordStrategy.Profile>(
         entityManager,
         mongoClient,
@@ -66,7 +72,7 @@ export function configPassport(passport: PassportStatic, entityManager: EntityMa
   );
   passport.use(
     new GoogleStrategy(
-      AuthConfig.oauth.google.strategyConfig,
+      authConfig.oauth.google.strategyConfig,
       getOAuthStrategyPassportCallback<GoogleStrategyProfile>(
         entityManager,
         mongoClient,
@@ -234,7 +240,7 @@ export async function authenticateBasicRootUserPassword(args: string[]): Promise
       401,
       "Basic authentication needs username and password. Format: 'basic [username]:[password]'.",
     );
-  const authorized = AuthConfig.rootUsers.some(
+  const authorized = authConfig.rootUsers.some(
     (user) => user.username === usernamePassword[0] && user.password === usernamePassword[1],
   );
   if (!authorized) throw new HttpError(401, 'Invalid username/password.');

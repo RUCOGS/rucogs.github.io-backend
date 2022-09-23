@@ -1,9 +1,10 @@
-import { authenticate, AuthScheme, configPassport } from '@src/controllers/auth.controller';
+import { authenticate, AuthScheme, configAuthController, configPassport } from '@src/controllers/auth.controller';
 import {
   createSecureEntityManager,
   createUnsecureEntityManager,
   getOperationMetadataFromRequest,
 } from '@src/controllers/entity-manager.controller/entity-manager';
+import { configJwtController } from '@src/controllers/jwt.controller';
 import { MailController } from '@src/controllers/mail.controller/mail.controller';
 import { getCompleteSecurityContext } from '@src/controllers/security.controller';
 import { EntityManager } from '@src/generated/typetta';
@@ -23,7 +24,7 @@ import { Db, MongoClient } from 'mongodb';
 import nodemailer from 'nodemailer';
 import passport from 'passport';
 import { WebSocketServer } from 'ws';
-import { ServerConfig } from './config';
+import { AuthConfig, ServerConfig } from './config';
 
 let globalDebug = false;
 export function isDebug() {
@@ -34,6 +35,9 @@ export async function startServer(debug: boolean, mock: boolean = false) {
   const serverConfig: ServerConfig = debug
     ? require('@src/config/server.debug.config.json')
     : require('@src/config/server.config.json');
+  const authConfig: AuthConfig = debug
+    ? require('@src/config/auth.debug.config.json')
+    : require('@src/config/auth.config.json');
 
   globalDebug = debug;
   const mongoClient = new MongoClient(serverConfig.mongoDB.url);
@@ -49,9 +53,13 @@ export async function startServer(debug: boolean, mock: boolean = false) {
   });
   const mailController = new MailController(nodemailerTransporter);
 
+  configAuthController(authConfig);
+  configJwtController(authConfig);
+
   const app = express();
   configExpress({
     serverConfig,
+    authConfig,
     app,
     entityManager: unsecureEntityManager,
     mongoClient,
@@ -220,6 +228,7 @@ async function startApolloServer(options: {
 
 function configExpress(options: {
   serverConfig: ServerConfig;
+  authConfig: AuthConfig;
   app: Express;
   entityManager: EntityManager;
   mongoClient: MongoClient;
@@ -258,7 +267,7 @@ function configExpress(options: {
   });
 
   const router = express.Router();
-  router.use('/auth', authRouter);
+  router.use('/auth', authRouter(options.authConfig));
   router.use('/cdn', cdnRouter);
 
   router.get('/', (req, res) => {
