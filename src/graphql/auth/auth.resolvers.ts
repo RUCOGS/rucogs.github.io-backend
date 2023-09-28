@@ -14,7 +14,13 @@ export default {
         // regenerate it even if it was stored in the cache.
         return await getCompleteSecurityContext(context.unsecureEntityManager, args.userId, true);
       }
-      if (context.securityContext) return context.securityContext;
+      if (context.securityContext) {
+        if (context.securityContext.userId) {
+          return await getCompleteSecurityContext(context.unsecureEntityManager, context.securityContext.userId, true);
+        } else {
+          return context.securityContext;
+        }
+      }
       return null;
     },
     securityPolicy: async (parent, args, context: ApolloResolversContext, info) => {

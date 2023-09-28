@@ -41,9 +41,8 @@ export async function getCompleteSecurityContext(entityManager: AnyEntityManager
   if (!forceClearCache) {
     // Look in cache first, before trying 
     const cachedContext = SECURITY_CONTEXT_CACHE.get(userId);
-    if (cachedContext != undefined)
-      if (now < cachedContext.expiresAt)
-        return cachedContext.context;
+    if (cachedContext != undefined && now < cachedContext.expiresAt)
+      return cachedContext.context;
   }
   
   // Check if user exists
@@ -52,7 +51,9 @@ export async function getCompleteSecurityContext(entityManager: AnyEntityManager
       id: userId,
     },
   });
-  if (!userExists) return DefaultSecurityContext;
+  if (!userExists)
+    return DefaultSecurityContext;
+  
   let context = <SecurityContext>{
     userId,
     permissions: await getCompleteSecurityPermissions(entityManager, userId),
