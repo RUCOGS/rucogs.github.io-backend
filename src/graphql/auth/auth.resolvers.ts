@@ -9,7 +9,10 @@ export default {
         // If we are querying for the security context of a another user,
         // then we must generate it, because we cannot reuse the security
         // context generated for ourselves.
-        return await getCompleteSecurityContext(context.unsecureEntityManager, args.userId);
+
+        // Security contexts queried here should always be up to date, therefore we must
+        // regenerate it even if it was stored in the cache.
+        return await getCompleteSecurityContext(context.unsecureEntityManager, args.userId, true);
       }
       if (context.securityContext) return context.securityContext;
       return null;

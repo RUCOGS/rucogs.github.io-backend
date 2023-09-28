@@ -63,6 +63,7 @@ export function createUnsecureEntityManager(db: Db | 'mock'): EntityManager {
     mongodb: {
       default: db,
     },
+    log: ['warning', 'error'],
     middlewares: [dateMetadataMiddleware(getScalars()!.Date!.generate!)],
     scalars: getScalars(),
   });
@@ -78,7 +79,7 @@ export function createSecureEntityManager(
     mongodb: {
       default: db,
     },
-    log: true,
+    log: ['warning', 'error'],
     middlewares: [dateMetadataMiddleware(getScalars()!.Date!.generate!)],
     scalars: getScalars(),
     security: {

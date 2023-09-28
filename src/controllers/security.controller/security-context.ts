@@ -22,8 +22,30 @@ import { PermissionDataDict } from '@src/shared/security/permissions';
 import { HttpError, isDeepEquals } from '@src/shared/utils';
 import { RoleBackendDataDict } from './role-backend';
 
+// Caches security contexts for fast lookups
+export const SECURITY_CONTEXT_CACHE = new Map<string, { 
+  // Time in milliseconds since Jan 1 1970 that this cache entry will expire at
+  expiresAt: number, 
+  // Cached security context
+  context: SecurityContext 
+}>();
+// LIfetime of cached security context in milliseconds
+export const SECURITY_CONTEXT_CACHE_LIFETIME = 1000 * 60 * 60 * 24 // Context stays cached for an entire day
+// Maximum number of cached contexts
+export const SECURITY_CONTEXT_CACHE_MAX_SIZE = 100
+
 // Centeral point to get security context.
-export async function getCompleteSecurityContext(entityManager: AnyEntityManager, userId: string) {
+export async function getCompleteSecurityContext(entityManager: AnyEntityManager, userId: string, forceClearCache: boolean = false) {
+  const now = Date.now()
+
+  if (!forceClearCache) {
+    // Look in cache first, before trying 
+    const cachedContext = SECURITY_CONTEXT_CACHE.get(userId);
+    if (cachedContext != undefined)
+      if (now < cachedContext.expiresAt)
+        return cachedContext.context;
+  }
+  
   // Check if user exists
   const userExists = await entityManager.user.exists({
     filter: {
@@ -31,10 +53,28 @@ export async function getCompleteSecurityContext(entityManager: AnyEntityManager
     },
   });
   if (!userExists) return DefaultSecurityContext;
-  return <SecurityContext>{
+  let context = <SecurityContext>{
     userId,
     permissions: await getCompleteSecurityPermissions(entityManager, userId),
   };
+
+  // Delete the oldest half of the cache when the max size is reached
+  if (SECURITY_CONTEXT_CACHE.size > SECURITY_CONTEXT_CACHE_MAX_SIZE) {
+    // Clear half of the cache entries
+    // Delete the oldest ones
+    let arr = Array.from(SECURITY_CONTEXT_CACHE.entries());
+    // Sort from oldest to newest
+    arr.sort((a, b) => a[1].expiresAt - b[1].expiresAt);
+    for (let i = 0; i < arr.length / 2; i++) {
+      SECURITY_CONTEXT_CACHE.delete(arr[i][0]);
+    }
+  }
+
+  SECURITY_CONTEXT_CACHE.set(userId, {
+    expiresAt: now + SECURITY_CONTEXT_CACHE_LIFETIME,
+    context
+  });
+  return context;
 }
 
 export async function getCompleteSecurityPermissions(entityManager: AnyEntityManager, userId: string) {
