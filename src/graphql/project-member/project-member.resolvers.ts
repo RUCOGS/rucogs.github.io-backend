@@ -25,6 +25,7 @@ import {
 } from '@src/utils';
 import { PartialDeep } from 'type-fest';
 import { deleteAllProjectInvites } from '../project-invite/project-invite.resolvers';
+import { regenerateSecurityContext } from '@src/controllers/security.controller';
 
 async function getRequesterRoles(unsecureEntityManager: EntityManager, requesterUserId: string, roleEntityId: string) {
   const requesterUser = await unsecureEntityManager.user.findOne({
@@ -95,6 +96,8 @@ export default {
       );
       if (error instanceof Error) throw new HttpError(400, error.message);
 
+      await regenerateSecurityContext(context.unsecureEntityManager, args.input.userId);
+      
       return projectMemberId;
     },
 
@@ -160,6 +163,17 @@ export default {
         },
       );
       if (error instanceof Error) throw new HttpError(400, error.message);
+
+      if (isDefined(args.input.roles)) {
+        let projectMember = await context.unsecureEntityManager.projectMember
+          .findOne({
+            filter: { id: args.input.id }, 
+            projection: { userId: true }
+          });
+        if (projectMember)
+          await regenerateSecurityContext(context.unsecureEntityManager, projectMember.userId);
+      }
+
       return true;
     },
 
@@ -173,7 +187,7 @@ export default {
 
       const projectMember = await context.unsecureEntityManager.projectMember.findOne({
         filter: { id: args.id },
-        projection: { projectId: true },
+        projection: { projectId: true, userId: true },
       });
       if (!projectMember) throw new HttpError(400, "Project member doesn't exist!");
 
@@ -206,6 +220,10 @@ export default {
         },
       );
       if (error instanceof Error) throw new HttpError(400, error.message);
+
+      if (projectMember)
+        await regenerateSecurityContext(context.unsecureEntityManager, projectMember.userId);
+
       return true;
     },
   },

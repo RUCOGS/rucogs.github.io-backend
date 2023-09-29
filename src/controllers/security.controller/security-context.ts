@@ -34,6 +34,10 @@ export const SECURITY_CONTEXT_CACHE_LIFETIME = 1000 * 60 * 60 * 24 // Context st
 // Maximum number of cached contexts
 export const SECURITY_CONTEXT_CACHE_MAX_SIZE = 100
 
+export async function regenerateSecurityContext(entityManager: AnyEntityManager, userId: string) {
+  await getCompleteSecurityContext(entityManager, userId, true);
+}
+
 // Centeral point to get security context.
 export async function getCompleteSecurityContext(entityManager: AnyEntityManager, userId: string, forceClearCache: boolean = false) {
   const now = Date.now()

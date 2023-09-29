@@ -377,6 +377,7 @@ export type Query = {
 
 
 export type QuerySecurityContextArgs = {
+  clearCache?: InputMaybe<Scalars['Boolean']>;
   userId?: InputMaybe<Scalars['ID']>;
 };
 

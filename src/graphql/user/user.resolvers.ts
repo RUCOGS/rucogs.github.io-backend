@@ -39,6 +39,7 @@ import AsyncLock from 'async-lock';
 import { deleteAllEBoards } from '../e-board/e-board.resolvers';
 import { deleteAllProjectInvites } from '../project-invite/project-invite.resolvers';
 import { deleteAllUserLoginIdentity as deleteAllUserLoginIdentities } from '../user-login-identity/user-login-identity.resolvers';
+import { regenerateSecurityContext } from '@src/controllers/security.controller';
 
 async function getRequesterRoles(unsecureEntityManager: EntityManager, requesterUserId: string, roleEntityId: string) {
   return getEntityRoleCodes(unsecureEntityManager.userRole, 'userId', requesterUserId);
@@ -84,6 +85,9 @@ export default {
         },
       );
       if (error instanceof Error) throw new HttpError(400, error.message);
+
+      await regenerateSecurityContext(context.unsecureEntityManager, userId);
+
       return userId;
     },
 
@@ -241,6 +245,11 @@ export default {
             });
           },
         );
+
+        if (isDefined(args.input.roles)) {
+          await regenerateSecurityContext(context.unsecureEntityManager, args.input.id);
+        }
+        
         if (error instanceof Error) throw new HttpError(400, error.message);
       });
       return true;
@@ -281,6 +290,9 @@ export default {
         },
       );
       if (error instanceof Error) throw new HttpError(400, error.message);
+
+      await regenerateSecurityContext(context.unsecureEntityManager, args.id);
+
       return true;
     },
 
