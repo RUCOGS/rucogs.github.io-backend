@@ -18,6 +18,7 @@
     "compile:tools": "npm run clean && tsc --project tsconfig.tools.json && resolve-tspaths && gulp assets",
     "tidy-uploads": "npm run compile:tools && node dist/_tools/tidy-uploads",
     "clean": "rimraf dist",
+    "build-no-gen": "npm run clean && npm run compile:app",
     "build": "npm run clean && npm run generate && npm run compile:app",
     "pretty": "prettier --write \"src//**/*.ts\""
   },

@@ -241,7 +241,7 @@ function configExpress(options: {
   } else {
     options.app.use(
       cors({
-        origin: ['https://cogs.club', 'https://atlinx.net'],
+        origin: ['https://cogs.club'],
       }),
     );
   }
