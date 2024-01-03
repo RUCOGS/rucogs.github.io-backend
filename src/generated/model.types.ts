@@ -1166,6 +1166,7 @@ export type QueryProjectsArgs = {
 
 
 export type QuerySecurityContextArgs = {
+  clearCache?: InputMaybe<Scalars['Boolean']>;
   userId?: InputMaybe<Scalars['ID']>;
 };
 

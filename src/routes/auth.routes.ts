@@ -1,5 +1,6 @@
 import * as authController from '@src/controllers/auth.controller';
 import { jwtVerifyAsync } from '@src/controllers/jwt.controller';
+import { regenerateSecurityContext } from '@src/controllers/security.controller';
 import { VerityNetIdPayload } from '@src/controllers/verify-netid.controller';
 import pubsub, { PubSubEvents } from '@src/graphql/utils/pubsub';
 import { AuthConfig } from '@src/misc/config';
@@ -77,6 +78,7 @@ export default function configAuthRoutes(authConfig: AuthConfig) {
         filter: { id: token.userId },
       });
       pubsub.publish(PubSubEvents.UserUpdated, updatedUser);
+      await regenerateSecurityContext(req.context.unsecureEntityManager, token.userId);
     } catch (e) {
       failMessage();
       return;
