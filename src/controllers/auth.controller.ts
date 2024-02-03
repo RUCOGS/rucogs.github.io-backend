@@ -278,7 +278,7 @@ export function passportAuthenticateUserAndSendAuthToken(strategy: string) {
       // a token using each type of user.
       const authToken = await jwtSignAsync({ userId: user.id }, '7d');
       console.log(
-        `Authenticated user:\n${JSON.stringify(user)}\n using strategy '${strategy}' with token '${authToken}'`,
+        `🔑 Authenticated user:\n${JSON.stringify(user)}\n using strategy '${strategy}' with token '${authToken}'`,
       );
 
       const message = JSON.stringify({

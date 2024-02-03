@@ -6,7 +6,6 @@ export default {
   Query: {
     securityContext: async (parent, args, context: ApolloResolversContext, info) => {
       let clearCache: boolean = args.clearCache != undefined && args.clearCache;
-      console.log("getting context, clear cache? ", clearCache);
       if (args.userId) {
         // If we are querying for the security context of a another user,
         // then we must generate it, because we cannot reuse the security
