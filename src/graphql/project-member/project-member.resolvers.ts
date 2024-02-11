@@ -1,3 +1,4 @@
+import { regenerateSecurityContext } from '@src/controllers/security.controller';
 import { MutationResolvers, QueryResolvers, SubscriptionResolvers } from '@src/generated/graphql-endpoint.types';
 import { Permission, Project, RoleCode } from '@src/generated/model.types';
 import {
@@ -12,20 +13,19 @@ import {
 import pubsub, { PubSubEvents } from '@src/graphql/utils/pubsub';
 import { makeSubscriptionResolver } from '@src/graphql/utils/subscription-resolver-builder';
 import { ApolloResolversContext } from '@src/misc/context';
-import { makePermsCalc, RoleType } from '@src/shared/security';
+import { RoleType, makePermsCalc } from '@src/shared/security';
 import { HttpError } from '@src/shared/utils';
 import { assertProjectHasMember, assertProjectHasOwner } from '@src/shared/validation';
 import {
+  FuncQueue,
   assertRequesterCanManageRoleCodes,
   assertRolesAreOfType,
   daoInsertRolesBatch,
-  FuncQueue,
   isDefined,
   startEntityManagerTransaction,
 } from '@src/utils';
 import { PartialDeep } from 'type-fest';
 import { deleteAllProjectInvites } from '../project-invite/project-invite.resolvers';
-import { regenerateSecurityContext } from '@src/controllers/security.controller';
 
 async function getRequesterRoles(unsecureEntityManager: EntityManager, requesterUserId: string, roleEntityId: string) {
   const requesterUser = await unsecureEntityManager.user.findOne({
@@ -96,8 +96,6 @@ export default {
       );
       if (error instanceof Error) throw new HttpError(400, error.message);
 
-      await regenerateSecurityContext(context.unsecureEntityManager, args.input.userId);
-      
       return projectMemberId;
     },
 
@@ -164,16 +162,6 @@ export default {
       );
       if (error instanceof Error) throw new HttpError(400, error.message);
 
-      if (isDefined(args.input.roles)) {
-        let projectMember = await context.unsecureEntityManager.projectMember
-          .findOne({
-            filter: { id: args.input.id }, 
-            projection: { userId: true }
-          });
-        if (projectMember)
-          await regenerateSecurityContext(context.unsecureEntityManager, projectMember.userId);
-      }
-
       return true;
     },
 
@@ -221,9 +209,6 @@ export default {
       );
       if (error instanceof Error) throw new HttpError(400, error.message);
 
-      if (projectMember)
-        await regenerateSecurityContext(context.unsecureEntityManager, projectMember.userId);
-
       return true;
     },
   },
@@ -265,6 +250,7 @@ export async function makeProjectMember(options: {
     idKey: 'projectMemberId',
     id: member.id,
   });
+  subFuncQueue?.addFunc(async () => await regenerateSecurityContext(entityManager, record.userId));
   if (emitSubscription) pubsub.publishOrAddToFuncQueue(PubSubEvents.ProjectMemberCreated, member, subFuncQueue);
   return member;
 }
@@ -278,7 +264,7 @@ export async function updateProjectMember(options: {
   subFuncQueue?: FuncQueue;
 }) {
   const { entityManager, filter, changes, roles, emitSubscription = true, subFuncQueue } = options;
-  const member = await entityManager.projectMember.findOne({ filter, projection: { id: true } });
+  const member = await entityManager.projectMember.findOne({ filter, projection: { id: true, userId: true } });
   if (!member) throw new HttpError(400, 'Expected ProjectMember to not be null during update!');
   await entityManager.projectMember.updateOne({ filter, changes });
   if (roles)
@@ -289,6 +275,9 @@ export async function updateProjectMember(options: {
       id: member.id,
     });
   const updatedMember = await entityManager.projectMember.findOne({ filter });
+  if (roles) {
+    subFuncQueue?.addFunc(async () => await regenerateSecurityContext(entityManager, member.userId));
+  }
   if (emitSubscription) pubsub.publishOrAddToFuncQueue(PubSubEvents.ProjectMemberUpdated, updatedMember, subFuncQueue);
   return member;
 }
@@ -306,6 +295,7 @@ export async function deleteProjectMember(options: {
     filter: { projectMemberId: member.id },
   });
   await entityManager.projectMember.deleteOne({ filter });
+  subFuncQueue?.addFunc(async () => await regenerateSecurityContext(entityManager, member.userId));
   if (emitSubscription) pubsub.publishOrAddToFuncQueue(PubSubEvents.ProjectMemberDeleted, member, subFuncQueue);
 }
 

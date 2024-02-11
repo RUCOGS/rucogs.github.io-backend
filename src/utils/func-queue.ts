@@ -1,19 +1,19 @@
 export class FuncQueue {
-  methods: (() => void)[];
+  methods: (() => Promise<void>)[];
 
   constructor() {
     this.methods = [];
   }
 
-  addFunc(method: () => void) {
+  addFunc(method: () => Promise<void>) {
     this.methods.push(method);
   }
 
-  executeQueue() {
+  async executeQueue() {
     while (this.methods.length > 0) {
       // shift() is dequeuing
       const method = this.methods.shift();
-      if (method) method();
+      if (method) await method();
     }
   }
 }

@@ -1,5 +1,6 @@
 import { DataSize, fileUploadPromiseToCdn, tryDeleteFileIfSelfHosted } from '@src/controllers/cdn.controller';
 import { jwtSignAsync } from '@src/controllers/jwt.controller';
+import { regenerateSecurityContext } from '@src/controllers/security.controller';
 import { VerityNetIdPayload } from '@src/controllers/verify-netid.controller';
 import {
   MutationResolvers,
@@ -22,15 +23,15 @@ import {
 import pubsub, { PubSubEvents } from '@src/graphql/utils/pubsub';
 import { makeSubscriptionResolver } from '@src/graphql/utils/subscription-resolver-builder';
 import { ApolloResolversContext } from '@src/misc/context';
-import { makePermsCalc, RoleType } from '@src/shared/security';
+import { RoleType, makePermsCalc } from '@src/shared/security';
 import { HttpError } from '@src/shared/utils';
 import { assertNetId, assertNoDuplicates } from '@src/shared/validation';
 import {
+  FuncQueue,
   assertRequesterCanManageRoleCodes,
   assertRolesAreOfType,
   daoInsertBatch,
   daoInsertRolesBatch,
-  FuncQueue,
   getEntityRoleCodes,
   isDefined,
   startEntityManagerTransactionGraphQL,
@@ -39,7 +40,6 @@ import AsyncLock from 'async-lock';
 import { deleteAllEBoards } from '../e-board/e-board.resolvers';
 import { deleteAllProjectInvites } from '../project-invite/project-invite.resolvers';
 import { deleteAllUserLoginIdentity as deleteAllUserLoginIdentities } from '../user-login-identity/user-login-identity.resolvers';
-import { regenerateSecurityContext } from '@src/controllers/security.controller';
 
 async function getRequesterRoles(unsecureEntityManager: EntityManager, requesterUserId: string, roleEntityId: string) {
   return getEntityRoleCodes(unsecureEntityManager.userRole, 'userId', requesterUserId);
@@ -85,8 +85,6 @@ export default {
         },
       );
       if (error instanceof Error) throw new HttpError(400, error.message);
-
-      await regenerateSecurityContext(context.unsecureEntityManager, userId);
 
       return userId;
     },
@@ -245,12 +243,11 @@ export default {
             });
           },
         );
+        if (error instanceof Error) throw new HttpError(400, error.message);
 
         if (isDefined(args.input.roles)) {
           await regenerateSecurityContext(context.unsecureEntityManager, args.input.id);
         }
-        
-        if (error instanceof Error) throw new HttpError(400, error.message);
       });
       return true;
     },
@@ -290,8 +287,6 @@ export default {
         },
       );
       if (error instanceof Error) throw new HttpError(400, error.message);
-
-      await regenerateSecurityContext(context.unsecureEntityManager, args.id);
 
       return true;
     },
@@ -384,6 +379,7 @@ export async function makeUser(options: {
       userId: user.id,
     },
   });
+  subFuncQueue?.addFunc(async () => await regenerateSecurityContext(entityManager, user.id));
   if (emitSubscription) pubsub.publishOrAddToFuncQueue(PubSubEvents.UserCreated, user, subFuncQueue);
   return user;
 }
@@ -434,6 +430,7 @@ export async function deleteUser(options: {
   await entityManager.user.deleteOne({
     filter: { id: user.id },
   });
+  subFuncQueue?.addFunc(async () => await regenerateSecurityContext(entityManager, user.id));
   if (emitSubscription) pubsub.publishOrAddToFuncQueue(PubSubEvents.UserDeleted, user, subFuncQueue);
   return user;
 }

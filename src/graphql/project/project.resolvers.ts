@@ -25,13 +25,7 @@ import { makeSubscriptionResolver } from '@src/graphql/utils/subscription-resolv
 import { ApolloResolversContext } from '@src/misc/context';
 import { makePermsCalc } from '@src/shared/security';
 import { HttpError } from '@src/shared/utils';
-import {
-  daoInsertRolesBatch,
-  FuncQueue,
-  isDefined,
-  startEntityManagerTransaction,
-  startEntityManagerTransactionGraphQL,
-} from '@src/utils';
+import { FuncQueue, isDefined, startEntityManagerTransaction, startEntityManagerTransactionGraphQL } from '@src/utils';
 import AsyncLock from 'async-lock';
 import { deleteAllProjectInvites } from '../project-invite/project-invite.resolvers';
 import { deleteAllProjectMembers, makeProjectMember } from '../project-member/project-member.resolvers';
@@ -336,7 +330,7 @@ export async function makeProject(options: {
   });
 
   if (ownerUserId) {
-    const projectOwner = await makeProjectMember({
+    await makeProjectMember({
       entityManager,
       record: {
         userId: ownerUserId,
@@ -344,13 +338,6 @@ export async function makeProject(options: {
       },
       additionalRoles: [RoleCode.ProjectOwner],
       subFuncQueue,
-    });
-
-    await daoInsertRolesBatch({
-      dao: entityManager.projectMemberRole,
-      roleCodes: [RoleCode.ProjectMember, RoleCode.ProjectOwner],
-      idKey: 'projectMemberId',
-      id: projectOwner.id,
     });
   }
 

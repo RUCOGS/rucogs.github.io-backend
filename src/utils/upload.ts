@@ -92,7 +92,7 @@ export async function startEntityManagerTransaction(
     );
     await session.commitTransaction();
     // Execute accrued methods
-    postTransFuncQueue.executeQueue();
+    await postTransFuncQueue.executeQueue();
   } catch (err) {
     if (err instanceof Error) error = err;
     await session.abortTransaction();
