@@ -1,3 +1,4 @@
+import { regenerateSecurityContext } from '@src/controllers/security.controller';
 import {
   InviteType,
   MutationResolvers,
@@ -14,6 +15,7 @@ import { makePermsCalc } from '@src/shared/security';
 import { HttpError } from '@src/shared/utils';
 import { FuncQueue, startEntityManagerTransactionGraphQL } from '@src/utils';
 import { makeProjectMember } from '../project-member/project-member.resolvers';
+import { regenerateProjectMemberSecurityContexts } from '../project/project.resolvers';
 
 const acceptProjectInvite: MutationResolvers['acceptProjectInvite'] = async (
   parent,
@@ -288,6 +290,11 @@ export async function makeProjectInvite(options: {
   const projectInvite = await entityManager.projectInvite.insertOne({
     record,
   });
+  // Update invite and project member security contexts
+  subFuncQueue?.addFunc(async () => {
+    await regenerateProjectMemberSecurityContexts({ entityManager, filter: { id: record.projectId } });
+    await regenerateSecurityContext(entityManager, record.userId);
+  });
   if (emitSubscription) pubsub.publishOrAddToFuncQueue(PubSubEvents.ProjectInviteCreated, projectInvite, subFuncQueue);
   return projectInvite;
 }
@@ -302,6 +309,11 @@ export async function deleteProjectInvite(options: {
   const invite = await entityManager.projectInvite.findOne({ filter });
   if (!invite) throw new HttpError(400, 'Expected ProjectInvite to not be null during delete!');
   await entityManager.projectInvite.deleteOne({ filter });
+  // Update invite and project member security contexts
+  subFuncQueue?.addFunc(async () => {
+    await regenerateProjectMemberSecurityContexts({ entityManager, filter: { id: invite.projectId } });
+    await regenerateSecurityContext(entityManager, invite.userId);
+  });
   if (emitSubscription) pubsub.publishOrAddToFuncQueue(PubSubEvents.ProjectInviteDeleted, invite, subFuncQueue);
 }
 
@@ -314,6 +326,13 @@ export async function deleteAllProjectInvites(options: {
   const { entityManager, filter, emitSubscription = true, subFuncQueue } = options;
   const invites = await entityManager.projectInvite.findAll({ filter });
   await entityManager.projectInvite.deleteAll({ filter });
+  // Update invite and project member security contexts
+  subFuncQueue?.addFunc(async () => {
+    for (const invite of invites) {
+      await regenerateProjectMemberSecurityContexts({ entityManager, filter: { id: invite.projectId } });
+      await regenerateSecurityContext(entityManager, invite.userId);
+    }
+  });
   if (emitSubscription) {
     for (const invite of invites)
       pubsub.publishOrAddToFuncQueue(PubSubEvents.ProjectInviteDeleted, invite, subFuncQueue);

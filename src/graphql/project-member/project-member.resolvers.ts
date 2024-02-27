@@ -4,6 +4,7 @@ import { Permission, Project, RoleCode } from '@src/generated/model.types';
 import {
   EntityManager,
   ProjectDAO,
+  ProjectFilter,
   ProjectMemberDAO,
   ProjectMemberFilter,
   ProjectMemberInsert,
@@ -251,6 +252,10 @@ export async function makeProjectMember(options: {
     id: member.id,
   });
   subFuncQueue?.addFunc(async () => await regenerateSecurityContext(entityManager, record.userId));
+  // Update owner security context after we added the new member and regenerated their security context
+  const owner = await getProjectOwner({ filter: { id: record.projectId }, entityManager });
+  const ownerUserId = owner.userId;
+  subFuncQueue?.addFunc(async () => await regenerateSecurityContext(entityManager, ownerUserId));
   if (emitSubscription) pubsub.publishOrAddToFuncQueue(PubSubEvents.ProjectMemberCreated, member, subFuncQueue);
   return member;
 }
@@ -296,6 +301,10 @@ export async function deleteProjectMember(options: {
   });
   await entityManager.projectMember.deleteOne({ filter });
   subFuncQueue?.addFunc(async () => await regenerateSecurityContext(entityManager, member.userId));
+  // Update owner security context after we added the new member and regenerated their security context
+  const owner = await getProjectOwner({ filter: { id: member.projectId }, entityManager });
+  const ownerUserId = owner.userId;
+  subFuncQueue?.addFunc(async () => await regenerateSecurityContext(entityManager, ownerUserId));
   if (emitSubscription) pubsub.publishOrAddToFuncQueue(PubSubEvents.ProjectMemberDeleted, member, subFuncQueue);
 }
 
@@ -311,8 +320,32 @@ export async function deleteAllProjectMembers(options: {
     filter: { projectMemberId: { in: members.map((x) => x.id) } },
   });
   await entityManager.projectMember.deleteAll({ filter });
+  // Update member security contexts
+  for (const member of members)
+    subFuncQueue?.addFunc(async () => await regenerateSecurityContext(entityManager, member.userId));
   if (emitSubscription) {
     for (const member of members)
       pubsub.publishOrAddToFuncQueue(PubSubEvents.ProjectMemberDeleted, member, subFuncQueue);
   }
+}
+
+export async function getProjectOwner(options: { filter: ProjectFilter; entityManager: EntityManager }) {
+  const { entityManager, filter } = options;
+  const project = await entityManager.project.findOne({
+    filter,
+    projection: {
+      members: {
+        id: true,
+        userId: true,
+        roles: {
+          id: true,
+          roleCode: true,
+        },
+      },
+    },
+  });
+  if (!project) throw new HttpError(400, "Project doesn't exist!");
+  let owner = project.members.find((x) => x.roles.some((x) => x.roleCode === RoleCode.ProjectOwner));
+  if (!owner) throw new HttpError(400, "Project doesn't have an owner!");
+  return owner;
 }
