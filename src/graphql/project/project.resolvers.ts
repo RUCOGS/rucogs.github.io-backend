@@ -370,13 +370,13 @@ export async function deleteProject(options: {
   const project = await entityManager.project.findOne({ filter });
   if (!project) throw new HttpError(400, 'Expected Project to not be null during delete!');
 
-  await deleteAllProjectMembers({
+  await deleteAllProjectInvites({
     entityManager,
     filter: { projectId: project.id },
     subFuncQueue,
   });
 
-  await deleteAllProjectInvites({
+  await deleteAllProjectMembers({
     entityManager,
     filter: { projectId: project.id },
     subFuncQueue,
