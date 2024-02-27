@@ -4,7 +4,6 @@ import { Permission, Project, RoleCode } from '@src/generated/model.types';
 import {
   EntityManager,
   ProjectDAO,
-  ProjectFilter,
   ProjectMemberDAO,
   ProjectMemberFilter,
   ProjectMemberInsert,
@@ -27,6 +26,7 @@ import {
 } from '@src/utils';
 import { PartialDeep } from 'type-fest';
 import { deleteAllProjectInvites } from '../project-invite/project-invite.resolvers';
+import { regenerateProjectMemberSecurityContexts } from '../project/project.resolvers';
 
 async function getRequesterRoles(unsecureEntityManager: EntityManager, requesterUserId: string, roleEntityId: string) {
   const requesterUser = await unsecureEntityManager.user.findOne({
@@ -251,11 +251,11 @@ export async function makeProjectMember(options: {
     idKey: 'projectMemberId',
     id: member.id,
   });
-  subFuncQueue?.addFunc(async () => await regenerateSecurityContext(entityManager, record.userId));
-  // Update owner security context after we added the new member and regenerated their security context
-  const owner = await getProjectOwner({ filter: { id: record.projectId }, entityManager });
-  const ownerUserId = owner.userId;
-  subFuncQueue?.addFunc(async () => await regenerateSecurityContext(entityManager, ownerUserId));
+  subFuncQueue?.addFunc(async () => {
+    await regenerateSecurityContext(entityManager, record.userId);
+    // Update project member security context after we added the new member and regenerated their security context
+    await regenerateProjectMemberSecurityContexts({ filter: { id: member.projectId }, entityManager });
+  });
   if (emitSubscription) pubsub.publishOrAddToFuncQueue(PubSubEvents.ProjectMemberCreated, member, subFuncQueue);
   return member;
 }
@@ -300,11 +300,11 @@ export async function deleteProjectMember(options: {
     filter: { projectMemberId: member.id },
   });
   await entityManager.projectMember.deleteOne({ filter });
-  subFuncQueue?.addFunc(async () => await regenerateSecurityContext(entityManager, member.userId));
-  // Update owner security context after we added the new member and regenerated their security context
-  const owner = await getProjectOwner({ filter: { id: member.projectId }, entityManager });
-  const ownerUserId = owner.userId;
-  subFuncQueue?.addFunc(async () => await regenerateSecurityContext(entityManager, ownerUserId));
+  subFuncQueue?.addFunc(async () => {
+    await regenerateSecurityContext(entityManager, member.userId);
+    // Update project member security context after we added the new member and regenerated their security context
+    await regenerateProjectMemberSecurityContexts({ filter: { id: member.projectId }, entityManager });
+  });
   if (emitSubscription) pubsub.publishOrAddToFuncQueue(PubSubEvents.ProjectMemberDeleted, member, subFuncQueue);
 }
 
@@ -322,30 +322,13 @@ export async function deleteAllProjectMembers(options: {
   await entityManager.projectMember.deleteAll({ filter });
   // Update member security contexts
   for (const member of members)
-    subFuncQueue?.addFunc(async () => await regenerateSecurityContext(entityManager, member.userId));
+    subFuncQueue?.addFunc(async () => {
+      await regenerateSecurityContext(entityManager, member.userId);
+      // Update project member security context after we added the new member and regenerated their security context
+      await regenerateProjectMemberSecurityContexts({ filter: { id: member.projectId }, entityManager });
+    });
   if (emitSubscription) {
     for (const member of members)
       pubsub.publishOrAddToFuncQueue(PubSubEvents.ProjectMemberDeleted, member, subFuncQueue);
   }
-}
-
-export async function getProjectOwner(options: { filter: ProjectFilter; entityManager: EntityManager }) {
-  const { entityManager, filter } = options;
-  const project = await entityManager.project.findOne({
-    filter,
-    projection: {
-      members: {
-        id: true,
-        userId: true,
-        roles: {
-          id: true,
-          roleCode: true,
-        },
-      },
-    },
-  });
-  if (!project) throw new HttpError(400, "Project doesn't exist!");
-  let owner = project.members.find((x) => x.roles.some((x) => x.roleCode === RoleCode.ProjectOwner));
-  if (!owner) throw new HttpError(400, "Project doesn't have an owner!");
-  return owner;
 }
