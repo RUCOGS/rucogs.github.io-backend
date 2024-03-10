@@ -90,14 +90,14 @@ export default {
     },
 
     updateUser: async (parent, args, context: ApolloResolversContext, info) => {
-      await updateUserLock.acquire('lock', async () => {
+      await updateUserLock.acquire(args.input.id, async () => {
         const permCalc = makePermsCalc().withContext(context.securityContext).withDomain({
           userId: args.input.id,
         });
 
         permCalc.assertPermission(Permission.UpdateUser);
-        if (args.input.createdAt) permCalc.assertPermission(Permission.ManageMetadata);
-        if (args.input.email) permCalc.assertPermission(Permission.UpdateUserPrivate);
+        if (args.input.createdAt || args.input.netId || args.input.manualVerified || args.input.email)
+          permCalc.assertPermission(Permission.ManageMetadata);
 
         const user = await context.unsecureEntityManager.user.findOne({
           filter: {
@@ -238,6 +238,12 @@ export default {
                 ...(isDefined(args.input.banner) && {
                   bannerLink: bannerSelfHostedFilePath,
                 }),
+                ...(isDefined(args.input.netId) && {
+                  netId: args.input.netId,
+                }),
+                ...(isDefined(args.input.manualVerified) && {
+                  manualVerified: args.input.manualVerified,
+                }),
               },
               subFuncQueue: postTransFuncQueue,
             });
@@ -245,7 +251,7 @@ export default {
         );
         if (error instanceof Error) throw new HttpError(400, error.message);
 
-        if (isDefined(args.input.roles)) {
+        if (isDefined(args.input.roles) || isDefined(args.input.netId) || isDefined(args.input.manualVerified)) {
           clearSecurityContext(context.unsecureEntityManager, args.input.id);
         }
       });

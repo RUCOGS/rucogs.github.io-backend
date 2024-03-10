@@ -7,7 +7,7 @@ import {
   SubscriptionResolvers,
 } from '@src/generated/graphql-endpoint.types';
 import { Access, SubscriptionProjectInviteCreatedArgs } from '@src/generated/model.types';
-import { EntityManager, ProjectDAO, ProjectInviteFilter, ProjectInviteInsert } from '@src/generated/typetta';
+import { EntityManager, ProjectInviteFilter, ProjectInviteInsert } from '@src/generated/typetta';
 import pubsub, { PubSubEvents } from '@src/graphql/utils/pubsub';
 import { makeSubscriptionResolver } from '@src/graphql/utils/subscription-resolver-builder';
 import { ApolloResolversContext } from '@src/misc/context';
@@ -16,6 +16,11 @@ import { HttpError } from '@src/shared/utils';
 import { FuncQueue, startEntityManagerTransactionGraphQL } from '@src/utils';
 import { makeProjectMember } from '../project-member/project-member.resolvers';
 import { clearProjectSecurityContexts } from '../project/project.resolvers';
+import AsyncLock from 'async-lock';
+
+const acceptProjectInviteLock = new AsyncLock();
+const createProjectInviteLock = new AsyncLock();
+const joinProjectLock = new AsyncLock();
 
 const acceptProjectInvite: MutationResolvers['acceptProjectInvite'] = async (
   parent,
@@ -23,44 +28,53 @@ const acceptProjectInvite: MutationResolvers['acceptProjectInvite'] = async (
   context: ApolloResolversContext,
   info,
 ) => {
-  const invite = await context.unsecureEntityManager.projectInvite.findOne({
-    filter: { id: args.inviteId },
-  });
-
-  if (!invite) throw new HttpError(400, "Invite doesn't exist!");
-
-  if (invite.type === InviteType.Incoming) {
-    makePermsCalc()
-      .withContext(context.securityContext)
-      .withDomain({ projectId: invite.projectId })
-      .assertPermission(Permission.UpdateProject);
-  } else if (invite.type === InviteType.Outgoing) {
-    makePermsCalc()
-      .withContext(context.securityContext)
-      .withDomain({ projectInviteId: args.inviteId })
-      .assertPermission(Permission.ManageProjectInvites);
-  }
-
-  const error = await startEntityManagerTransactionGraphQL(context, async (transEntityManager, postTransFuncQueue) => {
-    await makeProjectMember({
-      entityManager: transEntityManager,
-      record: {
-        userId: invite.userId,
-        projectId: invite.projectId,
-      },
-      subFuncQueue: postTransFuncQueue,
+  await acceptProjectInviteLock.acquire(args.inviteId, async () => {
+    const invite = await context.unsecureEntityManager.projectInvite.findOne({
+      filter: { id: args.inviteId },
     });
-    await deleteAllProjectInvites({
-      entityManager: transEntityManager,
-      filter: {
-        id: args.inviteId,
-      },
-      subFuncQueue: postTransFuncQueue,
+
+    if (!invite) throw new HttpError(400, "Invite doesn't exist!");
+
+    if (invite.type === InviteType.Incoming) {
+      makePermsCalc()
+        .withContext(context.securityContext)
+        .withDomain({ projectId: invite.projectId })
+        .assertPermission(Permission.UpdateProject);
+    } else if (invite.type === InviteType.Outgoing) {
+      makePermsCalc()
+        .withContext(context.securityContext)
+        .withDomain({ projectInviteId: args.inviteId })
+        .assertPermission(Permission.ManageProjectInvites);
+    }
+
+    const projectMemberExists = await context.unsecureEntityManager.projectMember.exists({
+      filter: { projectId: invite.projectId, userId: invite.userId },
     });
+    if (projectMemberExists) throw new HttpError(400, 'Project member already exists!');
+
+    const error = await startEntityManagerTransactionGraphQL(
+      context,
+      async (transEntityManager, postTransFuncQueue) => {
+        await makeProjectMember({
+          entityManager: transEntityManager,
+          record: {
+            userId: invite.userId,
+            projectId: invite.projectId,
+          },
+          subFuncQueue: postTransFuncQueue,
+        });
+        await deleteAllProjectInvites({
+          entityManager: transEntityManager,
+          filter: {
+            id: args.inviteId,
+          },
+          subFuncQueue: postTransFuncQueue,
+        });
+      },
+    );
+
+    if (error) throw error;
   });
-
-  if (error) throw error;
-
   return true;
 };
 
@@ -99,81 +113,86 @@ export default {
   Mutation: {
     // Requesting user to accept
     newProjectInvite: async (parent, args, context: ApolloResolversContext, info) => {
-      // Check permissions
-      if (args.input.type === InviteType.Outgoing)
-        if (
-          !makePermsCalc()
-            .withContext(context.securityContext)
-            .withDomain({
-              projectId: args.input.projectId,
-            })
-            .hasPermission(Permission.UpdateProject)
-        )
-          throw new HttpError(401, 'Not authorized!');
+      return await createProjectInviteLock.acquire<string>(args.input.projectId + args.input.userId, async () => {
+        // Check permissions
+        if (args.input.type === InviteType.Outgoing)
+          if (
+            !makePermsCalc()
+              .withContext(context.securityContext)
+              .withDomain({
+                projectId: args.input.projectId,
+              })
+              .hasPermission(Permission.UpdateProject)
+          )
+            throw new HttpError(401, 'Not authorized!');
 
-      const userExists = await context.unsecureEntityManager.user.exists({
-        filter: { id: args.input.userId },
-      });
-      if (!userExists) throw new HttpError(400, "User doesn't exist!");
-
-      const project = await context.unsecureEntityManager.project.findOne({
-        filter: { id: args.input.projectId },
-        projection: ProjectDAO.projection({
-          access: true,
-        }),
-      });
-      if (!project) throw new HttpError(400, "Project doesn't exist!");
-      if (args.input.type === InviteType.Incoming)
-        if (project.access !== Access.Invite)
-          throw new HttpError(403, "Cannot request invite for project whose access isn't 'INVITE'!");
-
-      const inviteExists = await context.unsecureEntityManager.projectInvite.exists({
-        filter: {
-          type: args.input.type,
-          projectId: args.input.projectId,
-          userId: args.input.userId,
-        },
-      });
-      if (inviteExists) throw new HttpError(400, 'Invite already exists!');
-
-      const oppositeInviteType = args.input.type === InviteType.Incoming ? InviteType.Outgoing : InviteType.Incoming;
-      const oppositeInvite = await context.unsecureEntityManager.projectInvite.findOne({
-        filter: {
-          type: oppositeInviteType,
-          projectId: args.input.projectId,
-          userId: args.input.userId,
-        },
-        projection: {
-          id: true,
-        },
-      });
-      if (oppositeInvite) {
-        await acceptProjectInvite(
-          parent,
-          {
-            inviteId: oppositeInvite.id,
-          },
-          context,
-          info,
-        );
-        return;
-      } else {
-        let insertedInviteId = '';
-        const error = startEntityManagerTransactionGraphQL(context, async (transEntityManager, postTransFuncQueue) => {
-          const insertedInvite = await makeProjectInvite({
-            entityManager: transEntityManager,
-            record: {
-              type: args.input.type,
-              projectId: args.input.projectId,
-              userId: args.input.userId,
-            },
-            subFuncQueue: postTransFuncQueue,
-          });
-          insertedInviteId = insertedInvite.id;
+        const userExists = await context.unsecureEntityManager.user.exists({
+          filter: { id: args.input.userId },
         });
-        if (error instanceof Error) throw new HttpError(400, error.message);
-        return insertedInviteId;
-      }
+        if (!userExists) throw new HttpError(400, "User doesn't exist!");
+
+        const project = await context.unsecureEntityManager.project.findOne({
+          filter: { id: args.input.projectId },
+          projection: {
+            access: true,
+          },
+        });
+        if (!project) throw new HttpError(400, "Project doesn't exist!");
+        if (args.input.type === InviteType.Incoming)
+          if (project.access !== Access.Invite)
+            throw new HttpError(403, "Cannot request invite for project whose access isn't 'INVITE'!");
+
+        const inviteExists = await context.unsecureEntityManager.projectInvite.exists({
+          filter: {
+            type: args.input.type,
+            projectId: args.input.projectId,
+            userId: args.input.userId,
+          },
+        });
+        if (inviteExists) throw new HttpError(400, 'Invite already exists!');
+
+        const oppositeInviteType = args.input.type === InviteType.Incoming ? InviteType.Outgoing : InviteType.Incoming;
+        const oppositeInvite = await context.unsecureEntityManager.projectInvite.findOne({
+          filter: {
+            type: oppositeInviteType,
+            projectId: args.input.projectId,
+            userId: args.input.userId,
+          },
+          projection: {
+            id: true,
+          },
+        });
+        if (oppositeInvite) {
+          await acceptProjectInvite(
+            parent,
+            {
+              inviteId: oppositeInvite.id,
+            },
+            context,
+            info,
+          );
+          return;
+        } else {
+          let insertedInviteId = '';
+          const error = startEntityManagerTransactionGraphQL(
+            context,
+            async (transEntityManager, postTransFuncQueue) => {
+              const insertedInvite = await makeProjectInvite({
+                entityManager: transEntityManager,
+                record: {
+                  type: args.input.type,
+                  projectId: args.input.projectId,
+                  userId: args.input.userId,
+                },
+                subFuncQueue: postTransFuncQueue,
+              });
+              insertedInviteId = insertedInvite.id;
+            },
+          );
+          if (error instanceof Error) throw new HttpError(400, error.message);
+          return insertedInviteId;
+        }
+      });
     },
 
     acceptProjectInvite,
@@ -214,49 +233,55 @@ export default {
     },
 
     joinOpenProject: async (parent, args, context: ApolloResolversContext, info) => {
-      const userId = context.securityContext.userId;
-      if (!userId) throw new HttpError(400, 'Expected context.securityContext.userId!');
+      await joinProjectLock.acquire(args.projectId, async () => {
+        const userId = context.securityContext.userId;
+        if (!userId) throw new HttpError(400, 'Expected context.securityContext.userId!');
 
-      const project = await context.unsecureEntityManager.project.findOne({
-        filter: { id: args.projectId },
-        projection: ProjectDAO.projection({
-          access: true,
-        }),
+        const project = await context.unsecureEntityManager.project.findOne({
+          filter: { id: args.projectId },
+          projection: {
+            access: true,
+          },
+        });
+        if (!project) throw new HttpError(400, "Project doesn't exist!");
+
+        const projectMemberExists = await context.unsecureEntityManager.projectMember.exists({
+          filter: { projectId: args.projectId, userId: userId },
+        });
+        if (projectMemberExists) throw new HttpError(400, 'Project member already exists!');
+
+        makePermsCalc()
+          .withContext(context.securityContext)
+          .withDomain({
+            projectId: args.projectId,
+          })
+          .assertPermission(Permission.JoinProject);
+
+        if (project.access !== Access.Open) throw new HttpError(403, "Project access is not 'OPEN'!");
+
+        const error = await startEntityManagerTransactionGraphQL(
+          context,
+          async (transEntityManager, postTransFuncQueue) => {
+            await deleteAllProjectInvites({
+              entityManager: transEntityManager,
+              filter: {
+                projectId: args.projectId,
+                userId: userId,
+              },
+            });
+
+            await makeProjectMember({
+              entityManager: transEntityManager,
+              record: {
+                userId,
+                projectId: args.projectId,
+              },
+              subFuncQueue: postTransFuncQueue,
+            });
+          },
+        );
+        if (error instanceof Error) throw new HttpError(400, error.message);
       });
-      if (!project) throw new HttpError(400, "Project doesn't exist!");
-
-      makePermsCalc()
-        .withContext(context.securityContext)
-        .withDomain({
-          projectId: args.projectId,
-        })
-        .assertPermission(Permission.JoinProject);
-
-      if (project.access !== Access.Open) throw new HttpError(403, "Project access is not 'OPEN'!");
-
-      const error = await startEntityManagerTransactionGraphQL(
-        context,
-        async (transEntityManager, postTransFuncQueue) => {
-          await deleteAllProjectInvites({
-            entityManager: transEntityManager,
-            filter: {
-              projectId: args.projectId,
-              userId: userId,
-            },
-          });
-
-          await makeProjectMember({
-            entityManager: transEntityManager,
-            record: {
-              userId,
-              projectId: args.projectId,
-            },
-            subFuncQueue: postTransFuncQueue,
-          });
-        },
-      );
-      if (error instanceof Error) throw new HttpError(400, error.message);
-
       return true;
     },
   },

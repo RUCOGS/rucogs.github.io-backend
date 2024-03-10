@@ -782,6 +782,14 @@ loginIdentities: { type: 'relation', relation: 'foreign',
       isExcluded: false,
       isId: false,
       generationStrategy: 'undefined' },
+manualVerified: { type: 'scalar', 
+      isList: false, 
+      astName: 'String', 
+      isRequired: false, 
+      isListElementRequired: false,
+      isExcluded: false,
+      isId: false,
+      generationStrategy: 'undefined' },
 netId: { type: 'scalar', 
       isList: false, 
       astName: 'String', 
@@ -1996,6 +2004,11 @@ export function userSchema(): T.Schema<ScalarsSpecification> {
                 dao: 'userLoginIdentity',
                 isListElementRequired: true,required: true,isList: true,directives: {  }
               },
+  'manualVerified': {
+              type: 'scalar',
+              scalar: 'String',
+              directives: {  }
+            },
   'netId': {
               type: 'scalar',
               scalar: 'String',

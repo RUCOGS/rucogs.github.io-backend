@@ -26,9 +26,10 @@ export const RoleBackendDataDict: {
         },
         projection: {
           netId: true,
+          manualVerified: true,
         },
       });
-      const rutgersVerified = user?.netId != undefined;
+      const rutgersVerified = (user?.netId ?? '') != '' || (user?.manualVerified ?? '') != '';
       return {
         RUTGERS_VERIFIED: rutgersVerified,
         READ_USER_PRIVATE: [{ userId }],
@@ -115,11 +116,11 @@ export const RoleBackendDataDict: {
         filter: {
           id: projectMember?.projectId,
         },
-        projection: ProjectDAO.projection({
+        projection: {
           members: {
             id: true,
           },
-        }),
+        },
       });
 
       if (!project) throw new Error('Expected project to exist!');

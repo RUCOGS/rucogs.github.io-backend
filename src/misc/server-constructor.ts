@@ -176,7 +176,6 @@ async function startApolloServer(options: {
         console.log(`Subscription Disconnected: (${code}) "${reason}"`);
       },
       context: async (ctx, msg, args) => {
-        console.log('Context: ' + ctx);
         const context = await authenticateGetContext(ctx.connectionParams);
         return context;
       },

@@ -575,6 +575,8 @@ export type UpdateUserInput = {
   displayName?: InputMaybe<Scalars['String']>;
   email?: InputMaybe<Scalars['String']>;
   id: Scalars['ID'];
+  manualVerified?: InputMaybe<Scalars['String']>;
+  netId?: InputMaybe<Scalars['String']>;
   roles?: InputMaybe<Array<RoleCode>>;
   socials?: InputMaybe<Array<UpdateUserSocialInput>>;
 };
@@ -620,6 +622,7 @@ export type User = {
   email?: Maybe<Scalars['String']>;
   id: Scalars['ID'];
   loginIdentities: Array<UserLoginIdentity>;
+  manualVerified?: Maybe<Scalars['String']>;
   netId?: Maybe<Scalars['String']>;
   projectInvites: Array<ProjectInvite>;
   projectMembers: Array<ProjectMember>;
@@ -1031,6 +1034,7 @@ export type UserResolvers<ContextType = any, ParentType extends ResolversParentT
   email?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   loginIdentities?: Resolver<Array<ResolversTypes['UserLoginIdentity']>, ParentType, ContextType>;
+  manualVerified?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   netId?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   projectInvites?: Resolver<Array<ResolversTypes['ProjectInvite']>, ParentType, ContextType>;
   projectMembers?: Resolver<Array<ResolversTypes['ProjectMember']>, ParentType, ContextType>;

@@ -25,7 +25,7 @@ async function startMockServer() {
   const projectIds = await generateProjects(unsecure, userIds, 30);
   const eboardIds = await generateEBoard(unsecure, userIds, 12);
 
-  console.log('🥸 Mock server configured!');
+  console.log('🕵️‍♀️ Mock server configured!');
 }
 
 async function generateEBoard(unsecure: EntityManager, userIds: string[], count: number) {

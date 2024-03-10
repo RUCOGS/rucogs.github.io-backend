@@ -134,13 +134,13 @@ export default {
             assertRequesterCanManageRoleCodes(requesterRoleCodes, args.input.roles);
             const project = await transEntityManager.project.findOne({
               filter: { id: projectMember.projectId },
-              projection: ProjectDAO.projection({
+              projection: {
                 members: {
                   roles: {
                     roleCode: true,
                   },
                 },
-              }),
+              },
             });
             if (!project) throw new HttpError(200, "Project doesn't exist! DB state may be corrupted.");
 

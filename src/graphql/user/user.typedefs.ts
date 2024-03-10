@@ -50,6 +50,8 @@ export default gql`
     roles: [RoleCode!]
 
     email: String
+    netId: String
+    manualVerified: String
 
     createdAt: Date
   }

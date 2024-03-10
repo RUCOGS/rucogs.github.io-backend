@@ -212,7 +212,7 @@ export default {
 
       const project = await context.unsecureEntityManager.project.findOne({
         filter: { id: args.id },
-        projection: ProjectDAO.projection({
+        projection: {
           id: true,
           cardImageLink: true,
           bannerLink: true,
@@ -223,7 +223,7 @@ export default {
           discordConfig: {
             id: true,
           },
-        }),
+        },
       });
       if (!project) throw new HttpError(400, "Project doesn't exist!");
       if (project.discordConfig) throw new HttpError(400, 'Cannot delete project with Discord presence!');

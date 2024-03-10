@@ -594,6 +594,7 @@ classYear: Int
 createdAt: Date
 displayName: String!
 email: String
+manualVerified: String
 netId: String
 updatedAt: Date
 username: String!
@@ -606,6 +607,7 @@ classYear: Int
 createdAt: Date
 displayName: String
 email: String
+manualVerified: String
 netId: String
 updatedAt: Date
 username: String
@@ -619,6 +621,7 @@ createdAt: SortDirection
 displayName: SortDirection
 email: SortDirection
 id: SortDirection
+manualVerified: SortDirection
 netId: SortDirection
 updatedAt: SortDirection
 username: SortDirection
@@ -632,6 +635,7 @@ createdAt: DateFilterInput
 displayName: StringFilterInput
 email: StringFilterInput
 id: IDFilterInput
+manualVerified: StringFilterInput
 netId: StringFilterInput
 updatedAt: DateFilterInput
 username: StringFilterInput

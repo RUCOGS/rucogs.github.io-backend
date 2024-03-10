@@ -22,12 +22,20 @@ export async function getEntityRoleCodes(
 
 export function assertRequesterCanDeleteRoleCodes(requesterRoleCodes: RoleCode[], roleCodes: RoleCode[]) {
   const requestHighestRoleCodes = getHighestRoles(requesterRoleCodes);
+  if (requestHighestRoleCodes.includes(RoleCode.SuperAdmin)) {
+    // SuperAdmins can remove any role, including the SuperAdmin role
+    return;
+  }
   for (const roleCode of roleCodes)
     if (requestHighestRoleCodes.includes(roleCode)) throw new HttpError(403, 'Cannot remove your own highest role!');
 }
 
 export function assertRequesterCanManageRoleCodes(requesterRoleCodes: RoleCode[], roleCodes: RoleCode[]) {
   const requestHighestRoleCodes = getHighestRoles(requesterRoleCodes);
+  if (requestHighestRoleCodes.includes(RoleCode.SuperAdmin)) {
+    // SuperAdmins can give other users any role, including the SuperAdmin role
+    return;
+  }
   for (const roleCode of roleCodes) {
     let isBelowAHighestRole = false;
     for (const highestRole of requestHighestRoleCodes) {

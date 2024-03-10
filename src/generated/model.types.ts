@@ -1505,6 +1505,8 @@ export type UpdateUserInput = {
   displayName?: InputMaybe<Scalars['String']>;
   email?: InputMaybe<Scalars['String']>;
   id: Scalars['ID'];
+  manualVerified?: InputMaybe<Scalars['String']>;
+  netId?: InputMaybe<Scalars['String']>;
   roles?: InputMaybe<Array<RoleCode>>;
   socials?: InputMaybe<Array<UpdateUserSocialInput>>;
 };
@@ -1570,6 +1572,7 @@ export type User = {
   email?: Maybe<Scalars['String']>;
   id: Scalars['ID'];
   loginIdentities: Array<UserLoginIdentity>;
+  manualVerified?: Maybe<Scalars['String']>;
   netId?: Maybe<Scalars['String']>;
   projectInvites: Array<ProjectInvite>;
   projectMembers: Array<ProjectMember>;
@@ -1589,6 +1592,7 @@ export type UserFilterInput = {
   displayName?: InputMaybe<StringFilterInput>;
   email?: InputMaybe<StringFilterInput>;
   id?: InputMaybe<IdFilterInput>;
+  manualVerified?: InputMaybe<StringFilterInput>;
   netId?: InputMaybe<StringFilterInput>;
   nor_?: InputMaybe<Array<UserFilterInput>>;
   or_?: InputMaybe<Array<UserFilterInput>>;
@@ -1612,6 +1616,7 @@ export type UserInsertInput = {
   createdAt?: InputMaybe<Scalars['Date']>;
   displayName: Scalars['String'];
   email?: InputMaybe<Scalars['String']>;
+  manualVerified?: InputMaybe<Scalars['String']>;
   netId?: InputMaybe<Scalars['String']>;
   updatedAt?: InputMaybe<Scalars['Date']>;
   username: Scalars['String'];
@@ -1794,6 +1799,7 @@ export type UserSortInput = {
   displayName?: InputMaybe<SortDirection>;
   email?: InputMaybe<SortDirection>;
   id?: InputMaybe<SortDirection>;
+  manualVerified?: InputMaybe<SortDirection>;
   netId?: InputMaybe<SortDirection>;
   updatedAt?: InputMaybe<SortDirection>;
   username?: InputMaybe<SortDirection>;
@@ -1811,6 +1817,7 @@ export type UserUpdateInput = {
   createdAt?: InputMaybe<Scalars['Date']>;
   displayName?: InputMaybe<Scalars['String']>;
   email?: InputMaybe<Scalars['String']>;
+  manualVerified?: InputMaybe<Scalars['String']>;
   netId?: InputMaybe<Scalars['String']>;
   updatedAt?: InputMaybe<Scalars['Date']>;
   username?: InputMaybe<Scalars['String']>;

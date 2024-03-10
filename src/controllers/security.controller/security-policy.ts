@@ -20,6 +20,7 @@ function getSecurityPolicy() {
             updatedAt: true,
             id: true,
             netId: true,
+            manualVerified: true,
             username: true,
             displayName: true,
             projectMembers: true,

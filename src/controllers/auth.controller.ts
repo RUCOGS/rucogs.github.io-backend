@@ -96,7 +96,7 @@ export function configPassport(passport: PassportStatic, entityManager: EntityMa
   );
 }
 
-const createNewUser = new AsyncLock();
+const createNewUserLock = new AsyncLock();
 
 function getOAuthStrategyPassportCallback<TProfile extends passport.Profile>(
   entityManager: EntityManager,
@@ -112,7 +112,7 @@ function getOAuthStrategyPassportCallback<TProfile extends passport.Profile>(
     // Wrap the contents of this async function to convert the result into the done function
     (async () => {
       const identityId = await profileToIdentityID(profile);
-      return await createNewUser.acquire(identityId, async () => {
+      return await createNewUserLock.acquire(identityId, async () => {
         const userLoginIdentity = await entityManager.userLoginIdentity.findOne({
           filter: {
             name: strategyName,
@@ -165,7 +165,7 @@ function getOAuthStrategyPassportCallback<TProfile extends passport.Profile>(
 
             if (isDebug()) {
               // Self-promote in debug mode to make testing easier
-              if (newUser.username === 'atlinx96230') {
+              if (newUser.username === 'atlinx0') {
                 await entityManager.userRole.insertOne({
                   record: {
                     roleCode: RoleCode.SuperAdmin,
@@ -266,11 +266,10 @@ export async function authenticateBearerToken(args: string[]): Promise<AuthPaylo
 export function passportAuthenticateUserAndSendAuthToken(strategy: string) {
   return function (req: any, res: any, next: any): void {
     passport.authenticate(strategy, { session: false }, async (err, user: User) => {
-      if (err) {
-        return next(err);
-      }
-      if (!user) {
-        return res.status(403).send({ message: 'Unauthorized' });
+      if (err || !user) {
+        return res.send(
+          `<html><head><title>Authenticate</title></head><body></body><script>res = undefined; window.opener.postMessage(res, "*");window.close();</script></html>`,
+        );
       }
 
       // Each passport strategy returns a different user,

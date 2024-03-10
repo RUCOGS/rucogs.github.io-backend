@@ -12,81 +12,89 @@ import { ApolloResolversContext } from '@src/misc/context';
 import { makePermsCalc } from '@src/shared/security';
 import { HttpError } from '@src/shared/utils';
 import { FuncQueue, isDefined, startEntityManagerTransactionGraphQL } from '@src/utils';
+import AsyncLock from 'async-lock';
+
+const newUserLoginIdentityLock = new AsyncLock();
+const updateUserLoginIdentityLock = new AsyncLock();
 
 export default {
   Mutation: {
     newUserLoginIdentity: async (parent, args, context: ApolloResolversContext, info) => {
-      makePermsCalc()
-        .withContext(context.securityContext)
-        .withDomain({
-          userId: args.input.userId,
-        })
-        .assertPermission(Permission.UpdateUserPrivate);
+      return await newUserLoginIdentityLock.acquire(args.input.userId, async () => {
+        makePermsCalc()
+          .withContext(context.securityContext)
+          .withDomain({
+            userId: args.input.userId,
+          })
+          .assertPermission(Permission.ManageMetadata);
 
-      const userExists = context.unsecureEntityManager.user.exists({
-        filter: { id: args.input.userId },
-      });
-      if (!userExists) throw new HttpError(400, `User doesn't exist!`);
-
-      const loginIdentityExists = await context.unsecureEntityManager.userLoginIdentity.exists({
-        filter: {
-          userId: args.input.userId,
-          name: args.input.name,
-        },
-      });
-      if (loginIdentityExists)
-        throw new HttpError(400, `User already has a login identity of name "${args.input.name}"!`);
-
-      let loginIdentityId = '';
-      const error = startEntityManagerTransactionGraphQL(context, async (transEntityManager, postTransFuncQueue) => {
-        const loginIdentity = await makeUserLoginIdentity({
-          entityManager: transEntityManager,
-          record: args.input,
-          subFuncQueue: postTransFuncQueue,
+        const userExists = context.unsecureEntityManager.user.exists({
+          filter: { id: args.input.userId },
         });
-        loginIdentityId = loginIdentity.id;
-      });
-      if (error instanceof Error) throw new HttpError(400, error.message);
-      return loginIdentityId;
-    },
+        if (!userExists) throw new HttpError(400, `User doesn't exist!`);
 
-    updateUserLoginIdentity: async (parent, args, context: ApolloResolversContext, info) => {
-      const loginIdentity = await context.unsecureEntityManager.userLoginIdentity.findOne({
-        filter: { id: args.input.id },
-      });
-      if (!loginIdentity) throw new HttpError(400, "Login identity doesn't exist!");
-
-      makePermsCalc()
-        .withContext(context.securityContext)
-        .withDomain({
-          userId: loginIdentity.userId,
-        })
-        .assertPermission(Permission.UpdateUserPrivate);
-
-      if (args.input.name) {
-        const identityWithSameNameExists = await context.unsecureEntityManager.userLoginIdentity.exists({
+        const loginIdentityExists = await context.unsecureEntityManager.userLoginIdentity.exists({
           filter: {
-            userId: loginIdentity.userId,
+            userId: args.input.userId,
             name: args.input.name,
           },
         });
-        if (identityWithSameNameExists) throw new HttpError(400, `Identity with same name exists for the same user!`);
-      }
+        if (loginIdentityExists)
+          throw new HttpError(400, `User already has a login identity of name "${args.input.name}"!`);
 
-      const error = startEntityManagerTransactionGraphQL(context, async (transEntityManager, postTransFuncQueue) => {
-        await updateUserLoginIdentity({
-          entityManager: transEntityManager,
-          filter: { id: args.input.id },
-          changes: {
-            ...(isDefined(args.input.name) && { name: args.input.name }),
-            ...(isDefined(args.input.data) && { data: args.input.data }),
-            ...(isDefined(args.input.identityId) && { identityId: args.input.identityId }),
-          },
-          subFuncQueue: postTransFuncQueue,
+        let loginIdentityId = '';
+        const error = startEntityManagerTransactionGraphQL(context, async (transEntityManager, postTransFuncQueue) => {
+          const loginIdentity = await makeUserLoginIdentity({
+            entityManager: transEntityManager,
+            record: args.input,
+            subFuncQueue: postTransFuncQueue,
+          });
+          loginIdentityId = loginIdentity.id;
         });
+        if (error instanceof Error) throw new HttpError(400, error.message);
+        return loginIdentityId;
       });
-      if (error instanceof Error) throw new HttpError(400, error.message);
-      return true;
+    },
+
+    updateUserLoginIdentity: async (parent, args, context: ApolloResolversContext, info) => {
+      return await updateUserLoginIdentityLock.acquire(args.input.id, async () => {
+        const loginIdentity = await context.unsecureEntityManager.userLoginIdentity.findOne({
+          filter: { id: args.input.id },
+        });
+        if (!loginIdentity) throw new HttpError(400, "Login identity doesn't exist!");
+
+        makePermsCalc()
+          .withContext(context.securityContext)
+          .withDomain({
+            userId: loginIdentity.userId,
+          })
+          .assertPermission(Permission.ManageMetadata);
+
+        if (args.input.name) {
+          const identityWithSameNameExists = await context.unsecureEntityManager.userLoginIdentity.exists({
+            filter: {
+              userId: loginIdentity.userId,
+              name: args.input.name,
+            },
+          });
+          if (identityWithSameNameExists) throw new HttpError(400, `Identity with same name exists for the same user!`);
+        }
+
+        const error = startEntityManagerTransactionGraphQL(context, async (transEntityManager, postTransFuncQueue) => {
+          await updateUserLoginIdentity({
+            entityManager: transEntityManager,
+            filter: { id: args.input.id },
+            changes: {
+              ...(isDefined(args.input.name) && { name: args.input.name }),
+              ...(isDefined(args.input.data) && { data: args.input.data }),
+              ...(isDefined(args.input.identityId) && { identityId: args.input.identityId }),
+            },
+            subFuncQueue: postTransFuncQueue,
+          });
+        });
+        if (error instanceof Error) throw new HttpError(400, error.message);
+        return true;
+      });
     },
 
     deleteUserLoginIdentity: async (parent, args, context: ApolloResolversContext, info) => {
@@ -100,7 +108,7 @@ export default {
         .withDomain({
           userId: loginIdentity.userId,
         })
-        .assertPermission(Permission.UpdateUserPrivate);
+        .assertPermission(Permission.ManageMetadata);
 
       const error = startEntityManagerTransactionGraphQL(context, async (transEntityManager, postTransFuncQueue) => {
         await deleteUserLoginIdentity({

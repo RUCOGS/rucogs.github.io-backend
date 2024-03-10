@@ -86,6 +86,7 @@ export default gql`
 
     email: String
     netId: String
+    manualVerified: String
     username: String!
     displayName: String!
     classYear: Int
