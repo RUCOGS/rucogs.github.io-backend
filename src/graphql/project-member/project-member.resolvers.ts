@@ -1,4 +1,4 @@
-import { regenerateSecurityContext } from '@src/controllers/security.controller';
+import { clearSecurityContext } from '@src/controllers/security.controller';
 import { MutationResolvers, QueryResolvers, SubscriptionResolvers } from '@src/generated/graphql-endpoint.types';
 import { Permission, Project, RoleCode } from '@src/generated/model.types';
 import {
@@ -26,7 +26,7 @@ import {
 } from '@src/utils';
 import { PartialDeep } from 'type-fest';
 import { deleteAllProjectInvites } from '../project-invite/project-invite.resolvers';
-import { regenerateProjectMemberSecurityContexts } from '../project/project.resolvers';
+import { clearProjectSecurityContexts } from '../project/project.resolvers';
 
 async function getRequesterRoles(unsecureEntityManager: EntityManager, requesterUserId: string, roleEntityId: string) {
   const requesterUser = await unsecureEntityManager.user.findOne({
@@ -252,9 +252,8 @@ export async function makeProjectMember(options: {
     id: member.id,
   });
   subFuncQueue?.addFunc(async () => {
-    await regenerateSecurityContext(entityManager, record.userId);
-    // Update project member security context after we added the new member and regenerated their security context
-    await regenerateProjectMemberSecurityContexts({ filter: { id: member.projectId }, entityManager });
+    await clearProjectSecurityContexts({ filter: { id: member.projectId }, entityManager });
+    clearSecurityContext(entityManager, record.userId);
   });
   if (emitSubscription) pubsub.publishOrAddToFuncQueue(PubSubEvents.ProjectMemberCreated, member, subFuncQueue);
   return member;
@@ -281,7 +280,7 @@ export async function updateProjectMember(options: {
     });
   const updatedMember = await entityManager.projectMember.findOne({ filter });
   if (roles) {
-    subFuncQueue?.addFunc(async () => await regenerateSecurityContext(entityManager, member.userId));
+    subFuncQueue?.addFunc(async () => clearSecurityContext(entityManager, member.userId));
   }
   if (emitSubscription) pubsub.publishOrAddToFuncQueue(PubSubEvents.ProjectMemberUpdated, updatedMember, subFuncQueue);
   return member;
@@ -301,9 +300,8 @@ export async function deleteProjectMember(options: {
   });
   await entityManager.projectMember.deleteOne({ filter });
   subFuncQueue?.addFunc(async () => {
-    await regenerateSecurityContext(entityManager, member.userId);
-    // Update project member security context after we added the new member and regenerated their security context
-    await regenerateProjectMemberSecurityContexts({ filter: { id: member.projectId }, entityManager });
+    await clearProjectSecurityContexts({ filter: { id: member.projectId }, entityManager });
+    clearSecurityContext(entityManager, member.userId);
   });
   if (emitSubscription) pubsub.publishOrAddToFuncQueue(PubSubEvents.ProjectMemberDeleted, member, subFuncQueue);
 }
@@ -323,9 +321,8 @@ export async function deleteAllProjectMembers(options: {
   // Update member security contexts
   for (const member of members)
     subFuncQueue?.addFunc(async () => {
-      await regenerateSecurityContext(entityManager, member.userId);
-      // Update project member security context after we added the new member and regenerated their security context
-      await regenerateProjectMemberSecurityContexts({ filter: { id: member.projectId }, entityManager });
+      await clearProjectSecurityContexts({ filter: { id: member.projectId }, entityManager });
+      clearSecurityContext(entityManager, member.userId);
     });
   if (emitSubscription) {
     for (const member of members)

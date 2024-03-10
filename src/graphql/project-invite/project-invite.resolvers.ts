@@ -1,4 +1,4 @@
-import { regenerateSecurityContext } from '@src/controllers/security.controller';
+import { clearSecurityContext } from '@src/controllers/security.controller';
 import {
   InviteType,
   MutationResolvers,
@@ -15,7 +15,7 @@ import { makePermsCalc } from '@src/shared/security';
 import { HttpError } from '@src/shared/utils';
 import { FuncQueue, startEntityManagerTransactionGraphQL } from '@src/utils';
 import { makeProjectMember } from '../project-member/project-member.resolvers';
-import { regenerateProjectMemberSecurityContexts } from '../project/project.resolvers';
+import { clearProjectSecurityContexts } from '../project/project.resolvers';
 
 const acceptProjectInvite: MutationResolvers['acceptProjectInvite'] = async (
   parent,
@@ -292,8 +292,8 @@ export async function makeProjectInvite(options: {
   });
   // Update invite and project member security contexts
   subFuncQueue?.addFunc(async () => {
-    await regenerateProjectMemberSecurityContexts({ entityManager, filter: { id: record.projectId } });
-    await regenerateSecurityContext(entityManager, record.userId);
+    await clearProjectSecurityContexts({ entityManager, filter: { id: record.projectId } });
+    clearSecurityContext(entityManager, record.userId);
   });
   if (emitSubscription) pubsub.publishOrAddToFuncQueue(PubSubEvents.ProjectInviteCreated, projectInvite, subFuncQueue);
   return projectInvite;
@@ -311,8 +311,8 @@ export async function deleteProjectInvite(options: {
   await entityManager.projectInvite.deleteOne({ filter });
   // Update invite and project member security contexts
   subFuncQueue?.addFunc(async () => {
-    await regenerateProjectMemberSecurityContexts({ entityManager, filter: { id: invite.projectId } });
-    await regenerateSecurityContext(entityManager, invite.userId);
+    await clearProjectSecurityContexts({ entityManager, filter: { id: invite.projectId } });
+    clearSecurityContext(entityManager, invite.userId);
   });
   if (emitSubscription) pubsub.publishOrAddToFuncQueue(PubSubEvents.ProjectInviteDeleted, invite, subFuncQueue);
 }
@@ -329,8 +329,8 @@ export async function deleteAllProjectInvites(options: {
   // Update invite and project member security contexts
   subFuncQueue?.addFunc(async () => {
     for (const invite of invites) {
-      await regenerateProjectMemberSecurityContexts({ entityManager, filter: { id: invite.projectId } });
-      await regenerateSecurityContext(entityManager, invite.userId);
+      await clearProjectSecurityContexts({ entityManager, filter: { id: invite.projectId } });
+      clearSecurityContext(entityManager, invite.userId);
     }
   });
   if (emitSubscription) {

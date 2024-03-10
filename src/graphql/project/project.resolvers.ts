@@ -4,7 +4,7 @@ import {
   isSelfHostedFile,
   tryDeleteFileIfSelfHosted,
 } from '@src/controllers/cdn.controller';
-import { regenerateSecurityContext } from '@src/controllers/security.controller';
+import { clearSecurityContext } from '@src/controllers/security.controller';
 import {
   MutationResolvers,
   Permission,
@@ -395,16 +395,13 @@ export async function deleteProject(options: {
   if (emitSubscription) pubsub.publishOrAddToFuncQueue(PubSubEvents.ProjectDeleted, project, subFuncQueue);
 }
 
-export async function regenerateProjectMemberSecurityContexts(options: {
-  entityManager: EntityManager;
-  filter: ProjectFilter;
-}) {
+export async function clearProjectSecurityContexts(options: { entityManager: EntityManager; filter: ProjectFilter }) {
   const { entityManager, filter } = options;
   const project = await entityManager.project.findOne({
     filter,
     projection: { members: { userId: true } },
   });
   if (project) {
-    for (const member of project.members) await regenerateSecurityContext(entityManager, member.userId);
+    for (const member of project.members) clearSecurityContext(entityManager, member.userId);
   }
 }

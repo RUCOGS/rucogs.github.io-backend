@@ -1,6 +1,6 @@
 import { DataSize, fileUploadPromiseToCdn, tryDeleteFileIfSelfHosted } from '@src/controllers/cdn.controller';
 import { jwtSignAsync } from '@src/controllers/jwt.controller';
-import { regenerateSecurityContext } from '@src/controllers/security.controller';
+import { clearSecurityContext } from '@src/controllers/security.controller';
 import { VerityNetIdPayload } from '@src/controllers/verify-netid.controller';
 import {
   MutationResolvers,
@@ -246,7 +246,7 @@ export default {
         if (error instanceof Error) throw new HttpError(400, error.message);
 
         if (isDefined(args.input.roles)) {
-          await regenerateSecurityContext(context.unsecureEntityManager, args.input.id);
+          clearSecurityContext(context.unsecureEntityManager, args.input.id);
         }
       });
       return true;
@@ -379,7 +379,7 @@ export async function makeUser(options: {
       userId: user.id,
     },
   });
-  subFuncQueue?.addFunc(async () => await regenerateSecurityContext(entityManager, user.id));
+  subFuncQueue?.addFunc(async () => clearSecurityContext(entityManager, user.id));
   if (emitSubscription) pubsub.publishOrAddToFuncQueue(PubSubEvents.UserCreated, user, subFuncQueue);
   return user;
 }

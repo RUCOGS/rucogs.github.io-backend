@@ -23,41 +23,51 @@ import { HttpError, isDeepEquals } from '@src/shared/utils';
 import { RoleBackendDataDict } from './role-backend';
 
 // Caches security contexts for fast lookups
-export const SECURITY_CONTEXT_CACHE = new Map<string, { 
-  // Time in milliseconds since Jan 1 1970 that this cache entry will expire at
-  expiresAt: number, 
-  // Cached security context
-  context: SecurityContext 
-}>();
+export const SECURITY_CONTEXT_CACHE = new Map<
+  string,
+  {
+    // Time in milliseconds since Jan 1 1970 that this cache entry will expire at
+    expiresAt: number;
+    // Cached security context
+    context: SecurityContext;
+  }
+>();
 // LIfetime of cached security context in milliseconds
-export const SECURITY_CONTEXT_CACHE_LIFETIME = 1000 * 60 * 60 * 24 // Context stays cached for an entire day
+export const SECURITY_CONTEXT_CACHE_LIFETIME = 1000 * 60 * 60 * 24; // Context stays cached for an entire day
 // Maximum number of cached contexts
-export const SECURITY_CONTEXT_CACHE_MAX_SIZE = 100
+export const SECURITY_CONTEXT_CACHE_MAX_SIZE = 100;
 
-export async function regenerateSecurityContext(entityManager: AnyEntityManager, userId: string) {
-  await getCompleteSecurityContext(entityManager, userId, true);
+// Clears a user's security context cache.
+// This forces a regeneration of their security context the next
+// time they make a request to the API.
+export function clearSecurityContext(entityManager: AnyEntityManager, userId: string) {
+  SECURITY_CONTEXT_CACHE.delete(userId);
 }
 
-// Centeral point to get security context.
-export async function getCompleteSecurityContext(entityManager: AnyEntityManager, userId: string, forceClearCache: boolean = false) {
-  const now = Date.now()
+// Fetches a security context for a user.
+// First checks the cache to see if it exists.
+// If it does not, it then generates the security context.
+export async function getCompleteSecurityContext(
+  entityManager: AnyEntityManager,
+  userId: string,
+  forceClearCache: boolean = false,
+) {
+  const now = Date.now();
 
   if (!forceClearCache) {
-    // Look in cache first, before trying 
+    // Look in cache first, before trying
     const cachedContext = SECURITY_CONTEXT_CACHE.get(userId);
-    if (cachedContext != undefined && now < cachedContext.expiresAt)
-      return cachedContext.context;
+    if (cachedContext != undefined && now < cachedContext.expiresAt) return cachedContext.context;
   }
-  
+
   // Check if user exists
   const userExists = await entityManager.user.exists({
     filter: {
       id: userId,
     },
   });
-  if (!userExists)
-    return DefaultSecurityContext;
-  
+  if (!userExists) return DefaultSecurityContext;
+
   let context = <SecurityContext>{
     userId,
     permissions: await getCompleteSecurityPermissions(entityManager, userId),
@@ -77,7 +87,7 @@ export async function getCompleteSecurityContext(entityManager: AnyEntityManager
 
   SECURITY_CONTEXT_CACHE.set(userId, {
     expiresAt: now + SECURITY_CONTEXT_CACHE_LIFETIME,
-    context
+    context,
   });
   return context;
 }
