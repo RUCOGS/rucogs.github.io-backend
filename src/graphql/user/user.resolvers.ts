@@ -430,7 +430,7 @@ export async function deleteUser(options: {
   await entityManager.user.deleteOne({
     filter: { id: user.id },
   });
-  subFuncQueue?.addFunc(async () => await regenerateSecurityContext(entityManager, user.id));
+  subFuncQueue?.addFunc(async () => await clearSecurityContext(entityManager, user.id));
   if (emitSubscription) pubsub.publishOrAddToFuncQueue(PubSubEvents.UserDeleted, user, subFuncQueue);
   return user;
 }
