@@ -47,6 +47,9 @@ export const RoleData: {
       RoleCode.Outreach,
       RoleCode.BotDeveloper,
       RoleCode.ClubGraphicArtist,
+      RoleCode.CommunicationsSpecialist,
+      RoleCode.PromotionsManager,
+      RoleCode.MerchandiseManager,
 
       // Project Roles
       RoleCode.ProjectOwner,
@@ -128,6 +131,19 @@ export const RoleData: {
     type: [RoleType.EBoard],
     name: '🕸️ Webmaster',
   },
+  [RoleCode.CommunicationsSpecialist]: {
+    type: [RoleType.EBoard],
+    name: '🗣️ Communications Specialist',
+  },
+  [RoleCode.PromotionsManager]: {
+    type: [RoleType.EBoard],
+    name: '🪧 Promotions Manager',
+  },
+  [RoleCode.MerchandiseManager]: {
+    type: [RoleType.EBoard],
+    name: '👕 Merch Manager',
+  },
+  
   // #endregion // -- EBOARD ROLES ----- //
 
   // #region // ----- PROJECT MEMBER ROLES ----- //
