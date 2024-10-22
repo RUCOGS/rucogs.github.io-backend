@@ -51,6 +51,7 @@ export const RoleData: {
       RoleCode.PromotionsManager,
       RoleCode.MerchandiseManager,
       RoleCode.PortfolioManager,
+      RoleCode.PreProfessionalManager,
 
       // Project Roles
       RoleCode.ProjectOwner,
