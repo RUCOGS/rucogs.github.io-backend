@@ -52,6 +52,8 @@ export const RoleData: {
       RoleCode.MerchandiseManager,
       RoleCode.PortfolioManager,
       RoleCode.PreProfessionalManager,
+      RoleCode.OutreachDirector,
+      RoleCode.Secretary,
 
       // Project Roles
       RoleCode.ProjectOwner,
@@ -152,6 +154,18 @@ export const RoleData: {
   [RoleCode.PreProfessionalManager]: {
     type: [RoleType.EBoard],
     name: '🤵 Pre-Professional Manager'
+  },
+    [RoleCode.OutreachDirector]: {
+    type: [RoleType.EBoard],
+    name: '🗣️ Outreach Director'
+  },
+  [RoleCode.Secretary]: {
+    type: [RoleType.EBoard],
+    name: '📨 Secretary'
+  },
+  [RoleCode.MinieventCoordinator]: {
+    type: [RoleType.EBoard],
+    name: '🧑‍🏫 Mini Event Coordinator'
   },
   
   // #endregion // -- EBOARD ROLES ----- //
