@@ -1,0 +1,13 @@
+{
+    "type": "debug",
+    "backendDomain": "localhost:3000",
+    "cdnDomain": "localhost:3000",
+    "cdnHttpsPrefix": "http://",
+    "httpsPrefix": "http://",
+    "wssPrefix": "ws://",
+    "cdnRelativePath": "/cdn",
+    "dynamicCdnRelativePath": "/cdn/dynamic",
+    "graphqlRelativePath": "/graphql",
+    "selfHostedPrefix": "cdn://",
+    "archiveCategoryId": "799858313835708446"
+}
