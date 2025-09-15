@@ -163,7 +163,7 @@ export const RoleData: {
     type: [RoleType.EBoard],
     name: '📨 Secretary'
   },
-  [RoleCode.MinieventCoordinator]: {
+  [RoleCode.MiniEventCoordinator]: {
     type: [RoleType.EBoard],
     name: '🧑‍🏫 Mini Event Coordinator'
   },
